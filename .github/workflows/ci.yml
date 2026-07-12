@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify / ${{ matrix.shell }}
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        shell:
+          - powershell
+          - pwsh
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Verify module
+        shell: ${{ matrix.shell }}
+        run: .\build.ps1 -Task Verify -Bootstrap
+
+      - name: Upload verification artifacts
+        if: matrix.shell == 'pwsh'
+        uses: actions/upload-artifact@v7
+        with:
+          name: InfraPulse-verification-${{ github.sha }}
+          path: |
+            out/InfraPulse-*.zip
+            out/InfraPulse-*.zip.sha256
+            test-results/*.xml
+          if-no-files-found: error
+          retention-days: 14

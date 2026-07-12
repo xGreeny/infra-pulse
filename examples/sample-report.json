@@ -1,0 +1,493 @@
+[
+  {
+    "SchemaVersion": "1.0",
+    "Tool": "InfraPulse",
+    "ToolVersion": "1.0.0",
+    "RequestedComputerName": "srv-app-01.contoso.invalid",
+    "ComputerName": "SRV-APP-01",
+    "GeneratedAtUtc": "2026-07-11T09:30:00Z",
+    "OverallStatus": "Warning",
+    "Summary": {
+      "Total": 10,
+      "Healthy": 9,
+      "Warning": 1,
+      "Critical": 0,
+      "Unknown": 0,
+      "Skipped": 0
+    },
+    "Inventory": {
+      "ComputerName": "SRV-APP-01",
+      "Fqdn": "srv-app-01.contoso.invalid",
+      "Platform": "Windows",
+      "OperatingSystem": "Microsoft Windows Server 2022 Standard",
+      "OperatingSystemSku": 7,
+      "Version": "10.0.20348",
+      "BuildNumber": "20348",
+      "Architecture": "64-bit",
+      "Manufacturer": "VMware, Inc.",
+      "Model": "VMware Virtual Platform",
+      "Domain": "contoso.invalid",
+      "PartOfDomain": true,
+      "PowerShellVersion": "7.6.3",
+      "PowerShellEdition": "Core",
+      "CollectedAtUtc": "2026-07-11T09:29:59Z"
+    },
+    "Results": [
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "Disk",
+        "Category": "Capacity",
+        "Target": "C:",
+        "Status": "Warning",
+        "Message": "36.80 GB free (18.40%) of 200.00 GB on C: (System).",
+        "ObservedValue": "18.40% / 36.80 GB",
+        "WarningThreshold": "<= 20% or <= 30 GB",
+        "CriticalThreshold": "<= 8% or <= 12 GB",
+        "Recommendation": "Review growth, cleanup candidates, and volume capacity before the critical threshold is reached.",
+        "Evidence": {
+          "DeviceId": "C:",
+          "VolumeName": "System",
+          "FileSystem": "NTFS",
+          "SizeBytes": 214748364800,
+          "FreeBytes": 39513699123,
+          "FreeGB": 36.8,
+          "FreePercent": 18.4
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 48.2,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "Memory",
+        "Category": "Capacity",
+        "Target": "Physical memory",
+        "Status": "Healthy",
+        "Message": "12.53 GB available (39.16%) of 32.00 GB physical memory.",
+        "ObservedValue": "39.16%",
+        "WarningThreshold": "<= 20%",
+        "CriticalThreshold": "<= 10%",
+        "Recommendation": "",
+        "Evidence": {
+          "TotalGB": 32,
+          "AvailableGB": 12.53,
+          "AvailablePercent": 39.16
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 23.8,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "Uptime",
+        "Category": "Lifecycle",
+        "Target": "Operating system",
+        "Status": "Healthy",
+        "Message": "18.42 days since last boot (2026-06-22 23:25:00 +00:00).",
+        "ObservedValue": "18.42 days",
+        "WarningThreshold": ">= 45 days",
+        "CriticalThreshold": ">= 90 days",
+        "Recommendation": "",
+        "Evidence": {
+          "LastBootTime": "2026-06-22T23:25:00Z",
+          "UptimeDays": 18.42,
+          "UptimeHours": 442.08
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 17.4,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "PendingReboot",
+        "Category": "Lifecycle",
+        "Target": "Operating system",
+        "Status": "Healthy",
+        "Message": "No supported pending-reboot indicators were detected.",
+        "ObservedValue": false,
+        "WarningThreshold": "Any supported reboot indicator",
+        "CriticalThreshold": null,
+        "Recommendation": "",
+        "Evidence": {
+          "Pending": false,
+          "Reasons": []
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 14.1,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "Services",
+        "Category": "Availability",
+        "Target": "EventLog",
+        "Status": "Healthy",
+        "Message": "Service 'Windows Event Log' is Running.",
+        "ObservedValue": "Running",
+        "WarningThreshold": null,
+        "CriticalThreshold": "Expected: Running",
+        "Recommendation": "",
+        "Evidence": {
+          "Name": "EventLog",
+          "DisplayName": "Windows Event Log",
+          "Status": "Running",
+          "ExpectedStatus": "Running",
+          "StartMode": "Auto",
+          "Exists": true
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 12.2,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "Services",
+        "Category": "Availability",
+        "Target": "Winmgmt",
+        "Status": "Healthy",
+        "Message": "Service 'Windows Management Instrumentation' is Running.",
+        "ObservedValue": "Running",
+        "WarningThreshold": null,
+        "CriticalThreshold": "Expected: Running",
+        "Recommendation": "",
+        "Evidence": {
+          "Name": "Winmgmt",
+          "Status": "Running",
+          "ExpectedStatus": "Running",
+          "StartMode": "Auto",
+          "Exists": true
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 12.2,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "Certificates",
+        "Category": "Security",
+        "Target": "Certificate inventory",
+        "Status": "Healthy",
+        "Message": "6 of 6 certificate(s) are valid beyond the warning threshold.",
+        "ObservedValue": 6,
+        "WarningThreshold": "Expiry <= 30 days",
+        "CriticalThreshold": "Expiry <= 14 days",
+        "Recommendation": "",
+        "Evidence": {
+          "TotalCertificates": 6,
+          "HealthyCertificates": 6,
+          "ExistingStores": [
+            "Cert:\\LocalMachine\\My",
+            "Cert:\\LocalMachine\\WebHosting"
+          ],
+          "MissingStores": []
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 61.8,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "EventLog",
+        "Category": "Reliability",
+        "Target": "System",
+        "Status": "Healthy",
+        "Message": "8 critical/error event(s) in 'System' during the last 24 hour(s).",
+        "ObservedValue": 8,
+        "WarningThreshold": ">= 25 events",
+        "CriticalThreshold": ">= 100 events",
+        "Recommendation": "",
+        "Evidence": {
+          "LogName": "System",
+          "Count": 8,
+          "LookbackHours": 24,
+          "Levels": [
+            1,
+            2
+          ],
+          "Truncated": false,
+          "TopProviders": [
+            {
+              "Provider": "Service Control Manager",
+              "Count": 3
+            }
+          ]
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 76.4,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "Dns",
+        "Category": "Connectivity",
+        "Target": "login.microsoftonline.com",
+        "Status": "Healthy",
+        "Message": "Resolved login.microsoftonline.com [A] to 20.190.160.2 in 11.2 ms.",
+        "ObservedValue": "20.190.160.2",
+        "WarningThreshold": null,
+        "CriticalThreshold": "Resolution failure",
+        "Recommendation": "",
+        "Evidence": {
+          "Name": "login.microsoftonline.com",
+          "QueryType": "A",
+          "Server": "",
+          "Answers": [
+            "20.190.160.2"
+          ],
+          "DurationMs": 11.2
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 11.2,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "Tcp",
+        "Category": "Connectivity",
+        "Target": "Microsoft identity",
+        "Status": "Healthy",
+        "Message": "Connected to login.microsoftonline.com:443 in 24.8 ms.",
+        "ObservedValue": true,
+        "WarningThreshold": null,
+        "CriticalThreshold": "Connection failure",
+        "Recommendation": "",
+        "Evidence": {
+          "Name": "Microsoft identity",
+          "Host": "login.microsoftonline.com",
+          "Port": 443,
+          "DurationMs": 24.8,
+          "TimeoutMs": 3000
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 24.8,
+        "Error": ""
+      }
+    ],
+    "Tags": [
+      "production",
+      "application"
+    ],
+    "DurationMs": 842.17
+  },
+  {
+    "SchemaVersion": "1.0",
+    "Tool": "InfraPulse",
+    "ToolVersion": "1.0.0",
+    "RequestedComputerName": "srv-dc-01.contoso.invalid",
+    "ComputerName": "SRV-DC-01",
+    "GeneratedAtUtc": "2026-07-11T09:30:02Z",
+    "OverallStatus": "Critical",
+    "Summary": {
+      "Total": 7,
+      "Healthy": 3,
+      "Warning": 3,
+      "Critical": 1,
+      "Unknown": 0,
+      "Skipped": 0
+    },
+    "Inventory": {
+      "ComputerName": "SRV-DC-01",
+      "Fqdn": "srv-dc-01.contoso.invalid",
+      "Platform": "Windows",
+      "OperatingSystem": "Microsoft Windows Server 2022 Datacenter",
+      "OperatingSystemSku": 8,
+      "Version": "10.0.20348",
+      "BuildNumber": "20348",
+      "Architecture": "64-bit",
+      "Manufacturer": "Dell Inc.",
+      "Model": "PowerEdge R650",
+      "Domain": "contoso.invalid",
+      "PartOfDomain": true,
+      "PowerShellVersion": "5.1.20348.2849",
+      "PowerShellEdition": "Desktop",
+      "CollectedAtUtc": "2026-07-11T09:30:01Z"
+    },
+    "Results": [
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-DC-01",
+        "CheckName": "Disk",
+        "Category": "Capacity",
+        "Target": "C:",
+        "Status": "Healthy",
+        "Message": "82.14 GB free (41.07%) of 200.00 GB on C: (System).",
+        "ObservedValue": "41.07% / 82.14 GB",
+        "WarningThreshold": "<= 20% or <= 30 GB",
+        "CriticalThreshold": "<= 8% or <= 12 GB",
+        "Recommendation": "",
+        "Evidence": {
+          "DeviceId": "C:",
+          "VolumeName": "System",
+          "FileSystem": "NTFS",
+          "SizeBytes": 214748364800,
+          "FreeBytes": 88197133414,
+          "FreeGB": 82.14,
+          "FreePercent": 41.07
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 41.7,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-DC-01",
+        "CheckName": "Memory",
+        "Category": "Capacity",
+        "Target": "Physical memory",
+        "Status": "Healthy",
+        "Message": "9.81 GB available (61.31%) of 16.00 GB physical memory.",
+        "ObservedValue": "61.31%",
+        "WarningThreshold": "<= 20%",
+        "CriticalThreshold": "<= 10%",
+        "Recommendation": "",
+        "Evidence": {
+          "TotalGB": 16,
+          "AvailableGB": 9.81,
+          "AvailablePercent": 61.31
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 20.2,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-DC-01",
+        "CheckName": "Uptime",
+        "Category": "Lifecycle",
+        "Target": "Operating system",
+        "Status": "Warning",
+        "Message": "57.21 days since last boot (2026-05-15 04:27:00 +00:00).",
+        "ObservedValue": "57.21 days",
+        "WarningThreshold": ">= 45 days",
+        "CriticalThreshold": ">= 90 days",
+        "Recommendation": "Review maintenance cadence and schedule a controlled restart if required by patching or operational policy.",
+        "Evidence": {
+          "LastBootTime": "2026-05-15T04:27:00Z",
+          "UptimeDays": 57.21,
+          "UptimeHours": 1373.04
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 15.9,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-DC-01",
+        "CheckName": "PendingReboot",
+        "Category": "Lifecycle",
+        "Target": "Operating system",
+        "Status": "Warning",
+        "Message": "A reboot is pending: Windows Update.",
+        "ObservedValue": true,
+        "WarningThreshold": "Any supported reboot indicator",
+        "CriticalThreshold": null,
+        "Recommendation": "Schedule a controlled restart, confirm service restoration, and verify that all reboot indicators clear afterward.",
+        "Evidence": {
+          "Pending": true,
+          "Reasons": [
+            "Windows Update"
+          ]
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 12.8,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-DC-01",
+        "CheckName": "Services",
+        "Category": "Availability",
+        "Target": "NTDS",
+        "Status": "Critical",
+        "Message": "Service 'Active Directory Domain Services' is Stopped; expected Running.",
+        "ObservedValue": "Stopped",
+        "WarningThreshold": null,
+        "CriticalThreshold": "Expected: Running",
+        "Recommendation": "Review dependent services and recent changes, then restore the expected state using the approved operational procedure.",
+        "Evidence": {
+          "Name": "NTDS",
+          "DisplayName": "Active Directory Domain Services",
+          "Status": "Stopped",
+          "ExpectedStatus": "Running",
+          "StartMode": "Auto",
+          "Exists": true
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 18.1,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-DC-01",
+        "CheckName": "EventLog",
+        "Category": "Reliability",
+        "Target": "Directory Service",
+        "Status": "Warning",
+        "Message": "42 critical/error event(s) in 'Directory Service' during the last 24 hour(s).",
+        "ObservedValue": 42,
+        "WarningThreshold": ">= 25 events",
+        "CriticalThreshold": ">= 100 events",
+        "Recommendation": "Review recurring providers and event IDs before the error rate becomes operationally significant.",
+        "Evidence": {
+          "LogName": "Directory Service",
+          "Count": 42,
+          "LookbackHours": 24,
+          "Levels": [
+            1,
+            2
+          ],
+          "Truncated": false,
+          "TopProviders": [
+            {
+              "Provider": "Microsoft-Windows-ActiveDirectory_DomainService",
+              "Count": 31
+            }
+          ]
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 92.6,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-DC-01",
+        "CheckName": "Dns",
+        "Category": "Connectivity",
+        "Target": "_ldap._tcp.dc._msdcs.contoso.invalid",
+        "Status": "Healthy",
+        "Message": "Resolved _ldap._tcp.dc._msdcs.contoso.invalid [SRV] to dc01.contoso.invalid in 6.4 ms.",
+        "ObservedValue": "dc01.contoso.invalid",
+        "WarningThreshold": null,
+        "CriticalThreshold": "Resolution failure",
+        "Recommendation": "",
+        "Evidence": {
+          "Name": "_ldap._tcp.dc._msdcs.contoso.invalid",
+          "QueryType": "SRV",
+          "Server": "10.20.0.10",
+          "Answers": [
+            "dc01.contoso.invalid"
+          ],
+          "DurationMs": 6.4
+        },
+        "TimestampUtc": "2026-07-11T09:30:00Z",
+        "DurationMs": 6.4,
+        "Error": ""
+      }
+    ],
+    "Tags": [
+      "production",
+      "domain-controller"
+    ],
+    "DurationMs": 611.43
+  }
+]

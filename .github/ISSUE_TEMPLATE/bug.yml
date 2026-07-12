@@ -1,0 +1,49 @@
+name: Bug report
+description: Report reproducible incorrect behavior in InfraPulse.
+title: '[bug] '
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Remove hostnames, credentials, tenant identifiers, private addresses, customer data, and unredacted logs before submitting.
+  - type: input
+    id: version
+    attributes:
+      label: InfraPulse version
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: PowerShell edition/version, controller OS, target OS, and local or remote execution mode.
+      placeholder: PowerShell 7.6 on Windows 11; Windows Server 2022 target through WSMan
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Reproduction command and sanitized configuration
+      render: powershell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and complete error
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional diagnostic context
+      description: Include verbose output or a sanitized result object when useful.

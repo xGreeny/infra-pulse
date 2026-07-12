@@ -1,0 +1,108 @@
+function Invoke-InfraPulseDiskCheck {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [psobject]$Context,
+
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary]$Settings
+    )
+
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $scriptBlock = {
+        param($CheckSettings)
+
+        if ($env:OS -ne 'Windows_NT') {
+            throw 'The Disk check requires a Windows target.'
+        }
+
+        if (Get-Command -Name Get-CimInstance -ErrorAction SilentlyContinue) {
+            $disks = Get-CimInstance -ClassName Win32_LogicalDisk -Filter 'DriveType = 3' -ErrorAction Stop
+        }
+        else {
+            $disks = Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 3' -ErrorAction Stop
+        }
+
+        $includePatterns = @($CheckSettings.Include)
+        $excludePatterns = @($CheckSettings.Exclude)
+
+        foreach ($disk in $disks) {
+            $deviceId = [string]$disk.DeviceID
+            $included = $includePatterns.Count -eq 0
+            foreach ($pattern in $includePatterns) {
+                if ($deviceId -like [string]$pattern) {
+                    $included = $true
+                    break
+                }
+            }
+
+            $excluded = $false
+            foreach ($pattern in $excludePatterns) {
+                if ($deviceId -like [string]$pattern) {
+                    $excluded = $true
+                    break
+                }
+            }
+
+            if (-not $included -or $excluded) {
+                continue
+            }
+
+            $sizeBytes = [double]$disk.Size
+            $freeBytes = [double]$disk.FreeSpace
+            $freePercent = if ($sizeBytes -gt 0) { ($freeBytes / $sizeBytes) * 100 } else { 0 }
+
+            [pscustomobject]@{
+                DeviceId    = $deviceId
+                VolumeName  = [string]$disk.VolumeName
+                SizeBytes   = [math]::Round($sizeBytes, 0)
+                FreeBytes   = [math]::Round($freeBytes, 0)
+                FreeGB      = [math]::Round($freeBytes / 1GB, 2)
+                FreePercent = [math]::Round($freePercent, 2)
+                FileSystem  = [string]$disk.FileSystem
+            }
+        }
+    }
+
+    $raw = @(Invoke-InfraPulseCommand -Context $Context -ScriptBlock $scriptBlock -ArgumentList @($Settings))
+    $stopwatch.Stop()
+
+    if ($raw.Count -eq 0) {
+        return New-InfraPulseResult -Status 'Unknown' -CheckName 'Disk' -Category 'Capacity' -ComputerName $Context.ComputerName -Target 'Fixed disks' -Message 'No fixed disks matched the configured include and exclude patterns.' -Recommendation 'Review Checks.Disk.Include and Checks.Disk.Exclude.' -DurationMs $stopwatch.Elapsed.TotalMilliseconds
+    }
+
+    $results = @()
+    foreach ($disk in $raw) {
+        $isCritical = ([double]$disk.FreePercent -le [double]$Settings.CriticalFreePercent) -or ([double]$disk.FreeGB -le [double]$Settings.CriticalFreeGB)
+        $isWarning = ([double]$disk.FreePercent -le [double]$Settings.WarningFreePercent) -or ([double]$disk.FreeGB -le [double]$Settings.WarningFreeGB)
+
+        if ($isCritical) {
+            $status = 'Critical'
+            $recommendation = 'Free disk space immediately, extend the volume, or move data after validating retention and recovery requirements.'
+        }
+        elseif ($isWarning) {
+            $status = 'Warning'
+            $recommendation = 'Review growth, cleanup candidates, and volume capacity before the critical threshold is reached.'
+        }
+        else {
+            $status = 'Healthy'
+            $recommendation = ''
+        }
+
+        $volumeLabel = if ([string]::IsNullOrWhiteSpace([string]$disk.VolumeName)) { 'unlabeled' } else { [string]$disk.VolumeName }
+        $message = '{0:N2} GB free ({1:N2}%) of {2:N2} GB on {3} ({4}).' -f [double]$disk.FreeGB, [double]$disk.FreePercent, ([double]$disk.SizeBytes / 1GB), [string]$disk.DeviceId, $volumeLabel
+        $evidence = [ordered]@{
+            DeviceId    = [string]$disk.DeviceId
+            VolumeName  = [string]$disk.VolumeName
+            FileSystem  = [string]$disk.FileSystem
+            SizeBytes   = [double]$disk.SizeBytes
+            FreeBytes   = [double]$disk.FreeBytes
+            FreeGB      = [double]$disk.FreeGB
+            FreePercent = [double]$disk.FreePercent
+        }
+
+        $results += New-InfraPulseResult -Status $status -CheckName 'Disk' -Category 'Capacity' -ComputerName $Context.ComputerName -Target ([string]$disk.DeviceId) -Message $message -ObservedValue ("{0:N2}% / {1:N2} GB" -f [double]$disk.FreePercent, [double]$disk.FreeGB) -WarningThreshold ("<= {0}% or <= {1} GB" -f $Settings.WarningFreePercent, $Settings.WarningFreeGB) -CriticalThreshold ("<= {0}% or <= {1} GB" -f $Settings.CriticalFreePercent, $Settings.CriticalFreeGB) -Recommendation $recommendation -Evidence $evidence -DurationMs ($stopwatch.Elapsed.TotalMilliseconds / $raw.Count)
+    }
+
+    return $results
+}

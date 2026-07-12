@@ -1,0 +1,46 @@
+name: Feature proposal
+description: Propose a focused, read-only capability or engineering improvement.
+title: '[feature] '
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Operational problem
+      description: Describe the workflow, evidence gap, or repeated manual task.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Define inputs, result semantics, failure behavior, and expected output.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - New check
+        - Existing check
+        - Configuration
+        - Remoting
+        - Reporting
+        - Testing and CI
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: permissions
+    attributes:
+      label: Required permissions and data sensitivity
+      description: Identify target interfaces, privileges, report data, and read-only guarantees.
+    validations:
+      required: true
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Compatibility considerations
+      description: PowerShell 5.1, PowerShell 7, Windows versions, and remote execution behavior.

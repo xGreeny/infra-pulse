@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">InfraPulse</title>
+  <desc id="desc">Read-only PowerShell health telemetry for Windows infrastructure.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#080c16"/>
+      <stop offset="0.55" stop-color="#101827"/>
+      <stop offset="1" stop-color="#0a111e"/>
+    </linearGradient>
+    <linearGradient id="pulse" x1="0" x2="1">
+      <stop offset="0" stop-color="#63e6be" stop-opacity="0.1"/>
+      <stop offset="0.45" stop-color="#63e6be"/>
+      <stop offset="1" stop-color="#78a9ff" stop-opacity="0.18"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#26334a" stroke-width="1" opacity="0.28"/>
+    </pattern>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="frame"><rect x="24" y="24" width="1232" height="592" rx="30"/></clipPath>
+  </defs>
+
+  <rect width="1280" height="640" fill="#080c16"/>
+  <g clip-path="url(#frame)">
+    <rect x="24" y="24" width="1232" height="592" fill="url(#background)"/>
+    <rect x="24" y="24" width="1232" height="592" fill="url(#grid)"/>
+    <circle cx="1110" cy="40" r="350" fill="#63e6be" opacity="0.05"/>
+    <circle cx="60" cy="650" r="330" fill="#78a9ff" opacity="0.045"/>
+
+    <g font-family="ui-monospace, SFMono-Regular, Consolas, monospace">
+      <text x="76" y="92" fill="#63e6be" font-size="19" letter-spacing="4">XGREENY // INFRASTRUCTURE ENGINEERING</text>
+      <text x="72" y="218" fill="#edf4ff" font-family="Inter, Segoe UI, sans-serif" font-size="92" font-weight="800" letter-spacing="-5">INFRA<tspan fill="#63e6be">PULSE</tspan></text>
+      <text x="78" y="265" fill="#9fb0c7" font-size="21" letter-spacing="1">READ-ONLY WINDOWS INFRASTRUCTURE HEALTH TELEMETRY</text>
+
+      <g transform="translate(78 302)">
+        <rect width="148" height="40" rx="20" fill="#101827" stroke="#26334a"/>
+        <circle cx="21" cy="20" r="5" fill="#45d483" filter="url(#glow)"/>
+        <text x="38" y="26" fill="#c9d7e8" font-size="15">OBJECT FIRST</text>
+
+        <rect x="164" width="140" height="40" rx="20" fill="#101827" stroke="#26334a"/>
+        <circle cx="185" cy="20" r="5" fill="#45d483" filter="url(#glow)"/>
+        <text x="202" y="26" fill="#c9d7e8" font-size="15">READ ONLY</text>
+
+        <rect x="320" width="142" height="40" rx="20" fill="#101827" stroke="#26334a"/>
+        <circle cx="341" cy="20" r="5" fill="#45d483" filter="url(#glow)"/>
+        <text x="358" y="26" fill="#c9d7e8" font-size="15">PS 5.1 + 7</text>
+      </g>
+    </g>
+
+    <g transform="translate(78 382)">
+      <rect width="1124" height="188" rx="18" fill="#090e19" stroke="#26334a" stroke-width="2"/>
+      <rect width="1124" height="40" rx="18" fill="#151f31"/>
+      <path d="M0 40H1124" stroke="#26334a"/>
+      <circle cx="23" cy="20" r="6" fill="#ff6b6b" opacity="0.85"/>
+      <circle cx="45" cy="20" r="6" fill="#f7c948" opacity="0.85"/>
+      <circle cx="67" cy="20" r="6" fill="#45d483" opacity="0.85"/>
+      <text x="91" y="26" fill="#9fb0c7" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="14">xGreeny@ops:~</text>
+
+      <g font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="16">
+        <text x="26" y="76" fill="#63e6be">PS&gt;</text>
+        <text x="68" y="76" fill="#edf4ff">Invoke-InfraPulse -ComputerName SRV-APP-01</text>
+        <text x="26" y="110" fill="#9fb0c7">inventory</text><text x="238" y="110" fill="#66758a">....................</text><text x="472" y="110" fill="#45d483">HEALTHY</text>
+        <text x="26" y="140" fill="#9fb0c7">10 checks</text><text x="238" y="140" fill="#66758a">....................</text><text x="472" y="140" fill="#f7c948">1 WARNING</text>
+        <text x="26" y="170" fill="#9fb0c7">HTML / JSON / CSV</text><text x="238" y="170" fill="#66758a">...........</text><text x="472" y="170" fill="#45d483">EXPORTED</text>
+      </g>
+
+      <path d="M650 119h50l14-28 22 58 25-72 24 54 18-28 16 16h274" fill="none" stroke="url(#pulse)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+      <text x="653" y="166" fill="#66758a" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="14">DISK  MEMORY  UPTIME  REBOOT  SERVICES  CERTS  EVENTS  DNS  TCP  SNTP</text>
+    </g>
+  </g>
+  <rect x="24" y="24" width="1232" height="592" rx="30" fill="none" stroke="#26334a" stroke-width="2"/>
+</svg>

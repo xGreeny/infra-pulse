@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'"><meta name="generator" content="InfraPulse 1.0.0"><title>Infrastructure Health Report</title><style>:root {
+  color-scheme: dark;
+  --bg: #080c16;
+  --panel: #101827;
+  --panel-2: #151f31;
+  --line: #26334a;
+  --line-soft: rgba(38, 51, 74, .72);
+  --text: #edf4ff;
+  --muted: #9fb0c7;
+  --accent: #63e6be;
+  --accent-2: #78a9ff;
+  --healthy: #45d483;
+  --warning: #f7c948;
+  --critical: #ff6b6b;
+  --unknown: #8aa4c8;
+  --skipped: #66758a;
+  --shadow: 0 18px 55px rgba(0, 0, 0, .28);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: radial-gradient(circle at 15% 0%, rgba(99, 230, 190, .09), transparent 36rem), var(--bg);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+button, input, select { font: inherit; }
+main { width: min(1480px, calc(100% - 32px)); margin: 32px auto 64px; }
+.hero {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: center;
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(21, 31, 49, .97), rgba(10, 16, 28, .97));
+  box-shadow: var(--shadow);
+}
+.eyebrow { color: var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; }
+h1 { margin: 8px 0 4px; font-size: clamp(2rem, 5vw, 3.8rem); line-height: 1; letter-spacing: -.04em; }
+.subtitle { margin: 12px 0 0; color: var(--muted); max-width: 760px; }
+.pulse-mark { width: 220px; max-width: 25vw; }
+.overall { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; padding: 8px 12px; border-radius: 999px; font-weight: 700; border: 1px solid currentColor; }
+.overall::before, .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 14px currentColor; }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin: 18px 0; }
+.metric { padding: 16px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+.metric .value { display: block; font-size: 1.65rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.metric .label { color: var(--muted); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto auto auto auto;
+  gap: 10px;
+  align-items: center;
+  margin: 18px 0 32px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(16, 24, 39, .94);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, .24);
+  backdrop-filter: blur(12px);
+}
+.control { width: 100%; min-height: 40px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px; background: #0b1220; color: var(--text); outline: none; }
+.control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99, 230, 190, .12); }
+.button { min-height: 40px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-2); color: var(--text); cursor: pointer; }
+.button:hover { border-color: var(--accent); }
+.visible-count { color: var(--muted); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .8rem; white-space: nowrap; }
+.host { margin: 28px 0; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: var(--panel); box-shadow: var(--shadow); }
+.host[hidden], tr[hidden] { display: none; }
+.host-header { display: flex; justify-content: space-between; gap: 20px; align-items: center; padding: 22px 24px; background: var(--panel-2); border-bottom: 1px solid var(--line); }
+.host-title { margin: 0; font-size: 1.35rem; }
+.host-meta { margin-top: 4px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .82rem; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.tag { padding: 3px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--accent-2); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .72rem; }
+.inventory { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 1px; background: var(--line); border-bottom: 1px solid var(--line); }
+.inventory div { padding: 14px 18px; background: var(--panel); }
+.inventory dt { margin: 0 0 4px; color: var(--muted); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
+.inventory dd { margin: 0; font-size: .92rem; overflow-wrap: anywhere; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 1140px; }
+th { padding: 12px 14px; color: var(--muted); background: rgba(255,255,255,.018); border-bottom: 1px solid var(--line); text-align: left; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
+td { padding: 14px; border-bottom: 1px solid var(--line-soft); vertical-align: top; font-size: .88rem; }
+tr:last-child td { border-bottom: 0; }
+tr:hover td { background: rgba(255,255,255,.018); }
+.status { display: inline-flex; align-items: center; gap: 7px; padding: 4px 9px; border: 1px solid currentColor; border-radius: 999px; font-weight: 750; font-size: .75rem; white-space: nowrap; }
+.healthy { color: var(--healthy); }
+.warning { color: var(--warning); }
+.critical { color: var(--critical); }
+.unknown { color: var(--unknown); }
+.skipped { color: var(--skipped); }
+.mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .82rem; }
+.muted { color: var(--muted); }
+.threshold { display: block; white-space: nowrap; }
+.recommendation { max-width: 380px; }
+details { margin-top: 8px; }
+summary { color: var(--accent); cursor: pointer; font-size: .78rem; }
+pre { white-space: pre-wrap; word-break: break-word; max-width: 640px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: #090e19; color: #c9d7e8; font-size: .74rem; }
+.empty-state { display: none; margin: 28px 0; padding: 28px; border: 1px dashed var(--line); border-radius: 16px; color: var(--muted); text-align: center; }
+footer { margin-top: 28px; color: var(--muted); text-align: center; font-size: .8rem; }
+@media (max-width: 960px) {
+  .hero { grid-template-columns: 1fr; }
+  .pulse-mark { display: none; }
+  .inventory { grid-template-columns: repeat(2, 1fr); }
+  .toolbar { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  main { width: min(100% - 18px, 1480px); margin-top: 10px; }
+  .hero { padding: 22px; }
+  .inventory { grid-template-columns: 1fr; }
+  .host-header { align-items: flex-start; flex-direction: column; }
+  .toolbar { position: static; grid-template-columns: 1fr; }
+}
+@media print {
+  :root { color-scheme: light; --bg: #fff; --panel: #fff; --panel-2: #f4f6f8; --line: #d9dee5; --line-soft: #e5e7eb; --text: #111827; --muted: #4b5563; --shadow: none; }
+  body { background: #fff; }
+  main { width: 100%; margin: 0; }
+  .toolbar { display: none; }
+  .host { break-inside: avoid; box-shadow: none; }
+  details { display: none; }
+}</style></head><body><main>
+<section class="hero"><div><div class="eyebrow">InfraPulse // infrastructure telemetry</div><h1>Infrastructure Health Report</h1><p class="subtitle">Read-only health telemetry for Windows infrastructure. Generated 2026-07-11 09:30:03 UTC.</p><div class="overall critical">Critical</div></div>
+<svg class="pulse-mark" viewBox="0 0 260 100" role="img" aria-label="InfraPulse heartbeat"><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#63e6be" stop-opacity=".15"/><stop offset=".5" stop-color="#63e6be"/><stop offset="1" stop-color="#63e6be" stop-opacity=".15"/></linearGradient></defs><path d="M5 56h42l14-28 22 58 24-72 24 54 17-28 14 16h93" fill="none" stroke="url(#g)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="129" cy="68" r="4" fill="#63e6be"/></svg></section>
+<section class="summary-grid" aria-label="Report summary">
+<div class="metric"><span class="value">2</span><span class="label">Hosts</span></div>
+<div class="metric"><span class="value">17</span><span class="label">Checks</span></div>
+<div class="metric healthy"><span class="value">12</span><span class="label">Healthy</span></div>
+<div class="metric warning"><span class="value">4</span><span class="label">Warning</span></div>
+<div class="metric critical"><span class="value">1</span><span class="label">Critical</span></div>
+<div class="metric unknown"><span class="value">0</span><span class="label">Unknown</span></div>
+<div class="metric skipped"><span class="value">0</span><span class="label">Skipped</span></div>
+</section>
+<section class="toolbar" aria-label="Report filters"><input id="filter-query" class="control" type="search" placeholder="Filter host, check, target or message" aria-label="Filter report"><select id="filter-status" class="control" aria-label="Filter by status"><option value="all">All statuses</option><option value="critical">Critical</option><option value="warning">Warning</option><option value="unknown">Unknown</option><option value="healthy">Healthy</option><option value="skipped">Skipped</option></select><button id="filter-reset" class="button" type="button">Reset</button><button id="print-report" class="button" type="button">Print</button><span id="visible-count" class="visible-count" aria-live="polite"></span></section>
+<article class="host" data-search="srv-app-01 srv-app-01.contoso.invalid production application {&quot;computername&quot;: &quot;srv-app-01&quot;, &quot;fqdn&quot;: &quot;srv-app-01.contoso.invalid&quot;, &quot;platform&quot;: &quot;windows&quot;, &quot;operatingsystem&quot;: &quot;microsoft windows server 2022 standard&quot;, &quot;operatingsystemsku&quot;: 7, &quot;version&quot;: &quot;10.0.20348&quot;, &quot;buildnumber&quot;: &quot;20348&quot;, &quot;architecture&quot;: &quot;64-bit&quot;, &quot;manufacturer&quot;: &quot;vmware, inc.&quot;, &quot;model&quot;: &quot;vmware virtual platform&quot;, &quot;domain&quot;: &quot;contoso.invalid&quot;, &quot;partofdomain&quot;: true, &quot;powershellversion&quot;: &quot;7.6.3&quot;, &quot;powershelledition&quot;: &quot;core&quot;, &quot;collectedatutc&quot;: &quot;2026-07-11t09:29:59z&quot;}"><header class="host-header"><div><h2 class="host-title">SRV-APP-01</h2><div class="host-meta">generated 2026-07-11 09:30:00 UTC | duration 842 ms</div><div class="tags"><span class="tag">production</span><span class="tag">application</span></div></div><span class="status warning">Warning</span></header>
+<dl class="inventory"><div><dt>Operating system</dt><dd>Microsoft Windows Server 2022 Standard</dd></div><div><dt>Version / build</dt><dd>10.0.20348 / 20348</dd></div><div><dt>Architecture</dt><dd>64-bit</dd></div><div><dt>FQDN</dt><dd>srv-app-01.contoso.invalid</dd></div><div><dt>Manufacturer</dt><dd>VMware, Inc.</dd></div><div><dt>Model</dt><dd>VMware Virtual Platform</dd></div><div><dt>Domain</dt><dd>contoso.invalid</dd></div><div><dt>PowerShell</dt><dd>Core 7.6.3</dd></div></dl><div class="table-wrap"><table><thead><tr><th>Status</th><th>Check</th><th>Target</th><th>Message</th><th>Observed</th><th>Thresholds</th><th>Recommendation / evidence</th></tr></thead><tbody>
+<tr data-status="warning" data-search="warning disk capacity c: 36.80 gb free (18.40%) of 200.00 gb on c: (system). 18.40% / 36.80 gb review growth, cleanup candidates, and volume capacity before the critical threshold is reached. "><td><span class="status warning">Warning</span></td><td><span class="mono">Disk</span><br><span class="muted">Capacity</span></td><td>C:</td><td>36.80 GB free (18.40%) of 200.00 GB on C: (System).</td><td class="mono">18.40% / 36.80 GB</td><td class="mono"><span class="threshold">W: &lt;= 20% or &lt;= 30 GB</span><span class="threshold">C: &lt;= 8% or &lt;= 12 GB</span></td><td class="recommendation">Review growth, cleanup candidates, and volume capacity before the critical threshold is reached.<details><summary>Evidence</summary><pre>{
+  &quot;DeviceId&quot;: &quot;C:&quot;,
+  &quot;VolumeName&quot;: &quot;System&quot;,
+  &quot;FileSystem&quot;: &quot;NTFS&quot;,
+  &quot;SizeBytes&quot;: 214748364800,
+  &quot;FreeBytes&quot;: 39513699123,
+  &quot;FreeGB&quot;: 36.8,
+  &quot;FreePercent&quot;: 18.4
+}</pre></details></td></tr>
+<tr data-status="healthy" data-search="healthy memory capacity physical memory 12.53 gb available (39.16%) of 32.00 gb physical memory. 39.16%  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Memory</span><br><span class="muted">Capacity</span></td><td>Physical memory</td><td>12.53 GB available (39.16%) of 32.00 GB physical memory.</td><td class="mono">39.16%</td><td class="mono"><span class="threshold">W: &lt;= 20%</span><span class="threshold">C: &lt;= 10%</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;TotalGB&quot;: 32,
+  &quot;AvailableGB&quot;: 12.53,
+  &quot;AvailablePercent&quot;: 39.16
+}</pre></details></td></tr>
+<tr data-status="healthy" data-search="healthy uptime lifecycle operating system 18.42 days since last boot (2026-06-22 23:25:00 +00:00). 18.42 days  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Uptime</span><br><span class="muted">Lifecycle</span></td><td>Operating system</td><td>18.42 days since last boot (2026-06-22 23:25:00 +00:00).</td><td class="mono">18.42 days</td><td class="mono"><span class="threshold">W: &gt;= 45 days</span><span class="threshold">C: &gt;= 90 days</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;LastBootTime&quot;: &quot;2026-06-22T23:25:00Z&quot;,
+  &quot;UptimeDays&quot;: 18.42,
+  &quot;UptimeHours&quot;: 442.08
+}</pre></details></td></tr>
+<tr data-status="healthy" data-search="healthy pendingreboot lifecycle operating system no supported pending-reboot indicators were detected. false  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">PendingReboot</span><br><span class="muted">Lifecycle</span></td><td>Operating system</td><td>No supported pending-reboot indicators were detected.</td><td class="mono">False</td><td class="mono"><span class="threshold">W: Any supported reboot indicator</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;Pending&quot;: false,
+  &quot;Reasons&quot;: []
+}</pre></details></td></tr>
+<tr data-status="healthy" data-search="healthy services availability eventlog service &#x27;windows event log&#x27; is running. running  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Services</span><br><span class="muted">Availability</span></td><td>EventLog</td><td>Service &#x27;Windows Event Log&#x27; is Running.</td><td class="mono">Running</td><td class="mono"><span class="threshold">C: Expected: Running</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;Name&quot;: &quot;EventLog&quot;,
+  &quot;DisplayName&quot;: &quot;Windows Event Log&quot;,
+  &quot;Status&quot;: &quot;Running&quot;,
+  &quot;ExpectedStatus&quot;: &quot;Running&quot;,
+  &quot;StartMode&quot;: &quot;Auto&quot;,
+  &quot;Exists&quot;: true
+}</pre></details></td></tr>
+<tr data-status="healthy" data-search="healthy services availability winmgmt service &#x27;windows management instrumentation&#x27; is running. running  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Services</span><br><span class="muted">Availability</span></td><td>Winmgmt</td><td>Service &#x27;Windows Management Instrumentation&#x27; is Running.</td><td class="mono">Running</td><td class="mono"><span class="threshold">C: Expected: Running</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;Name&quot;: &quot;Winmgmt&quot;,
+  &quot;Status&quot;: &quot;Running&quot;,
+  &quot;ExpectedStatus&quot;: &quot;Running&quot;,
+  &quot;StartMode&quot;: &quot;Auto&quot;,
+  &quot;Exists&quot;: true
+}</pre></details></td></tr>
+<tr data-status="healthy" data-search="healthy certificates security certificate inventory 6 of 6 certificate(s) are valid beyond the warning threshold. 6  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Certificates</span><br><span class="muted">Security</span></td><td>Certificate inventory</td><td>6 of 6 certificate(s) are valid beyond the warning threshold.</td><td class="mono">6</td><td class="mono"><span class="threshold">W: Expiry &lt;= 30 days</span><span class="threshold">C: Expiry &lt;= 14 days</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;TotalCertificates&quot;: 6,
+  &quot;HealthyCertificates&quot;: 6,
+  &quot;ExistingStores&quot;: [
+    &quot;Cert:\\LocalMachine\\My&quot;,
+    &quot;Cert:\\LocalMachine\\WebHosting&quot;
+  ],
+  &quot;MissingStores&quot;: []
+}</pre></details></td></tr>
+<tr data-status="healthy" data-search="healthy eventlog reliability system 8 critical/error event(s) in &#x27;system&#x27; during the last 24 hour(s). 8  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">EventLog</span><br><span class="muted">Reliability</span></td><td>System</td><td>8 critical/error event(s) in &#x27;System&#x27; during the last 24 hour(s).</td><td class="mono">8</td><td class="mono"><span class="threshold">W: &gt;= 25 events</span><span class="threshold">C: &gt;= 100 events</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;LogName&quot;: &quot;System&quot;,
+  &quot;Count&quot;: 8,
+  &quot;LookbackHours&quot;: 24,
+  &quot;Levels&quot;: [
+    1,
+    2
+  ],
+  &quot;Truncated&quot;: false,
+  &quot;TopProviders&quot;: [
+    {
+      &quot;Provider&quot;: &quot;Service Control Manager&quot;,
+      &quot;Count&quot;: 3
+    }
+  ]
+}</pre></details></td></tr>
+<tr data-status="healthy" data-search="healthy dns connectivity login.microsoftonline.com resolved login.microsoftonline.com [a] to 20.190.160.2 in 11.2 ms. 20.190.160.2  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Dns</span><br><span class="muted">Connectivity</span></td><td>login.microsoftonline.com</td><td>Resolved login.microsoftonline.com [A] to 20.190.160.2 in 11.2 ms.</td><td class="mono">20.190.160.2</td><td class="mono"><span class="threshold">C: Resolution failure</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;Name&quot;: &quot;login.microsoftonline.com&quot;,
+  &quot;QueryType&quot;: &quot;A&quot;,
+  &quot;Server&quot;: &quot;&quot;,
+  &quot;Answers&quot;: [
+    &quot;20.190.160.2&quot;
+  ],
+  &quot;DurationMs&quot;: 11.2
+}</pre></details></td></tr>
+<tr data-status="healthy" data-search="healthy tcp connectivity microsoft identity connected to login.microsoftonline.com:443 in 24.8 ms. true  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Tcp</span><br><span class="muted">Connectivity</span></td><td>Microsoft identity</td><td>Connected to login.microsoftonline.com:443 in 24.8 ms.</td><td class="mono">True</td><td class="mono"><span class="threshold">C: Connection failure</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;Name&quot;: &quot;Microsoft identity&quot;,
+  &quot;Host&quot;: &quot;login.microsoftonline.com&quot;,
+  &quot;Port&quot;: 443,
+  &quot;DurationMs&quot;: 24.8,
+  &quot;TimeoutMs&quot;: 3000
+}</pre></details></td></tr>
+</tbody></table></div></article>
+<article class="host" data-search="srv-dc-01 srv-dc-01.contoso.invalid production domain-controller {&quot;computername&quot;: &quot;srv-dc-01&quot;, &quot;fqdn&quot;: &quot;srv-dc-01.contoso.invalid&quot;, &quot;platform&quot;: &quot;windows&quot;, &quot;operatingsystem&quot;: &quot;microsoft windows server 2022 datacenter&quot;, &quot;operatingsystemsku&quot;: 8, &quot;version&quot;: &quot;10.0.20348&quot;, &quot;buildnumber&quot;: &quot;20348&quot;, &quot;architecture&quot;: &quot;64-bit&quot;, &quot;manufacturer&quot;: &quot;dell inc.&quot;, &quot;model&quot;: &quot;poweredge r650&quot;, &quot;domain&quot;: &quot;contoso.invalid&quot;, &quot;partofdomain&quot;: true, &quot;powershellversion&quot;: &quot;5.1.20348.2849&quot;, &quot;powershelledition&quot;: &quot;desktop&quot;, &quot;collectedatutc&quot;: &quot;2026-07-11t09:30:01z&quot;}"><header class="host-header"><div><h2 class="host-title">SRV-DC-01</h2><div class="host-meta">generated 2026-07-11 09:30:02 UTC | duration 611 ms</div><div class="tags"><span class="tag">production</span><span class="tag">domain-controller</span></div></div><span class="status critical">Critical</span></header>
+<dl class="inventory"><div><dt>Operating system</dt><dd>Microsoft Windows Server 2022 Datacenter</dd></div><div><dt>Version / build</dt><dd>10.0.20348 / 20348</dd></div><div><dt>Architecture</dt><dd>64-bit</dd></div><div><dt>FQDN</dt><dd>srv-dc-01.contoso.invalid</dd></div><div><dt>Manufacturer</dt><dd>Dell Inc.</dd></div><div><dt>Model</dt><dd>PowerEdge R650</dd></div><div><dt>Domain</dt><dd>contoso.invalid</dd></div><div><dt>PowerShell</dt><dd>Desktop 5.1.20348.2849</dd></div></dl><div class="table-wrap"><table><thead><tr><th>Status</th><th>Check</th><th>Target</th><th>Message</th><th>Observed</th><th>Thresholds</th><th>Recommendation / evidence</th></tr></thead><tbody>
+<tr data-status="healthy" data-search="healthy disk capacity c: 82.14 gb free (41.07%) of 200.00 gb on c: (system). 41.07% / 82.14 gb  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Disk</span><br><span class="muted">Capacity</span></td><td>C:</td><td>82.14 GB free (41.07%) of 200.00 GB on C: (System).</td><td class="mono">41.07% / 82.14 GB</td><td class="mono"><span class="threshold">W: &lt;= 20% or &lt;= 30 GB</span><span class="threshold">C: &lt;= 8% or &lt;= 12 GB</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;DeviceId&quot;: &quot;C:&quot;,
+  &quot;VolumeName&quot;: &quot;System&quot;,
+  &quot;FileSystem&quot;: &quot;NTFS&quot;,
+  &quot;SizeBytes&quot;: 214748364800,
+  &quot;FreeBytes&quot;: 88197133414,
+  &quot;FreeGB&quot;: 82.14,
+  &quot;FreePercent&quot;: 41.07
+}</pre></details></td></tr>
+<tr data-status="healthy" data-search="healthy memory capacity physical memory 9.81 gb available (61.31%) of 16.00 gb physical memory. 61.31%  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Memory</span><br><span class="muted">Capacity</span></td><td>Physical memory</td><td>9.81 GB available (61.31%) of 16.00 GB physical memory.</td><td class="mono">61.31%</td><td class="mono"><span class="threshold">W: &lt;= 20%</span><span class="threshold">C: &lt;= 10%</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;TotalGB&quot;: 16,
+  &quot;AvailableGB&quot;: 9.81,
+  &quot;AvailablePercent&quot;: 61.31
+}</pre></details></td></tr>
+<tr data-status="warning" data-search="warning uptime lifecycle operating system 57.21 days since last boot (2026-05-15 04:27:00 +00:00). 57.21 days review maintenance cadence and schedule a controlled restart if required by patching or operational policy. "><td><span class="status warning">Warning</span></td><td><span class="mono">Uptime</span><br><span class="muted">Lifecycle</span></td><td>Operating system</td><td>57.21 days since last boot (2026-05-15 04:27:00 +00:00).</td><td class="mono">57.21 days</td><td class="mono"><span class="threshold">W: &gt;= 45 days</span><span class="threshold">C: &gt;= 90 days</span></td><td class="recommendation">Review maintenance cadence and schedule a controlled restart if required by patching or operational policy.<details><summary>Evidence</summary><pre>{
+  &quot;LastBootTime&quot;: &quot;2026-05-15T04:27:00Z&quot;,
+  &quot;UptimeDays&quot;: 57.21,
+  &quot;UptimeHours&quot;: 1373.04
+}</pre></details></td></tr>
+<tr data-status="warning" data-search="warning pendingreboot lifecycle operating system a reboot is pending: windows update. true schedule a controlled restart, confirm service restoration, and verify that all reboot indicators clear afterward. "><td><span class="status warning">Warning</span></td><td><span class="mono">PendingReboot</span><br><span class="muted">Lifecycle</span></td><td>Operating system</td><td>A reboot is pending: Windows Update.</td><td class="mono">True</td><td class="mono"><span class="threshold">W: Any supported reboot indicator</span></td><td class="recommendation">Schedule a controlled restart, confirm service restoration, and verify that all reboot indicators clear afterward.<details><summary>Evidence</summary><pre>{
+  &quot;Pending&quot;: true,
+  &quot;Reasons&quot;: [
+    &quot;Windows Update&quot;
+  ]
+}</pre></details></td></tr>
+<tr data-status="critical" data-search="critical services availability ntds service &#x27;active directory domain services&#x27; is stopped; expected running. stopped review dependent services and recent changes, then restore the expected state using the approved operational procedure. "><td><span class="status critical">Critical</span></td><td><span class="mono">Services</span><br><span class="muted">Availability</span></td><td>NTDS</td><td>Service &#x27;Active Directory Domain Services&#x27; is Stopped; expected Running.</td><td class="mono">Stopped</td><td class="mono"><span class="threshold">C: Expected: Running</span></td><td class="recommendation">Review dependent services and recent changes, then restore the expected state using the approved operational procedure.<details><summary>Evidence</summary><pre>{
+  &quot;Name&quot;: &quot;NTDS&quot;,
+  &quot;DisplayName&quot;: &quot;Active Directory Domain Services&quot;,
+  &quot;Status&quot;: &quot;Stopped&quot;,
+  &quot;ExpectedStatus&quot;: &quot;Running&quot;,
+  &quot;StartMode&quot;: &quot;Auto&quot;,
+  &quot;Exists&quot;: true
+}</pre></details></td></tr>
+<tr data-status="warning" data-search="warning eventlog reliability directory service 42 critical/error event(s) in &#x27;directory service&#x27; during the last 24 hour(s). 42 review recurring providers and event ids before the error rate becomes operationally significant. "><td><span class="status warning">Warning</span></td><td><span class="mono">EventLog</span><br><span class="muted">Reliability</span></td><td>Directory Service</td><td>42 critical/error event(s) in &#x27;Directory Service&#x27; during the last 24 hour(s).</td><td class="mono">42</td><td class="mono"><span class="threshold">W: &gt;= 25 events</span><span class="threshold">C: &gt;= 100 events</span></td><td class="recommendation">Review recurring providers and event IDs before the error rate becomes operationally significant.<details><summary>Evidence</summary><pre>{
+  &quot;LogName&quot;: &quot;Directory Service&quot;,
+  &quot;Count&quot;: 42,
+  &quot;LookbackHours&quot;: 24,
+  &quot;Levels&quot;: [
+    1,
+    2
+  ],
+  &quot;Truncated&quot;: false,
+  &quot;TopProviders&quot;: [
+    {
+      &quot;Provider&quot;: &quot;Microsoft-Windows-ActiveDirectory_DomainService&quot;,
+      &quot;Count&quot;: 31
+    }
+  ]
+}</pre></details></td></tr>
+<tr data-status="healthy" data-search="healthy dns connectivity _ldap._tcp.dc._msdcs.contoso.invalid resolved _ldap._tcp.dc._msdcs.contoso.invalid [srv] to dc01.contoso.invalid in 6.4 ms. dc01.contoso.invalid  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Dns</span><br><span class="muted">Connectivity</span></td><td>_ldap._tcp.dc._msdcs.contoso.invalid</td><td>Resolved _ldap._tcp.dc._msdcs.contoso.invalid [SRV] to dc01.contoso.invalid in 6.4 ms.</td><td class="mono">dc01.contoso.invalid</td><td class="mono"><span class="threshold">C: Resolution failure</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;Name&quot;: &quot;_ldap._tcp.dc._msdcs.contoso.invalid&quot;,
+  &quot;QueryType&quot;: &quot;SRV&quot;,
+  &quot;Server&quot;: &quot;10.20.0.10&quot;,
+  &quot;Answers&quot;: [
+    &quot;dc01.contoso.invalid&quot;
+  ],
+  &quot;DurationMs&quot;: 6.4
+}</pre></details></td></tr>
+</tbody></table></div></article>
+<div id="empty-state" class="empty-state">No checks match the current filters.</div><footer>InfraPulse 1.0.0 | read-only infrastructure health report</footer><script>(function () {
+  const queryInput = document.getElementById('filter-query');
+  const statusSelect = document.getElementById('filter-status');
+  const resetButton = document.getElementById('filter-reset');
+  const printButton = document.getElementById('print-report');
+  const visibleCount = document.getElementById('visible-count');
+  const emptyState = document.getElementById('empty-state');
+  const rows = Array.from(document.querySelectorAll('tbody tr'));
+  const hosts = Array.from(document.querySelectorAll('.host'));
+
+  function applyFilters() {
+    const query = queryInput.value.trim().toLowerCase();
+    const status = statusSelect.value;
+    let shownRows = 0;
+    let shownHosts = 0;
+
+    hosts.forEach(function (host) {
+      const hostMatch = !query || host.dataset.search.includes(query);
+      const hostRows = Array.from(host.querySelectorAll('tbody tr'));
+      let hostShownRows = 0;
+
+      hostRows.forEach(function (row) {
+        const statusMatch = status === 'all' || row.dataset.status === status;
+        const textMatch = !query || hostMatch || row.dataset.search.includes(query);
+        const show = statusMatch && textMatch;
+        row.hidden = !show;
+        if (show) {
+          hostShownRows += 1;
+          shownRows += 1;
+        }
+      });
+
+      host.hidden = hostShownRows === 0;
+      if (!host.hidden) {
+        shownHosts += 1;
+      }
+    });
+
+    visibleCount.textContent = shownRows + ' of ' + rows.length + ' checks | ' + shownHosts + ' hosts';
+    emptyState.style.display = shownRows === 0 ? 'block' : 'none';
+  }
+
+  queryInput.addEventListener('input', applyFilters);
+  statusSelect.addEventListener('change', applyFilters);
+  resetButton.addEventListener('click', function () {
+    queryInput.value = '';
+    statusSelect.value = 'all';
+    applyFilters();
+    queryInput.focus();
+  });
+  printButton.addEventListener('click', function () { window.print(); });
+  applyFilters();
+}());</script></main></body></html>
