@@ -168,7 +168,8 @@ function Invoke-InfraPulse {
                     if ($FailFast -or -not [bool]$resolvedConfiguration.General.ContinueOnError) {
                         throw $message
                     }
-                    New-InfraPulseConnectionFailureReport -ComputerName '<empty>' -ErrorMessage $message -Tags $normalizedTags
+                    $invalidTargetName = '<empty>'
+                    New-InfraPulseConnectionFailureReport -ComputerName $invalidTargetName -ErrorMessage $message -Tags $normalizedTags
                     continue
                 }
 

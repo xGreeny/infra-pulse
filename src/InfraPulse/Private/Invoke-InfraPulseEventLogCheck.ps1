@@ -97,11 +97,11 @@ function Invoke-InfraPulseEventLogCheck {
             )
 
             $samples = @()
-            foreach ($event in @($events | Select-Object -First 5)) {
+            foreach ($eventRecord in @($events | Select-Object -First 5)) {
                 $message = $null
                 if ([bool]$CheckSettings.IncludeMessages) {
                     try {
-                        $message = ([string]$event.Message -replace '[\r\n]+', ' ').Trim()
+                        $message = ([string]$eventRecord.Message -replace '[\r\n]+', ' ').Trim()
                         if ($message.Length -gt 300) {
                             $message = $message.Substring(0, 300) + '...'
                         }
@@ -112,10 +112,10 @@ function Invoke-InfraPulseEventLogCheck {
                 }
 
                 $samples += [pscustomobject]@{
-                    TimeCreated  = $event.TimeCreated
-                    Id           = [int]$event.Id
-                    Level        = [string]$event.LevelDisplayName
-                    ProviderName = [string]$event.ProviderName
+                    TimeCreated  = $eventRecord.TimeCreated
+                    Id           = [int]$eventRecord.Id
+                    Level        = [string]$eventRecord.LevelDisplayName
+                    ProviderName = [string]$eventRecord.ProviderName
                     Message      = $message
                 }
             }

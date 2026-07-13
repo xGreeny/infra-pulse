@@ -8,6 +8,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+$bootstrapDependencies = $Bootstrap.IsPresent
 
 $repositoryRoot = $PSScriptRoot
 $sourceRoot = Join-Path -Path $repositoryRoot -ChildPath 'src/InfraPulse'
@@ -47,7 +48,7 @@ function Install-BuildDependency {
         return
     }
 
-    if (-not $Bootstrap) {
+    if (-not $bootstrapDependencies) {
         throw "Required development module '$Name' version '$Version' is not installed. Re-run with -Bootstrap."
     }
 
@@ -97,12 +98,13 @@ function Invoke-ParseValidation {
         $errors = $null
         $null = [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$errors)
         foreach ($errorRecord in @($errors)) {
-            $parseErrors.Add([pscustomobject]@{
+            $parseError = [pscustomobject][ordered]@{
                 File    = $file.FullName.Substring($repositoryRoot.Length + 1)
                 Line    = $errorRecord.Extent.StartLineNumber
                 Column  = $errorRecord.Extent.StartColumnNumber
                 Message = $errorRecord.Message
-            })
+            }
+            $parseErrors.Add($parseError)
         }
     }
 
@@ -111,12 +113,13 @@ function Invoke-ParseValidation {
             $null = [xml](Get-Content -LiteralPath $formatFile.FullName -Raw)
         }
         catch {
-            $parseErrors.Add([pscustomobject]@{
+            $parseError = [pscustomobject][ordered]@{
                 File    = $formatFile.FullName.Substring($repositoryRoot.Length + 1)
                 Line    = 0
                 Column  = 0
                 Message = $_.Exception.Message
-            })
+            }
+            $parseErrors.Add($parseError)
         }
     }
 
@@ -196,7 +199,7 @@ function Invoke-Analyze {
     }
 }
 
-function Invoke-Tests {
+function Invoke-TestSuite {
     [CmdletBinding()]
     param()
 
@@ -272,7 +275,7 @@ switch ($Task) {
         Invoke-Analyze
     }
     'Test' {
-        Invoke-Tests
+        Invoke-TestSuite
     }
     'Package' {
         Invoke-Package
@@ -280,7 +283,7 @@ switch ($Task) {
     'Verify' {
         Invoke-Clean
         Invoke-Analyze
-        Invoke-Tests
+        Invoke-TestSuite
         Invoke-Package
     }
 }
