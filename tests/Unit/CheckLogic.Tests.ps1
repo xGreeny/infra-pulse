@@ -10,8 +10,8 @@ AfterAll {
 }
 
 Describe 'InfraPulse check evaluation logic' {
-    InModuleScope InfraPulse {
-        BeforeEach {
+    BeforeEach {
+        InModuleScope InfraPulse {
             $script:Context = [pscustomobject]@{
                 RequestedComputerName = 'SRV-TEST-01'
                 ComputerName          = 'SRV-TEST-01'
@@ -20,8 +20,10 @@ Describe 'InfraPulse check evaluation logic' {
             }
             $script:Defaults = Get-DefaultInfraPulseConfiguration
         }
+    }
 
-        It 'marks a disk critical when either critical capacity threshold is reached' {
+    It 'marks a disk critical when either critical capacity threshold is reached' {
+        InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {
                 [pscustomobject]@{
                     DeviceId = 'C:'; VolumeName = 'System'; SizeBytes = 100GB; FreeBytes = 9GB
@@ -34,8 +36,10 @@ Describe 'InfraPulse check evaluation logic' {
             $result[0].Status | Should -Be 'Critical'
             $result[0].Evidence.DeviceId | Should -Be 'C:'
         }
+    }
 
-        It 'marks available memory warning at the warning boundary' {
+    It 'marks available memory warning at the warning boundary' {
+        InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {
                 [pscustomobject]@{
                     TotalBytes = 16GB; AvailableBytes = 3.2GB; TotalGB = 16
@@ -46,8 +50,10 @@ Describe 'InfraPulse check evaluation logic' {
             $result = Invoke-InfraPulseMemoryCheck -Context $script:Context -Settings $script:Defaults.Checks.Memory
             $result.Status | Should -Be 'Warning'
         }
+    }
 
-        It 'marks excessive uptime critical at the configured boundary' {
+    It 'marks excessive uptime critical at the configured boundary' {
+        InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {
                 [pscustomobject]@{
                     LastBootTime = (Get-Date).AddDays(-90)
@@ -59,8 +65,10 @@ Describe 'InfraPulse check evaluation logic' {
             $result = Invoke-InfraPulseUptimeCheck -Context $script:Context -Settings $script:Defaults.Checks.Uptime
             $result.Status | Should -Be 'Critical'
         }
+    }
 
-        It 'uses the configured pending-reboot severity' {
+    It 'uses the configured pending-reboot severity' {
+        InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {
                 [pscustomobject]@{ Pending = $true; Reasons = @('Windows Update') }
             }
@@ -73,8 +81,10 @@ Describe 'InfraPulse check evaluation logic' {
             $result.CriticalThreshold | Should -Be 'Any supported reboot indicator'
             $result.Evidence.Reasons | Should -Contain 'Windows Update'
         }
+    }
 
-        It 'uses the configured service severity when a required service is absent' {
+    It 'uses the configured service severity when a required service is absent' {
+        InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {
                 [pscustomobject]@{
                     Name = 'CriticalSvc'; DisplayName = 'CriticalSvc'; Status = 'NotFound'
@@ -94,8 +104,10 @@ Describe 'InfraPulse check evaluation logic' {
             $result[0].WarningThreshold | Should -BeNullOrEmpty
             $result[0].CriticalThreshold | Should -Be 'Expected: Running'
         }
+    }
 
-        It 'identifies a certificate inside the critical renewal window' {
+    It 'identifies a certificate inside the critical renewal window' {
+        InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {
                 @(
                     [pscustomobject]@{ RecordType = 'Store'; StorePath = 'Cert:\LocalMachine\My'; Exists = $true }
@@ -112,8 +124,10 @@ Describe 'InfraPulse check evaluation logic' {
             @($result | Where-Object Target -Like 'CN=app*')[0].Status | Should -Be 'Critical'
             @($result | Where-Object Target -EQ 'Certificate inventory')[0].Status | Should -Be 'Healthy'
         }
+    }
 
-        It 'marks an event log critical at the critical count boundary' {
+    It 'marks an event log critical at the critical count boundary' {
+        InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {
                 [pscustomobject]@{
                     LogName = 'System'; Exists = $true; QuerySucceeded = $true
@@ -125,8 +139,10 @@ Describe 'InfraPulse check evaluation logic' {
             $result = @(Invoke-InfraPulseEventLogCheck -Context $script:Context -Settings $script:Defaults.Checks.EventLog)
             $result[0].Status | Should -Be 'Critical'
         }
+    }
 
-        It 'marks a failed event-log query unknown' {
+    It 'marks a failed event-log query unknown' {
+        InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {
                 [pscustomobject]@{
                     LogName = 'System'; Exists = $true; QuerySucceeded = $false
@@ -139,8 +155,10 @@ Describe 'InfraPulse check evaluation logic' {
             $result[0].Status | Should -Be 'Unknown'
             $result[0].Error | Should -Be 'Access is denied.'
         }
+    }
 
-        It 'does not report a capped event-log query as healthy' {
+    It 'does not report a capped event-log query as healthy' {
+        InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {
                 [pscustomobject]@{
                     LogName = 'System'; Exists = $true; QuerySucceeded = $true
@@ -153,8 +171,10 @@ Describe 'InfraPulse check evaluation logic' {
             $result[0].Status | Should -Be 'Unknown'
             $result[0].Evidence.RetrievedCount | Should -Be 1000
         }
+    }
 
-        It 'marks successful DNS resolution healthy' {
+    It 'marks successful DNS resolution healthy' {
+        InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {
                 [pscustomobject]@{
                     Name = 'login.microsoftonline.com'; QueryType = 'A'; Server = ''
@@ -167,8 +187,10 @@ Describe 'InfraPulse check evaluation logic' {
             $result = @(Invoke-InfraPulseDnsCheck -Context $script:Context -Settings $settings)
             $result[0].Status | Should -Be 'Healthy'
         }
+    }
 
-        It 'marks an unsupported DNS query unknown instead of critical' {
+    It 'marks an unsupported DNS query unknown instead of critical' {
+        InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {
                 [pscustomobject]@{
                     Name = '_ldap._tcp.dc._msdcs.contoso.invalid'; QueryType = 'SRV'; Server = ''
@@ -186,8 +208,10 @@ Describe 'InfraPulse check evaluation logic' {
             $result[0].CriticalThreshold | Should -BeNullOrEmpty
             $result[0].Evidence.FailureKind | Should -Be 'UnsupportedQuery'
         }
+    }
 
-        It 'marks a failed TCP endpoint critical' {
+    It 'marks a failed TCP endpoint critical' {
+        InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {
                 [pscustomobject]@{
                     Name = 'LDAP'; Host = 'dc01.contoso.invalid'; Port = 389
@@ -203,8 +227,10 @@ Describe 'InfraPulse check evaluation logic' {
             $result[0].Status | Should -Be 'Critical'
             $result[0].Error | Should -Be 'Timed out.'
         }
+    }
 
-        It 'marks excessive SNTP offset warning' {
+    It 'marks excessive SNTP offset warning' {
+        InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {
                 [pscustomobject]@{
                     Server = 'time.windows.com'; Address = '20.101.57.9'; Success = $true
