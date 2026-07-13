@@ -59,7 +59,7 @@ function Export-InfraPulseReport {
         if ($null -eq $InputObject.PSObject.Properties['Results'] -or $null -eq $InputObject.PSObject.Properties['OverallStatus']) {
             throw 'InputObject is not an InfraPulse report.'
         }
-        $reports.Add($InputObject)
+        [void]$reports.Add($InputObject)
     }
 
     end {
