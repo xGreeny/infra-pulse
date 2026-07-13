@@ -17,28 +17,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify:
-    name: Verify / ${{ matrix.shell }}
+  verify-windows-powershell:
+    name: Verify / Windows PowerShell 5.1
     runs-on: windows-latest
     timeout-minutes: 20
-
-    strategy:
-      fail-fast: false
-      matrix:
-        shell:
-          - powershell
-          - pwsh
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
 
       - name: Verify module
-        shell: ${{ matrix.shell }}
+        shell: powershell
+        run: .\build.ps1 -Task Verify -Bootstrap
+
+  verify-powershell-7:
+    name: Verify / PowerShell 7
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Verify module
+        shell: pwsh
         run: .\build.ps1 -Task Verify -Bootstrap
 
       - name: Upload verification artifacts
-        if: matrix.shell == 'pwsh'
         uses: actions/upload-artifact@v7
         with:
           name: InfraPulse-verification-${{ github.sha }}
