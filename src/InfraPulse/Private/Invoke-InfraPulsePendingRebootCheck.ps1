@@ -18,19 +18,19 @@ function Invoke-InfraPulsePendingRebootCheck {
 
         $componentBasedServicing = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending'
         if (Test-Path -LiteralPath $componentBasedServicing) {
-            $reasons.Add('Component Based Servicing')
+            [void]$reasons.Add('Component Based Servicing')
         }
 
         $windowsUpdate = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired'
         if (Test-Path -LiteralPath $windowsUpdate) {
-            $reasons.Add('Windows Update')
+            [void]$reasons.Add('Windows Update')
         }
 
         $sessionManager = 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager'
         try {
             $pendingRename = (Get-ItemProperty -LiteralPath $sessionManager -Name PendingFileRenameOperations -ErrorAction Stop).PendingFileRenameOperations
             if ($null -ne $pendingRename -and @($pendingRename).Count -gt 0) {
-                $reasons.Add('Pending file rename operations')
+                [void]$reasons.Add('Pending file rename operations')
             }
         }
         catch {
@@ -41,7 +41,7 @@ function Invoke-InfraPulsePendingRebootCheck {
         try {
             $volatileValue = (Get-ItemProperty -LiteralPath $updateExeVolatile -Name UpdateExeVolatile -ErrorAction Stop).UpdateExeVolatile
             if ([int]$volatileValue -ne 0) {
-                $reasons.Add('UpdateExeVolatile')
+                [void]$reasons.Add('UpdateExeVolatile')
             }
         }
         catch {
@@ -52,7 +52,7 @@ function Invoke-InfraPulsePendingRebootCheck {
             $activeName = (Get-ItemProperty -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Control\ComputerName\ActiveComputerName' -Name ComputerName -ErrorAction Stop).ComputerName
             $configuredName = (Get-ItemProperty -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Control\ComputerName\ComputerName' -Name ComputerName -ErrorAction Stop).ComputerName
             if ($activeName -ne $configuredName) {
-                $reasons.Add('Computer rename')
+                [void]$reasons.Add('Computer rename')
             }
         }
         catch {
@@ -63,7 +63,7 @@ function Invoke-InfraPulsePendingRebootCheck {
             if (Get-Command -Name Invoke-CimMethod -ErrorAction SilentlyContinue) {
                 $ccmResult = Invoke-CimMethod -Namespace 'root\ccm\ClientSDK' -ClassName CCM_ClientUtilities -MethodName DetermineIfRebootPending -ErrorAction Stop
                 if ($ccmResult.RebootPending -or $ccmResult.IsHardRebootPending) {
-                    $reasons.Add('Configuration Manager client')
+                    [void]$reasons.Add('Configuration Manager client')
                 }
             }
         }

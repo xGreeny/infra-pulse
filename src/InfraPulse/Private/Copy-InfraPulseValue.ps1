@@ -14,15 +14,15 @@ function Copy-InfraPulseValue {
         foreach ($key in $Value.Keys) {
             $copy[$key] = Copy-InfraPulseValue -Value $Value[$key]
         }
-        return $copy
+        return , $copy
     }
 
     if (($Value -is [System.Collections.IEnumerable]) -and -not ($Value -is [string])) {
-        $items = @()
+        $items = New-Object System.Collections.Generic.List[object]
         foreach ($item in $Value) {
-            $items += , (Copy-InfraPulseValue -Value $item)
+            [void]$items.Add((Copy-InfraPulseValue -Value $item))
         }
-        return $items
+        return , $items.ToArray()
     }
 
     return $Value

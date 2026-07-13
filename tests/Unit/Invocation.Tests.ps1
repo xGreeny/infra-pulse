@@ -10,8 +10,8 @@ AfterAll {
 }
 
 Describe 'Invoke-InfraPulse orchestration' {
-    InModuleScope InfraPulse {
-        It 'runs a local target without creating a remote session' {
+    It 'runs a local target without creating a remote session' {
+        InModuleScope InfraPulse {
             Mock Test-InfraPulseLocalTarget { $true }
             Mock Invoke-InfraPulseTarget {
                 param($Context, $Configuration, $Checks, $FailFast, $Tags)
@@ -28,8 +28,10 @@ Describe 'Invoke-InfraPulse orchestration' {
             Should -Invoke New-PSSession -Times 0 -Exactly
             Should -Invoke Invoke-InfraPulseTarget -Times 1 -Exactly
         }
+    }
 
-        It 'returns a connection-failure report when a remote session cannot open' {
+    It 'returns a connection-failure report when a remote session cannot open' {
+        InModuleScope InfraPulse {
             Mock Test-InfraPulseLocalTarget { $false }
             Mock New-PSSessionOption { [pscustomobject]@{} }
             Mock New-PSSession { throw 'The client cannot connect.' }
@@ -40,16 +42,20 @@ Describe 'Invoke-InfraPulse orchestration' {
             $report.Results[0].CheckName | Should -Be 'Connection'
             $report.Results[0].Error | Should -Match 'cannot connect'
         }
+    }
 
-        It 'throws a connection error when FailFast is enabled' {
+    It 'throws a connection error when FailFast is enabled' {
+        InModuleScope InfraPulse {
             Mock Test-InfraPulseLocalTarget { $false }
             Mock New-PSSessionOption { [pscustomobject]@{} }
             Mock New-PSSession { throw 'The client cannot connect.' }
 
             { Invoke-InfraPulse -ComputerName 'srv-offline-01' -Check Disk -FailFast } | Should -Throw '*cannot connect*'
         }
+    }
 
-        It 'returns an execution-control report for an unexpected target failure' {
+    It 'returns an execution-control report for an unexpected target failure' {
+        InModuleScope InfraPulse {
             Mock Test-InfraPulseLocalTarget { $true }
             Mock Invoke-InfraPulseTarget { throw 'Unexpected orchestration failure.' }
 

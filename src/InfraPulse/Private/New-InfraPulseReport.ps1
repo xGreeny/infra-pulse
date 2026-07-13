@@ -32,7 +32,7 @@ function New-InfraPulseReport {
         Inventory             = $Inventory
         Results               = @($Results)
         Tags                  = @($Tags)
-        DurationMs            = [math]::Round($DurationMs, 2)
+        DurationMs            = [math]::Round($DurationMs, 2, [MidpointRounding]::AwayFromZero)
     }
     $report.PSObject.TypeNames.Insert(0, 'InfraPulse.Report')
     return $report

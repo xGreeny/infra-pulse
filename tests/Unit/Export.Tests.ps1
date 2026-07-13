@@ -37,6 +37,14 @@ Describe 'InfraPulse report export' {
         $content | Should -Not -Match '<script[^>]+src='
     }
 
+    It 'emits no pipeline output unless PassThru is requested' {
+        $path = Join-Path -Path $TestDrive -ChildPath 'silent-report.json'
+        $output = @($script:Report | Export-InfraPulseReport -Path $path -Force)
+
+        $output | Should -BeNullOrEmpty
+        Test-Path -LiteralPath $path | Should -BeTrue
+    }
+
     It 'writes a structured JSON array' {
         $path = Join-Path -Path $TestDrive -ChildPath 'report.json'
         $script:Report | Export-InfraPulseReport -Path $path -Force

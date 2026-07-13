@@ -52,7 +52,7 @@ function New-InfraPulseResult {
         Recommendation    = $Recommendation
         Evidence          = $Evidence
         TimestampUtc      = [DateTime]::UtcNow
-        DurationMs        = [math]::Round($DurationMs, 2)
+        DurationMs        = [math]::Round($DurationMs, 2, [MidpointRounding]::AwayFromZero)
         Error             = $ErrorMessage
     }
     $result.PSObject.TypeNames.Insert(0, 'InfraPulse.Result')
