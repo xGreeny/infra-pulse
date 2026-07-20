@@ -7,6 +7,7 @@ All notable changes to InfraPulse are documented in this file. The project follo
 ### Fixed
 
 - The DNS check no longer misreports CNAME-chained lookups as critical resolution failures on local scans: answer properties are now probed StrictMode-safely instead of being read from record types that do not carry them.
+- The TLS check now offers TLS 1.0–1.2 explicitly on Windows PowerShell 5.1 targets instead of the .NET Framework SSL3/TLS 1.0 default, which modern endpoints reject with transport errors; PowerShell 7 targets keep following operating-system defaults including TLS 1.3.
 
 ## [1.1.0] - 2026-07-20
 

@@ -160,6 +160,8 @@ Endpoints = @(
 
 A failed handshake, required name mismatch, required untrusted chain, expired certificate, or certificate inside the critical window is `Critical`. A certificate inside the warning window is `Warning`. Evidence contains certificate identity, thumbprint, validity dates, chain status, policy errors, protocol, and handshake duration.
 
+On PowerShell 7 targets the handshake follows the operating-system protocol defaults, including TLS 1.3 where available. On Windows PowerShell 5.1 targets the check explicitly offers TLS 1.0–1.2, because the .NET Framework default would otherwise fall back to SSL3/TLS 1.0 and fail against modern endpoints; TLS 1.3-only endpoints therefore require a PowerShell 7 target.
+
 The check does not perform an HTTP request, validate application authentication, inspect response content, or test end-to-end business transactions.
 
 ## TimeSync

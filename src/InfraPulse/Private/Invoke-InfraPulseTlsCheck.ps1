@@ -59,8 +59,20 @@ function Invoke-InfraPulseTlsCheck {
                     return $true
                 }
 
+                # .NET Framework negotiates only SSL3/TLS1.0 through the
+                # protocol-less overload because Windows PowerShell does not opt
+                # into system-default TLS versions, and modern endpoints reject
+                # those protocols. Tls13 is deliberately not offered on Desktop:
+                # older Framework builds throw on unsupported protocol flags.
+                $sslProtocols = if ([string]$PSVersionTable.PSEdition -eq 'Core') {
+                    [System.Security.Authentication.SslProtocols]::None
+                }
+                else {
+                    [System.Security.Authentication.SslProtocols](3072 -bor 768 -bor 192)
+                }
+
                 $sslStream = New-Object System.Net.Security.SslStream($client.GetStream(), $false, $validationCallback)
-                $sslStream.AuthenticateAsClient($sni)
+                $sslStream.AuthenticateAsClient($sni, $null, $sslProtocols, $false)
                 $timer.Stop()
 
                 $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($sslStream.RemoteCertificate)
