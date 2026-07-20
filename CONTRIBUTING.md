@@ -6,10 +6,10 @@ InfraPulse accepts focused changes that improve correctness, operational safety,
 
 - Windows PowerShell 5.1 or PowerShell 7+
 - Git
-- Pester 5.7.1
-- PSScriptAnalyzer 1.25.0
+- Pester 5.7.1 or a newer 5.x release
+- PSScriptAnalyzer 1.25.0 or a newer 1.x release
 
-The build script installs the pinned development dependencies for the current user:
+The build script installs the baseline versions for the current user when no compatible release is available:
 
 ```powershell
 .\build.ps1 -Task Verify -Bootstrap

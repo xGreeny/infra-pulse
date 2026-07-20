@@ -31,7 +31,7 @@ function Write-BuildMessage {
     Write-Information "[build] $Message" -InformationAction Continue
 }
 
-function Install-BuildDependency {
+function Resolve-BuildDependency {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -41,15 +41,29 @@ function Install-BuildDependency {
         [version]$Version
     )
 
+    # A module that is already imported must be reused: once its assembly is
+    # loaded into the process, importing a second copy fails with an assembly
+    # name conflict.
+    $imported = Get-Module -Name $Name |
+        Sort-Object -Property Version -Descending |
+        Select-Object -First 1
+    if ($null -ne $imported) {
+        if ($imported.Version.Major -eq $Version.Major -and $imported.Version -ge $Version) {
+            return $imported.Version
+        }
+        throw "Module '$Name' $($imported.Version) is already imported in this session, but version '$Version' or a newer $($Version.Major).x release is required. Run the build in a fresh PowerShell session."
+    }
+
     $available = Get-Module -ListAvailable -Name $Name |
-        Where-Object Version -EQ $Version |
+        Where-Object { $_.Version.Major -eq $Version.Major -and $_.Version -ge $Version } |
+        Sort-Object -Property Version -Descending |
         Select-Object -First 1
     if ($null -ne $available) {
-        return
+        return $available.Version
     }
 
     if (-not $bootstrapDependencies) {
-        throw "Required development module '$Name' version '$Version' is not installed. Re-run with -Bootstrap."
+        throw "Required development module '$Name' version '$Version' or a newer $($Version.Major).x release is not installed. Re-run with -Bootstrap."
     }
 
     Write-BuildMessage "Installing $Name $Version for the current user."
@@ -65,6 +79,33 @@ function Install-BuildDependency {
     }
 
     Install-Module -Name $Name -RequiredVersion $Version -Repository PSGallery -Scope CurrentUser -Force -AllowClobber -SkipPublisherCheck -Confirm:$false
+    return $Version
+}
+
+function Import-BuildPester {
+    [CmdletBinding()]
+    param()
+
+    $pesterVersion = Resolve-BuildDependency -Name Pester -Version $requiredModules.Pester
+
+    # Invoke-ScriptAnalyzer resolves commands referenced by analyzed scripts,
+    # which loads the newest installed Pester assembly into the process without
+    # importing the module. A mismatched assembly cannot be unloaded, so fail
+    # with an actionable message instead of a later Add-Type conflict.
+    $loadedAssembly = [System.AppDomain]::CurrentDomain.GetAssemblies() |
+        Where-Object { $_.GetName().Name -eq 'Pester' } |
+        Select-Object -First 1
+    if ($null -ne $loadedAssembly) {
+        $loadedVersion = $loadedAssembly.GetName().Version
+        $expectedVersion = [version]$pesterVersion
+        if ($loadedVersion.Major -ne $expectedVersion.Major -or
+            $loadedVersion.Minor -ne $expectedVersion.Minor -or
+            [math]::Max($loadedVersion.Build, 0) -ne [math]::Max($expectedVersion.Build, 0)) {
+            throw "Pester assembly $loadedVersion is already loaded in this process, but the build requires Pester $pesterVersion. Run the build in a fresh PowerShell session."
+        }
+    }
+
+    Import-Module -Name Pester -RequiredVersion $pesterVersion
 }
 
 function Invoke-Clean {
@@ -165,8 +206,8 @@ function Invoke-Analyze {
     Invoke-ParseValidation
     Invoke-ManifestValidation
 
-    Install-BuildDependency -Name PSScriptAnalyzer -Version $requiredModules.PSScriptAnalyzer
-    Import-Module -Name PSScriptAnalyzer -RequiredVersion $requiredModules.PSScriptAnalyzer -Force
+    $analyzerVersion = Resolve-BuildDependency -Name PSScriptAnalyzer -Version $requiredModules.PSScriptAnalyzer
+    Import-Module -Name PSScriptAnalyzer -RequiredVersion $analyzerVersion
 
     Write-BuildMessage 'Running PSScriptAnalyzer.'
     $analysisPaths = @(
@@ -203,8 +244,7 @@ function Invoke-TestSuite {
     [CmdletBinding()]
     param()
 
-    Install-BuildDependency -Name Pester -Version $requiredModules.Pester
-    Import-Module -Name Pester -RequiredVersion $requiredModules.Pester -Force
+    Import-BuildPester
 
     if (-not (Test-Path -LiteralPath $testResultRoot)) {
         $null = New-Item -Path $testResultRoot -ItemType Directory -Force
@@ -282,6 +322,10 @@ switch ($Task) {
     }
     'Verify' {
         Invoke-Clean
+        # Import Pester before the analysis stage: analyzing build.ps1 makes
+        # PSScriptAnalyzer auto-load the newest installed Pester, which would
+        # conflict with the version the test suite imports afterwards.
+        Import-BuildPester
         Invoke-Analyze
         Invoke-TestSuite
         Invoke-Package
