@@ -179,8 +179,18 @@ function Test-InfraPulseConfigurationData {
                     [void]$errors.Add("Checks.Certificates.StorePaths contains invalid certificate provider path '$storePath'.")
                 }
             }
+            foreach ($patternName in @('SubjectExcludePatterns', 'IssuerExcludePatterns')) {
+                foreach ($pattern in @($certificates[$patternName])) {
+                    if ([string]::IsNullOrWhiteSpace([string]$pattern)) {
+                        [void]$errors.Add("Checks.Certificates.$patternName cannot contain an empty pattern.")
+                    }
+                }
+            }
             if (-not $certificates.Contains('RequirePrivateKey') -or -not ($certificates.RequirePrivateKey -is [bool])) {
                 [void]$errors.Add('Checks.Certificates.RequirePrivateKey must be Boolean.')
+            }
+            if (-not $certificates.Contains('MinTotalLifetimeDays') -or -not (Test-InfraPulseNumber -Value $certificates.MinTotalLifetimeDays -Minimum 0)) {
+                [void]$errors.Add('Checks.Certificates.MinTotalLifetimeDays must be zero or greater.')
             }
         }
 

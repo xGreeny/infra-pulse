@@ -68,6 +68,55 @@ Describe 'InfraPulse configuration lifecycle' {
         ($result.Errors -join ' ') | Should -Match 'invalid query type'
     }
 
+    It 'accepts certificate issuer exclude patterns and a minimum lifetime' {
+        $result = Test-InfraPulseConfiguration -Configuration @{
+            Checks = @{
+                Certificates = @{
+                    IssuerExcludePatterns = @('CN=MS-Organization-P2P-Access*')
+                    MinTotalLifetimeDays  = 27
+                }
+            }
+        }
+
+        $result.IsValid | Should -BeTrue
+        $result.EffectiveConfiguration.Checks.Certificates.IssuerExcludePatterns | Should -Be @('CN=MS-Organization-P2P-Access*')
+        $result.EffectiveConfiguration.Checks.Certificates.MinTotalLifetimeDays | Should -Be 27
+    }
+
+    It 'defaults the certificate issuer patterns and minimum lifetime' {
+        $result = Test-InfraPulseConfiguration -Configuration @{}
+
+        $result.IsValid | Should -BeTrue
+        @($result.EffectiveConfiguration.Checks.Certificates.IssuerExcludePatterns).Count | Should -Be 0
+        $result.EffectiveConfiguration.Checks.Certificates.MinTotalLifetimeDays | Should -Be 0
+    }
+
+    It 'rejects an empty certificate issuer exclude pattern' {
+        $result = Test-InfraPulseConfiguration -Configuration @{
+            Checks = @{
+                Certificates = @{
+                    IssuerExcludePatterns = @('CN=MS-Organization-P2P-Access*', '   ')
+                }
+            }
+        }
+
+        $result.IsValid | Should -BeFalse
+        ($result.Errors -join ' ') | Should -Match 'IssuerExcludePatterns'
+    }
+
+    It 'rejects a negative certificate minimum lifetime' {
+        $result = Test-InfraPulseConfiguration -Configuration @{
+            Checks = @{
+                Certificates = @{
+                    MinTotalLifetimeDays = -1
+                }
+            }
+        }
+
+        $result.IsValid | Should -BeFalse
+        ($result.Errors -join ' ') | Should -Match 'MinTotalLifetimeDays'
+    }
+
     It 'rejects an unsafe TimeSync timeout' {
         $result = Test-InfraPulseConfiguration -Configuration @{
             Checks = @{

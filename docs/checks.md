@@ -73,9 +73,13 @@ Scans configured `Cert:\LocalMachine\...` stores and emits individual warning/cr
 
 Filters:
 
-- `SubjectExcludePatterns`: PowerShell wildcard patterns
+- `SubjectExcludePatterns`: PowerShell wildcard patterns matched against the subject
+- `IssuerExcludePatterns`: PowerShell wildcard patterns matched against the issuer
 - `ThumbprintExclude`: exact thumbprints
 - `RequirePrivateKey`: include only certificates with an accessible private key
+- `MinTotalLifetimeDays`: exclude certificates whose total lifetime (`NotAfter` minus `NotBefore`) is shorter than the given number of days; `0` (the default) keeps every certificate
+
+Auto-rotated short-lived certificates — for example the Entra ID device certificate issued by `CN=MS-Organization-P2P-Access [2026]` (about one day of lifetime) or the Azure Virtual Desktop agent certificate `CN=RDSAGENT.WVD` (about 26 days) — can never satisfy a 30-day warning threshold and would otherwise alert on every scan. `ThumbprintExclude` does not help because the thumbprint changes on each rotation. Exclude them by issuer, e.g. `IssuerExcludePatterns = @('CN=MS-Organization-P2P-Access*')`, or set `MinTotalLifetimeDays` above their rotation lifetime so every automatically renewed certificate stays out of the expiry evaluation.
 
 An expiring certificate must still be mapped to its bindings and workload before renewal. InfraPulse reports the evidence but does not infer service ownership or alter certificate stores.
 

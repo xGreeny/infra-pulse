@@ -112,8 +112,21 @@ function Get-InfraPulseConfigurationTemplate {
             WarningDays            = 30
             CriticalDays           = 14
             SubjectExcludePatterns = @()
-            ThumbprintExclude      = @()
-            RequirePrivateKey      = $false
+
+            # Wildcard patterns matched against the certificate issuer. Useful for
+            # auto-rotated short-lived certificates whose thumbprint changes on
+            # every rotation.
+            IssuerExcludePatterns = @(
+                # 'CN=MS-Organization-P2P-Access*'
+            )
+
+            ThumbprintExclude = @()
+            RequirePrivateKey = $false
+
+            # Certificates whose total lifetime (NotAfter - NotBefore) is shorter
+            # than this many days are excluded from the expiry evaluation.
+            # 0 keeps every certificate.
+            MinTotalLifetimeDays = 0
         }
 
         EventLog = @{
