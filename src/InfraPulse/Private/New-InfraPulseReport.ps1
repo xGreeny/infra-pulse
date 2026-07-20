@@ -16,23 +16,42 @@ function New-InfraPulseReport {
 
         [double]$DurationMs,
 
-        [string[]]$Tags = @()
+        [string[]]$Tags = @(),
+
+        [string]$RunId = '',
+
+        [datetime]$StartedAtUtc,
+
+        [string]$ConfigurationFingerprint = ''
     )
+
+    if ([string]::IsNullOrWhiteSpace($RunId)) {
+        $RunId = [guid]::NewGuid().ToString()
+    }
+
+    $completedAtUtc = [DateTime]::UtcNow
+    if (-not $PSBoundParameters.ContainsKey('StartedAtUtc')) {
+        $StartedAtUtc = $completedAtUtc.AddMilliseconds(-$DurationMs)
+    }
 
     $summary = Get-InfraPulseSummary -Results $Results
     $report = [pscustomobject][ordered]@{
-        SchemaVersion         = '1.0'
-        Tool                  = 'InfraPulse'
-        ToolVersion           = $script:InfraPulseModuleVersion
-        RequestedComputerName = $RequestedComputerName
-        ComputerName          = $ComputerName
-        GeneratedAtUtc        = [DateTime]::UtcNow
-        OverallStatus         = $summary.OverallStatus
-        Summary               = $summary.Counts
-        Inventory             = $Inventory
-        Results               = @($Results)
-        Tags                  = @($Tags)
-        DurationMs            = [math]::Round($DurationMs, 2, [MidpointRounding]::AwayFromZero)
+        SchemaVersion            = '1.1'
+        Tool                     = 'InfraPulse'
+        ToolVersion              = $script:InfraPulseModuleVersion
+        RunId                    = $RunId
+        RequestedComputerName    = $RequestedComputerName
+        ComputerName             = $ComputerName
+        GeneratedAtUtc           = $completedAtUtc
+        StartedAtUtc             = $StartedAtUtc.ToUniversalTime()
+        CompletedAtUtc           = $completedAtUtc
+        ConfigurationFingerprint = $ConfigurationFingerprint
+        OverallStatus            = $summary.OverallStatus
+        Summary                  = $summary.Counts
+        Inventory                = $Inventory
+        Results                  = @($Results)
+        Tags                     = @($Tags)
+        DurationMs               = [math]::Round($DurationMs, 2, [MidpointRounding]::AwayFromZero)
     }
     $report.PSObject.TypeNames.Insert(0, 'InfraPulse.Report')
     return $report

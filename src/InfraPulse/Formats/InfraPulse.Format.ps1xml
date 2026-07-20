@@ -53,5 +53,87 @@
         </TableRowEntries>
       </TableControl>
     </View>
+    <View>
+      <Name>InfraPulse.Comparison</Name>
+      <ViewSelectedBy>
+        <TypeName>InfraPulse.Comparison</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader><Label>Computer</Label><Width>24</Width></TableColumnHeader>
+          <TableColumnHeader><Label>Regressions</Label><Width>12</Width><Alignment>Right</Alignment></TableColumnHeader>
+          <TableColumnHeader><Label>Resolved</Label><Width>9</Width><Alignment>Right</Alignment></TableColumnHeader>
+          <TableColumnHeader><Label>Changed</Label><Width>8</Width><Alignment>Right</Alignment></TableColumnHeader>
+          <TableColumnHeader><Label>Unchanged</Label><Width>10</Width><Alignment>Right</Alignment></TableColumnHeader>
+          <TableColumnHeader><Label>Same config</Label><Width>11</Width></TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem><PropertyName>ComputerName</PropertyName></TableColumnItem>
+              <TableColumnItem><ScriptBlock>$_.Summary.NewFinding + $_.Summary.Regressed</ScriptBlock></TableColumnItem>
+              <TableColumnItem><ScriptBlock>$_.Summary.Resolved</ScriptBlock></TableColumnItem>
+              <TableColumnItem><ScriptBlock>$_.Summary.Changed</ScriptBlock></TableColumnItem>
+              <TableColumnItem><ScriptBlock>$_.Summary.Unchanged</ScriptBlock></TableColumnItem>
+              <TableColumnItem><ScriptBlock>if ($null -eq $_.ConfigurationMatches) { 'n/a' } else { $_.ConfigurationMatches }</ScriptBlock></TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+    <View>
+      <Name>InfraPulse.ResultChange</Name>
+      <ViewSelectedBy>
+        <TypeName>InfraPulse.ResultChange</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader><Label>Change</Label><Width>14</Width></TableColumnHeader>
+          <TableColumnHeader><Label>Check</Label><Width>14</Width></TableColumnHeader>
+          <TableColumnHeader><Label>Target</Label><Width>24</Width></TableColumnHeader>
+          <TableColumnHeader><Label>Before</Label><Width>8</Width></TableColumnHeader>
+          <TableColumnHeader><Label>After</Label><Width>8</Width></TableColumnHeader>
+          <TableColumnHeader><Label>Message</Label></TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem><PropertyName>ChangeType</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>CheckName</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>Target</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>ReferenceStatus</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>DifferenceStatus</PropertyName></TableColumnItem>
+              <TableColumnItem><ScriptBlock>if ($_.DifferenceMessage) { $_.DifferenceMessage } else { $_.ReferenceMessage }</ScriptBlock></TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+    <View>
+      <Name>InfraPulse.PolicyEvaluation</Name>
+      <ViewSelectedBy>
+        <TypeName>InfraPulse.PolicyEvaluation</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader><Label>Passed</Label><Width>7</Width></TableColumnHeader>
+          <TableColumnHeader><Label>Blocking</Label><Width>9</Width><Alignment>Right</Alignment></TableColumnHeader>
+          <TableColumnHeader><Label>Warnings</Label><Width>9</Width><Alignment>Right</Alignment></TableColumnHeader>
+          <TableColumnHeader><Label>Ignored</Label><Width>8</Width><Alignment>Right</Alignment></TableColumnHeader>
+          <TableColumnHeader><Label>Message</Label></TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem><PropertyName>Passed</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>BlockingCount</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>WarningCount</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>IgnoredCount</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>Message</PropertyName></TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
   </ViewDefinitions>
 </Configuration>

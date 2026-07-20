@@ -78,7 +78,7 @@ function Invoke-InfraPulse {
         [ValidateNotNull()]
         [System.Collections.IDictionary]$Configuration,
 
-        [ValidateSet('Disk', 'Memory', 'Uptime', 'PendingReboot', 'Services', 'Certificates', 'EventLog', 'Dns', 'Tcp', 'TimeSync')]
+        [ValidateSet('Disk', 'Memory', 'Uptime', 'PendingReboot', 'Services', 'Certificates', 'EventLog', 'Dns', 'Tcp', 'Tls', 'TimeSync')]
         [string[]]$Check,
 
         [Parameter(ParameterSetName = 'ComputerName')]
@@ -102,6 +102,8 @@ function Invoke-InfraPulse {
 
     begin {
         $resolvedConfiguration = Resolve-InfraPulseConfiguration -ConfigurationPath $ConfigurationPath -Configuration $Configuration
+        $runId = [guid]::NewGuid().ToString()
+        $configurationFingerprint = Get-InfraPulseConfigurationFingerprint -Configuration $resolvedConfiguration
         $catalog = @(Get-InfraPulseCheckCatalog)
         $normalizedTags = @(
             $Tag |
@@ -138,7 +140,7 @@ function Invoke-InfraPulse {
                     if ($FailFast -or -not [bool]$resolvedConfiguration.General.ContinueOnError) {
                         throw "Cannot use session for '$requestedName': $message"
                     }
-                    New-InfraPulseConnectionFailureReport -ComputerName $requestedName -ErrorMessage $message -Tags $normalizedTags
+                    New-InfraPulseConnectionFailureReport -ComputerName $requestedName -ErrorMessage $message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint
                     continue
                 }
 
@@ -150,13 +152,13 @@ function Invoke-InfraPulse {
                 }
 
                 try {
-                    Invoke-InfraPulseTarget -Context $context -Configuration $resolvedConfiguration -Checks $selectedChecks -FailFast:$FailFast -Tags $normalizedTags
+                    Invoke-InfraPulseTarget -Context $context -Configuration $resolvedConfiguration -Checks $selectedChecks -FailFast:$FailFast -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint
                 }
                 catch {
                     if ($FailFast -or -not [bool]$resolvedConfiguration.General.ContinueOnError) {
                         throw
                     }
-                    New-InfraPulseExecutionFailureReport -RequestedComputerName $requestedName -ComputerName $context.ComputerName -ErrorMessage $_.Exception.Message -Tags $normalizedTags
+                    New-InfraPulseExecutionFailureReport -RequestedComputerName $requestedName -ComputerName $context.ComputerName -ErrorMessage $_.Exception.Message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint
                 }
             }
         }
@@ -169,7 +171,7 @@ function Invoke-InfraPulse {
                         throw $message
                     }
                     $invalidTargetName = '<empty>'
-                    New-InfraPulseConnectionFailureReport -ComputerName $invalidTargetName -ErrorMessage $message -Tags $normalizedTags
+                    New-InfraPulseConnectionFailureReport -ComputerName $invalidTargetName -ErrorMessage $message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint
                     continue
                 }
 
@@ -221,18 +223,18 @@ function Invoke-InfraPulse {
                     if ($FailFast -or -not [bool]$resolvedConfiguration.General.ContinueOnError) {
                         throw
                     }
-                    New-InfraPulseConnectionFailureReport -ComputerName $targetName -ErrorMessage $_.Exception.Message -DurationMs $connectionStopwatch.Elapsed.TotalMilliseconds -Tags $normalizedTags
+                    New-InfraPulseConnectionFailureReport -ComputerName $targetName -ErrorMessage $_.Exception.Message -DurationMs $connectionStopwatch.Elapsed.TotalMilliseconds -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint
                     continue
                 }
 
                 try {
-                    Invoke-InfraPulseTarget -Context $context -Configuration $resolvedConfiguration -Checks $selectedChecks -FailFast:$FailFast -Tags $normalizedTags
+                    Invoke-InfraPulseTarget -Context $context -Configuration $resolvedConfiguration -Checks $selectedChecks -FailFast:$FailFast -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint
                 }
                 catch {
                     if ($FailFast -or -not [bool]$resolvedConfiguration.General.ContinueOnError) {
                         throw
                     }
-                    New-InfraPulseExecutionFailureReport -RequestedComputerName $targetName -ComputerName $context.ComputerName -ErrorMessage $_.Exception.Message -Tags $normalizedTags
+                    New-InfraPulseExecutionFailureReport -RequestedComputerName $targetName -ComputerName $context.ComputerName -ErrorMessage $_.Exception.Message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint
                 }
                 finally {
                     if ($null -ne $ownedSession) {

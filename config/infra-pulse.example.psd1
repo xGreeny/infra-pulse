@@ -12,6 +12,7 @@
             'EventLog'
             'Dns'
             'Tcp'
+            'Tls'
         )
         ContinueOnError          = $true
         ConnectionTimeoutSeconds = 15
@@ -101,6 +102,26 @@
 
         Tcp = @{
             TimeoutMilliseconds = 3000
+            Endpoints = @(
+                @{
+                    Name = 'Microsoft identity'
+                    Host = 'login.microsoftonline.com'
+                    Port = 443
+                }
+                @{
+                    Name = 'GitHub HTTPS'
+                    Host = 'github.com'
+                    Port = 443
+                }
+            )
+        }
+
+        Tls = @{
+            TimeoutMilliseconds = 5000
+            WarningDays         = 30
+            CriticalDays        = 14
+            RequireTrustedChain = $true
+            RequireNameMatch    = $true
             Endpoints = @(
                 @{
                     Name = 'Microsoft identity'

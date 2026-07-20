@@ -231,6 +231,169 @@ Describe 'InfraPulse check evaluation logic' {
         }
     }
 
+    It 'evaluates disk thresholds against unrounded byte counts' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                # 20.004 GB free of 200 GB: the rounded display value (20.0) sits on
+                # the warning boundary but the exact value is above it.
+                [pscustomobject]@{
+                    DeviceId = 'D:'; VolumeName = 'Data'; SizeBytes = 200GB; FreeBytes = 21478887587
+                    FreeGB = 20; FreePercent = 10; FileSystem = 'NTFS'
+                }
+            }
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.Disk
+            $settings.WarningFreePercent = 10
+            $settings.CriticalFreePercent = 5
+            $settings.WarningFreeGB = 20
+            $settings.CriticalFreeGB = 10
+
+            $result = @(Invoke-InfraPulseDiskCheck -Context $script:Context -Settings $settings)
+            $result[0].Status | Should -Be 'Healthy'
+        }
+    }
+
+    It 'keeps a failed service query unknown instead of reporting a missing service' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    Name = 'CriticalSvc'; DisplayName = 'CriticalSvc'; Status = 'QueryFailed'
+                    StartMode = $null; Exists = $false; QuerySucceeded = $false; Error = 'Access is denied.'
+                }
+            }
+            $settings = [ordered]@{
+                Enabled = $true
+                Required = @(
+                    [ordered]@{ Name = 'CriticalSvc'; ExpectedStatus = 'Running'; Severity = 'Critical' }
+                )
+            }
+
+            $result = @(Invoke-InfraPulseServiceCheck -Context $script:Context -Settings $settings)
+            $result[0].Status | Should -Be 'Unknown'
+            $result[0].Error | Should -Be 'Access is denied.'
+        }
+    }
+
+    It 'reports a missing configured certificate store as unknown' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                @(
+                    [pscustomobject]@{ RecordType = 'Store'; StorePath = 'Cert:\LocalMachine\My'; Exists = $true }
+                    [pscustomobject]@{ RecordType = 'Store'; StorePath = 'Cert:\LocalMachine\WebHosting'; Exists = $false }
+                )
+            }
+
+            $result = @(Invoke-InfraPulseCertificateCheck -Context $script:Context -Settings $script:Defaults.Checks.Certificates)
+            $missing = @($result | Where-Object Target -EQ 'Cert:\LocalMachine\WebHosting')
+            $missing.Count | Should -Be 1
+            $missing[0].Status | Should -Be 'Unknown'
+            @($result | Where-Object Target -EQ 'Certificate inventory')[0].Status | Should -Be 'Healthy'
+        }
+    }
+
+    It 'marks a healthy TLS endpoint healthy with protocol evidence' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    Name = 'Portal'; Host = 'portal.contoso.invalid'; Port = 443; Sni = 'portal.contoso.invalid'
+                    HandshakeSucceeded = $true; Protocol = 'Tls13'; Subject = 'CN=portal.contoso.invalid'
+                    Issuer = 'CN=Contoso CA'; Thumbprint = 'AA00'; SerialNumber = '01'
+                    NotBefore = (Get-Date).AddDays(-30); NotAfter = (Get-Date).AddDays(200); DaysRemaining = 200
+                    NameMatch = $true; ChainTrusted = $true; ChainStatus = @(); PolicyErrors = 'None'
+                    DurationMs = 42; TimeoutMs = 5000; Error = $null
+                }
+            }
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.Tls
+            $settings.Endpoints = @([ordered]@{ Name = 'Portal'; Host = 'portal.contoso.invalid' })
+
+            $result = @(Invoke-InfraPulseTlsCheck -Context $script:Context -Settings $settings)
+            $result[0].Status | Should -Be 'Healthy'
+            $result[0].Evidence.Protocol | Should -Be 'Tls13'
+        }
+    }
+
+    It 'marks an untrusted TLS chain critical when trust is required' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    Name = 'Portal'; Host = 'portal.contoso.invalid'; Port = 443; Sni = 'portal.contoso.invalid'
+                    HandshakeSucceeded = $true; Protocol = 'Tls12'; Subject = 'CN=portal.contoso.invalid'
+                    Issuer = 'CN=Untrusted CA'; Thumbprint = 'AA01'; SerialNumber = '02'
+                    NotBefore = (Get-Date).AddDays(-30); NotAfter = (Get-Date).AddDays(200); DaysRemaining = 200
+                    NameMatch = $true; ChainTrusted = $false; ChainStatus = @('UntrustedRoot: The root is not trusted.')
+                    PolicyErrors = 'RemoteCertificateChainErrors'; DurationMs = 40; TimeoutMs = 5000; Error = $null
+                }
+            }
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.Tls
+            $settings.Endpoints = @([ordered]@{ Name = 'Portal'; Host = 'portal.contoso.invalid' })
+
+            $result = @(Invoke-InfraPulseTlsCheck -Context $script:Context -Settings $settings)
+            $result[0].Status | Should -Be 'Critical'
+            $result[0].Message | Should -Match 'chain is not trusted'
+        }
+    }
+
+    It 'tolerates an untrusted TLS chain when trust is not required' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    Name = 'Portal'; Host = 'portal.contoso.invalid'; Port = 443; Sni = 'portal.contoso.invalid'
+                    HandshakeSucceeded = $true; Protocol = 'Tls12'; Subject = 'CN=portal.contoso.invalid'
+                    Issuer = 'CN=Internal CA'; Thumbprint = 'AA02'; SerialNumber = '03'
+                    NotBefore = (Get-Date).AddDays(-30); NotAfter = (Get-Date).AddDays(200); DaysRemaining = 200
+                    NameMatch = $true; ChainTrusted = $false; ChainStatus = @('UntrustedRoot: The root is not trusted.')
+                    PolicyErrors = 'RemoteCertificateChainErrors'; DurationMs = 40; TimeoutMs = 5000; Error = $null
+                }
+            }
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.Tls
+            $settings.RequireTrustedChain = $false
+            $settings.Endpoints = @([ordered]@{ Name = 'Portal'; Host = 'portal.contoso.invalid' })
+
+            $result = @(Invoke-InfraPulseTlsCheck -Context $script:Context -Settings $settings)
+            $result[0].Status | Should -Be 'Healthy'
+        }
+    }
+
+    It 'marks a failed TLS handshake critical' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    Name = 'Portal'; Host = 'portal.contoso.invalid'; Port = 443; Sni = 'portal.contoso.invalid'
+                    HandshakeSucceeded = $false; Protocol = $null; Subject = $null
+                    Issuer = $null; Thumbprint = $null; SerialNumber = $null
+                    NotBefore = $null; NotAfter = $null; DaysRemaining = $null
+                    NameMatch = $false; ChainTrusted = $false; ChainStatus = @(); PolicyErrors = ''
+                    DurationMs = 5000; TimeoutMs = 5000; Error = 'Connection timed out after 5000 ms.'
+                }
+            }
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.Tls
+            $settings.Endpoints = @([ordered]@{ Name = 'Portal'; Host = 'portal.contoso.invalid' })
+
+            $result = @(Invoke-InfraPulseTlsCheck -Context $script:Context -Settings $settings)
+            $result[0].Status | Should -Be 'Critical'
+            $result[0].Error | Should -Match 'timed out'
+        }
+    }
+
+    It 'marks a TLS certificate inside the warning window as warning' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    Name = 'Portal'; Host = 'portal.contoso.invalid'; Port = 443; Sni = 'portal.contoso.invalid'
+                    HandshakeSucceeded = $true; Protocol = 'Tls13'; Subject = 'CN=portal.contoso.invalid'
+                    Issuer = 'CN=Contoso CA'; Thumbprint = 'AA03'; SerialNumber = '04'
+                    NotBefore = (Get-Date).AddDays(-340); NotAfter = (Get-Date).AddDays(25); DaysRemaining = 25
+                    NameMatch = $true; ChainTrusted = $true; ChainStatus = @(); PolicyErrors = 'None'
+                    DurationMs = 42; TimeoutMs = 5000; Error = $null
+                }
+            }
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.Tls
+            $settings.Endpoints = @([ordered]@{ Name = 'Portal'; Host = 'portal.contoso.invalid' })
+
+            $result = @(Invoke-InfraPulseTlsCheck -Context $script:Context -Settings $settings)
+            $result[0].Status | Should -Be 'Warning'
+        }
+    }
+
     It 'marks excessive SNTP offset warning' {
         InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {

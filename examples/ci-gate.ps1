@@ -4,8 +4,7 @@ param(
 
     [string]$ConfigurationPath = (Join-Path -Path $PSScriptRoot -ChildPath '../config/infra-pulse.minimal.psd1'),
 
-    [ValidateSet('Critical', 'Unknown', 'Warning')]
-    [string[]]$BlockingStatus = @('Critical', 'Unknown')
+    [string]$PolicyPath = (Join-Path -Path $PSScriptRoot -ChildPath '../config/change-policy.example.psd1')
 )
 
 Set-StrictMode -Version Latest
@@ -20,12 +19,10 @@ $report = Invoke-InfraPulse `
     -Tag 'validation-gate' `
     -FailFast
 
-$blocking = @($report.Results | Where-Object Status -In $BlockingStatus)
-if ($blocking.Count -gt 0) {
-    $blocking |
-        Select-Object ComputerName, Status, CheckName, Target, Message |
-        Format-Table -AutoSize
-    throw "InfraPulse gate failed with $($blocking.Count) blocking result(s)."
+$evaluation = $report | Test-InfraPulseReport -PolicyPath $PolicyPath
+if (-not $evaluation.Passed) {
+    $evaluation.Blocking | Format-Table -AutoSize
+    throw "InfraPulse gate failed: $($evaluation.Message)"
 }
 
-Write-Output "InfraPulse gate passed for $($report.ComputerName): $($report.Summary.Healthy) healthy result(s)."
+Write-Output "InfraPulse gate passed for $($report.ComputerName): $($evaluation.Message)"

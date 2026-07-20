@@ -67,6 +67,13 @@ function Get-InfraPulseCheckCatalog {
             Description     = 'Tests configured TCP endpoints with deterministic connection timeouts.'
         }
         [pscustomobject]@{
+            Name            = 'Tls'
+            Category        = 'Security'
+            FunctionName    = 'Invoke-InfraPulseTlsCheck'
+            RequiresWindows = $false
+            Description     = 'Validates TLS handshakes, certificate identity, chain trust, protocol, and expiry for configured endpoints.'
+        }
+        [pscustomobject]@{
             Name            = 'TimeSync'
             Category        = 'Connectivity'
             FunctionName    = 'Invoke-InfraPulseTimeSyncCheck'

@@ -13,17 +13,21 @@ Describe 'InfraPulse module surface' {
     It 'has a valid module manifest' {
         $manifest = Test-ModuleManifest -Path $script:ModulePath -ErrorAction Stop
         $manifest.Name | Should -Be 'InfraPulse'
-        $manifest.Version.ToString() | Should -Be '1.0.0'
+        $manifest.Version.ToString() | Should -Be '1.1.0'
         $manifest.PowerShellVersion.ToString() | Should -Be '5.1'
     }
 
     It 'exports only the documented public commands' {
         $expected = @(
+            'Compare-InfraPulseReport'
+            'Export-InfraPulseComparison'
             'Export-InfraPulseReport'
             'Get-InfraPulseCheck'
+            'Import-InfraPulseReport'
             'Invoke-InfraPulse'
             'New-InfraPulseConfiguration'
             'Test-InfraPulseConfiguration'
+            'Test-InfraPulseReport'
         ) | Sort-Object
         $actual = Get-Command -Module InfraPulse -CommandType Function |
             Select-Object -ExpandProperty Name |
@@ -41,11 +45,12 @@ Describe 'InfraPulse module surface' {
         }
     }
 
-    It 'publishes a unique ten-check catalog' {
+    It 'publishes a unique eleven-check catalog' {
         $checks = @(Get-InfraPulseCheck)
-        $checks.Count | Should -Be 10
-        @($checks.Name | Select-Object -Unique).Count | Should -Be 10
+        $checks.Count | Should -Be 11
+        @($checks.Name | Select-Object -Unique).Count | Should -Be 11
         @($checks | Where-Object { [string]::IsNullOrWhiteSpace($_.Description) }).Count | Should -Be 0
+        @($checks.Name) | Should -Contain 'Tls'
     }
 
     It 'supports wildcard catalog filtering' {

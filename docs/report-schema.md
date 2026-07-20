@@ -1,6 +1,6 @@
 # Report schema
 
-InfraPulse returns PowerShell custom objects with ordered properties and explicit type names. The current schema version is `1.0`.
+InfraPulse returns PowerShell custom objects with ordered properties and explicit type names. The current schema version is `1.1`. Schema `1.0` JSON reports remain importable through `Import-InfraPulseReport`.
 
 ## `InfraPulse.Report`
 
@@ -9,9 +9,13 @@ InfraPulse returns PowerShell custom objects with ordered properties and explici
 | `SchemaVersion` | string | Report contract version |
 | `Tool` | string | Always `InfraPulse` |
 | `ToolVersion` | version/string | Module version from the manifest |
+| `RunId` | string | GUID shared by every report of one `Invoke-InfraPulse` invocation (1.1) |
 | `RequestedComputerName` | string | Operator-supplied target name |
 | `ComputerName` | string | Canonical target name when inventory succeeds |
 | `GeneratedAtUtc` | DateTime | UTC report creation time |
+| `StartedAtUtc` | DateTime | UTC target scan start time (1.1) |
+| `CompletedAtUtc` | DateTime | UTC target scan completion time (1.1) |
+| `ConfigurationFingerprint` | string | SHA-256 fingerprint of the effective configuration (1.1) |
 | `OverallStatus` | string | Highest-precedence result status |
 | `Summary` | object | Counts for Total, Healthy, Warning, Critical, Unknown, Skipped |
 | `Inventory` | object/null | Host inventory when enabled and available |
@@ -23,12 +27,16 @@ Example:
 
 ```json
 {
-  "SchemaVersion": "1.0",
+  "SchemaVersion": "1.1",
   "Tool": "InfraPulse",
-  "ToolVersion": "1.0.0",
+  "ToolVersion": "1.1.0",
+  "RunId": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
   "RequestedComputerName": "srv-app-01",
   "ComputerName": "SRV-APP-01",
-  "GeneratedAtUtc": "2026-07-11T09:30:00.0000000Z",
+  "GeneratedAtUtc": "2026-07-20T09:30:02.1234567Z",
+  "StartedAtUtc": "2026-07-20T09:30:01.2812345Z",
+  "CompletedAtUtc": "2026-07-20T09:30:02.1234567Z",
+  "ConfigurationFingerprint": "0f1e2d3c4b5a69788796a5b4c3d2e1f0f1e2d3c4b5a69788796a5b4c3d2e1f0f",
   "OverallStatus": "Warning",
   "Summary": {
     "Total": 8,
@@ -44,6 +52,8 @@ Example:
   "DurationMs": 842.17
 }
 ```
+
+The configuration fingerprint is a SHA-256 hash over a canonical, sorted-key rendering of the effective configuration. Two reports carry the same fingerprint exactly when their effective configurations are logically identical, regardless of the PowerShell edition that produced them. `Compare-InfraPulseReport` surfaces the fingerprint match so evidence collected under different policies is not treated as equivalent.
 
 ## Inventory object
 
@@ -106,6 +116,44 @@ Skipped results count toward `Summary.Total` but do not reduce the status of hea
 ## CSV mapping
 
 CSV export writes one row per result and repeats report-level context. `Evidence` is serialized into the `EvidenceJson` column because arbitrary nested structures cannot be represented safely as flat columns.
+
+## `InfraPulse.Comparison`
+
+`Compare-InfraPulseReport` returns one comparison per computer name:
+
+| Property | Type | Description |
+|---|---|---|
+| `SchemaVersion` | string | Comparison contract version (`1.1`) |
+| `ComputerName` | string | Compared host |
+| `Comparable` | Boolean | Both snapshots contained this host |
+| `ConfigurationMatches` | Boolean/null | Fingerprints equal; `null` when either side lacks one |
+| `HasRegressions` | Boolean | `NewFinding` + `Regressed` counts are greater than zero |
+| `Reference` / `Difference` | object/null | `RunId`, `GeneratedAtUtc`, `OverallStatus`, `ConfigurationFingerprint` per side |
+| `Summary` | object | Counts per change type plus `Total` |
+| `Changes` | array | `InfraPulse.ResultChange` objects |
+
+Each `InfraPulse.ResultChange` carries `ChangeType` (`NewFinding`, `Regressed`, `Resolved`, `Improved`, `Changed`, `NotComparable`, `Added`, `Unchanged`), the check identity, both statuses, both observed values, both messages, and an `EvidenceChanged` flag. Volatile evidence keys (timing values, event samples) are excluded from the change decision.
+
+## `InfraPulse.PolicyEvaluation`
+
+`Test-InfraPulseReport` returns:
+
+| Property | Type | Description |
+|---|---|---|
+| `Passed` | Boolean | Policy satisfied |
+| `Message` | string | Human-readable outcome summary |
+| `PolicySource` | string | Policy file path or `Inline parameters` |
+| `FailOn` | string array | Blocking statuses |
+| `MaximumWarnings` | int | Warning budget |
+| `TotalResults` / `EvaluatedCount` / `IgnoredCount` | int | Result accounting |
+| `BlockingCount` / `WarningCount` | int | Violation counts |
+| `Blocking` | array | Compact blocking-result descriptions |
+| `ComputerNames` | string array | Evaluated hosts |
+| `GeneratedAtUtc` | DateTime | UTC evaluation time |
+
+## Import and rehydration
+
+`Import-InfraPulseReport` validates that a JSON document is an InfraPulse report with schema `1.0` or `1.1`, restores DateTime values from ISO 8601 and from the legacy `\/Date(<epoch-ms>)\/` encoding that Windows PowerShell 5.1 produced before schema 1.1, reinstates the `InfraPulse.Report` and `InfraPulse.Result` type names, and adds empty `RunId`, `StartedAtUtc`, `CompletedAtUtc`, and `ConfigurationFingerprint` values to schema `1.0` reports.
 
 ## Schema evolution
 

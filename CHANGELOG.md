@@ -2,6 +2,29 @@
 
 All notable changes to InfraPulse are documented in this file. The project follows [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-07-20
+
+### Added
+
+- Report schema 1.1 with run identifiers, UTC start/completion timestamps, and effective-configuration SHA-256 fingerprints.
+- `Import-InfraPulseReport` for validated JSON import and type rehydration of schema 1.0 and 1.1 reports.
+- `Compare-InfraPulseReport` with regression, resolution, improvement, evidence-change, and comparability classification.
+- `Export-InfraPulseComparison` for self-contained HTML, JSON, and CSV change evidence.
+- `Test-InfraPulseReport` with blocking statuses, warning budgets, wildcard ignore rules, Boolean output, and opt-in terminating errors.
+- Cross-platform TLS endpoint check for handshake, SNI identity, chain trust, certificate expiry, protocol, and timing evidence.
+- Certificate check exclusions for auto-rotated certificates: `IssuerExcludePatterns` and `MinTotalLifetimeDays`.
+- Linux PowerShell 7 CI and JaCoCo coverage output.
+
+### Changed
+
+- Exported timestamps are normalized to round-trip ISO 8601 UTC strings across PowerShell editions.
+- Disk thresholds are evaluated against unrounded values while reports retain rounded display values.
+- Service query failures remain `Unknown` instead of being misclassified as missing services.
+- Missing configured certificate stores produce explicit `Unknown` results.
+- Event-log collection reads one record beyond the configured cap to distinguish a full result set from truncation.
+- The build resolves Pester and PSScriptAnalyzer as same-major version ranges and imports Pester before analysis, making CI resilient to preinstalled module versions.
+- Build validation and module-surface tests cover all new public commands.
+
 ## [1.0.0] - 2026-07-11
 
 ### Added
@@ -16,4 +39,5 @@ All notable changes to InfraPulse are documented in this file. The project follo
 - Pester test suite, PSScriptAnalyzer policy, dual-engine CI, and tagged-release packaging.
 - Operator documentation, examples, issue forms, security policy, and contribution workflow.
 
+[1.1.0]: https://github.com/xGreeny/infra-pulse/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/xGreeny/infra-pulse/releases/tag/v1.0.0

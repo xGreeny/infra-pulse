@@ -16,6 +16,8 @@ Each matching fixed volume produces one result. A volume is:
 
 Both relative and absolute thresholds matter. A large data volume can have a low percentage but adequate working space; a small system volume can have a reasonable percentage but too little absolute space.
 
+Thresholds are evaluated against unrounded values derived from the raw byte counts; the rounded `FreeGB` and `FreePercent` evidence fields are display values only, so a volume sitting exactly on a rounded boundary cannot flip state through rounding.
+
 `Include` and `Exclude` use PowerShell wildcard matching against drive identifiers such as `C:`.
 
 ## Memory
@@ -63,13 +65,15 @@ Each configured service has:
 
 Start mode is collected as evidence when available but is not currently evaluated. Configure services by server role; a universal service list creates noise and hides the operational intent of the scan.
 
+A missing service produces the configured `Severity`. A failed service query — for example access denied or a Service Control Manager communication failure — remains `Unknown` with the captured error, because it does not prove the service is absent.
+
 ## Certificates
 
 **Category:** Security
 **Platform:** Windows
 **Source:** PowerShell certificate provider
 
-Scans configured `Cert:\LocalMachine\...` stores and emits individual warning/critical results for expired or expiring certificates plus one inventory summary.
+Scans configured `Cert:\LocalMachine\...` stores and emits individual warning/critical results for expired or expiring certificates plus one inventory summary. Each configured store that does not exist on the target produces an explicit `Unknown` result so a scan cannot silently measure fewer stores than the configuration promises; remove unused stores from `StorePaths` for roles that do not provision them.
 
 Filters:
 
@@ -91,7 +95,7 @@ An expiring certificate must still be mapped to its bindings and workload before
 
 For each configured log, InfraPulse counts matching events inside `LookbackHours`, applies level/provider/event-ID filters, and records the five highest-volume providers plus up to five samples.
 
-Default levels are `1` (Critical) and `2` (Error). `MaxEvents` caps collection cost. When the query reaches that cap, InfraPulse preserves the finding as `Unknown` unless the returned matching events already meet a warning or critical threshold. This prevents an incomplete query from being reported as healthy. Keep `MaxEvents` comfortably above `CriticalCount` and reduce `LookbackHours` for high-volume logs.
+Default levels are `1` (Critical) and `2` (Error). `MaxEvents` caps collection cost. The query reads one record beyond the cap, so a result set that exactly fills the cap is still reported precisely; only a genuinely truncated query is treated as incomplete. A truncated query is preserved as `Unknown` unless the returned matching events already meet a warning or critical threshold. This prevents an incomplete query from being reported as healthy. Keep `MaxEvents` comfortably above `CriticalCount` and reduce `LookbackHours` for high-volume logs.
 
 `IncludeMessages` is off by default because message rendering can be expensive and may expose operational or user data.
 
@@ -128,6 +132,35 @@ Endpoints = @(
 ```
 
 This validates network reachability and listener acceptance only. It does not validate TLS identity, application protocol, authentication, or end-to-end transaction health.
+
+## Tls
+
+**Category:** Security
+**Platform:** Cross-platform
+**Protocols:** TCP and TLS
+
+The TLS check opens a TCP connection from the evaluated target, performs a TLS client handshake using the configured SNI name, captures the remote certificate, and evaluates:
+
+- handshake success and timeout,
+- certificate identity against SNI,
+- local chain trust without online revocation checks,
+- certificate validity and days remaining,
+- negotiated TLS protocol.
+
+```powershell
+Endpoints = @(
+    @{
+        Name = 'Application portal'
+        Host = 'portal.contoso.invalid'
+        Port = 443
+        Sni  = 'portal.contoso.invalid'
+    }
+)
+```
+
+A failed handshake, required name mismatch, required untrusted chain, expired certificate, or certificate inside the critical window is `Critical`. A certificate inside the warning window is `Warning`. Evidence contains certificate identity, thumbprint, validity dates, chain status, policy errors, protocol, and handshake duration.
+
+The check does not perform an HTTP request, validate application authentication, inspect response content, or test end-to-end business transactions.
 
 ## TimeSync
 

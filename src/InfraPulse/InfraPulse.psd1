@@ -1,6 +1,6 @@
 @{
     RootModule           = 'InfraPulse.psm1'
-    ModuleVersion        = '1.0.0'
+    ModuleVersion        = '1.1.0'
     GUID                 = '381fa9f8-98e3-43b2-893d-909bbfc10378'
     Author               = 'Flurin Gubler'
     CompanyName          = 'xGreeny'
@@ -10,11 +10,15 @@
     CompatiblePSEditions = @('Desktop', 'Core')
 
     FunctionsToExport = @(
+        'Compare-InfraPulseReport'
+        'Export-InfraPulseComparison'
         'Export-InfraPulseReport'
         'Get-InfraPulseCheck'
+        'Import-InfraPulseReport'
         'Invoke-InfraPulse'
         'New-InfraPulseConfiguration'
         'Test-InfraPulseConfiguration'
+        'Test-InfraPulseReport'
     )
 
     CmdletsToExport   = @()
@@ -37,7 +41,7 @@
             )
             LicenseUri = 'https://github.com/xGreeny/infra-pulse/blob/main/LICENSE'
             ProjectUri = 'https://github.com/xGreeny/infra-pulse'
-            ReleaseNotes = 'Initial stable release with ten built-in checks, remote execution, configuration validation, and HTML, JSON, and CSV reporting.'
+            ReleaseNotes = 'Adds report schema 1.1 with run identifiers and configuration fingerprints, JSON report import, snapshot comparison with change classification, policy gates, a cross-platform TLS endpoint check, and check accuracy fixes.'
         }
     }
 }

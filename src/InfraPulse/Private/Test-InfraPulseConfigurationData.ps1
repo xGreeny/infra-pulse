@@ -281,6 +281,51 @@ function Test-InfraPulseConfigurationData {
             }
         }
 
+        if ($checks.Contains('Tls')) {
+            $tls = $checks.Tls
+            if (-not $tls.Contains('TimeoutMilliseconds') -or -not (Test-InfraPulseNumber -Value $tls.TimeoutMilliseconds -Minimum 100 -Maximum 60000)) {
+                [void]$errors.Add('Checks.Tls.TimeoutMilliseconds must be between 100 and 60000.')
+            }
+            foreach ($name in @('WarningDays', 'CriticalDays')) {
+                if (-not $tls.Contains($name) -or -not (Test-InfraPulseNumber -Value $tls[$name] -Minimum 0)) {
+                    [void]$errors.Add("Checks.Tls.$name must be zero or greater.")
+                }
+            }
+            if (
+                (Test-InfraPulseNumber -Value $tls.WarningDays) -and
+                (Test-InfraPulseNumber -Value $tls.CriticalDays) -and
+                [double]$tls.CriticalDays -gt [double]$tls.WarningDays
+            ) {
+                [void]$errors.Add('Checks.Tls.CriticalDays must be less than or equal to WarningDays.')
+            }
+            foreach ($booleanName in @('RequireTrustedChain', 'RequireNameMatch')) {
+                if (-not $tls.Contains($booleanName) -or -not ($tls[$booleanName] -is [bool])) {
+                    [void]$errors.Add("Checks.Tls.$booleanName must be Boolean.")
+                }
+            }
+            $index = 0
+            foreach ($endpoint in @($tls.Endpoints)) {
+                if (-not ($endpoint -is [System.Collections.IDictionary])) {
+                    [void]$errors.Add("Checks.Tls.Endpoints[$index] must be a hashtable.")
+                }
+                else {
+                    if (-not $endpoint.Contains('Host') -or [string]::IsNullOrWhiteSpace([string]$endpoint.Host)) {
+                        [void]$errors.Add("Checks.Tls.Endpoints[$index].Host is required.")
+                    }
+                    if ($endpoint.Contains('Port') -and -not (Test-InfraPulseNumber -Value $endpoint.Port -Minimum 1 -Maximum 65535)) {
+                        [void]$errors.Add("Checks.Tls.Endpoints[$index].Port must be between 1 and 65535.")
+                    }
+                    if ($endpoint.Contains('Sni') -and [string]::IsNullOrWhiteSpace([string]$endpoint.Sni)) {
+                        [void]$errors.Add("Checks.Tls.Endpoints[$index].Sni cannot be empty.")
+                    }
+                    if ($endpoint.Contains('TimeoutMilliseconds') -and -not (Test-InfraPulseNumber -Value $endpoint.TimeoutMilliseconds -Minimum 100 -Maximum 60000)) {
+                        [void]$errors.Add("Checks.Tls.Endpoints[$index].TimeoutMilliseconds must be between 100 and 60000.")
+                    }
+                }
+                $index++
+            }
+        }
+
         if ($checks.Contains('TimeSync')) {
             $timeSync = $checks.TimeSync
             if (-not $timeSync.Contains('TimeoutMilliseconds') -or -not (Test-InfraPulseNumber -Value $timeSync.TimeoutMilliseconds -Minimum 100 -Maximum 60000)) {

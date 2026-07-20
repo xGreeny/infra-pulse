@@ -117,6 +117,47 @@ Describe 'InfraPulse configuration lifecycle' {
         ($result.Errors -join ' ') | Should -Match 'MinTotalLifetimeDays'
     }
 
+    It 'defaults the Tls check to enabled with safe thresholds' {
+        $result = Test-InfraPulseConfiguration -Configuration @{}
+
+        $result.IsValid | Should -BeTrue
+        $result.EffectiveConfiguration.Checks.Tls.Enabled | Should -BeTrue
+        $result.EffectiveConfiguration.Checks.Tls.WarningDays | Should -Be 30
+        $result.EffectiveConfiguration.Checks.Tls.CriticalDays | Should -Be 14
+        $result.EffectiveConfiguration.Checks.Tls.RequireTrustedChain | Should -BeTrue
+        $result.EffectiveConfiguration.Checks.Tls.RequireNameMatch | Should -BeTrue
+        @($result.EffectiveConfiguration.Checks.Tls.Endpoints).Count | Should -Be 0
+    }
+
+    It 'rejects a Tls endpoint without a host' {
+        $result = Test-InfraPulseConfiguration -Configuration @{
+            Checks = @{
+                Tls = @{
+                    Endpoints = @(
+                        @{ Name = 'Portal'; Port = 443 }
+                    )
+                }
+            }
+        }
+
+        $result.IsValid | Should -BeFalse
+        ($result.Errors -join ' ') | Should -Match 'Tls\.Endpoints\[0\]\.Host'
+    }
+
+    It 'rejects inverted Tls expiry thresholds' {
+        $result = Test-InfraPulseConfiguration -Configuration @{
+            Checks = @{
+                Tls = @{
+                    WarningDays  = 10
+                    CriticalDays = 20
+                }
+            }
+        }
+
+        $result.IsValid | Should -BeFalse
+        ($result.Errors -join ' ') | Should -Match 'Tls\.CriticalDays'
+    }
+
     It 'rejects an unsafe TimeSync timeout' {
         $result = Test-InfraPulseConfiguration -Configuration @{
             Checks = @{

@@ -50,7 +50,9 @@ function Invoke-InfraPulseEventLogCheck {
             }
 
             try {
-                $queriedEvents = @(Get-WinEvent -FilterHashtable $filter -MaxEvents ([int]$CheckSettings.MaxEvents) -ErrorAction Stop)
+                # One record beyond the cap distinguishes an exactly-full result
+                # set from a truncated one.
+                $queriedEvents = @(Get-WinEvent -FilterHashtable $filter -MaxEvents ([int]$CheckSettings.MaxEvents + 1) -ErrorAction Stop)
             }
             catch {
                 if ($_.FullyQualifiedErrorId -like 'NoMatchingEventsFound*') {
@@ -72,8 +74,11 @@ function Invoke-InfraPulseEventLogCheck {
                 }
             }
 
+            $truncated = $queriedEvents.Count -gt [int]$CheckSettings.MaxEvents
+            if ($truncated) {
+                $queriedEvents = @($queriedEvents | Select-Object -First ([int]$CheckSettings.MaxEvents))
+            }
             $retrievedCount = $queriedEvents.Count
-            $truncated = $retrievedCount -ge [int]$CheckSettings.MaxEvents
             $events = @($queriedEvents)
 
             if (@($CheckSettings.ExcludeProviders).Count -gt 0) {

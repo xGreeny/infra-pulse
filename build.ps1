@@ -176,11 +176,15 @@ function Invoke-ManifestValidation {
 
     $manifest = Test-ModuleManifest -Path $manifestPath -ErrorAction Stop
     $expectedCommands = @(
+        'Compare-InfraPulseReport'
+        'Export-InfraPulseComparison'
         'Export-InfraPulseReport'
         'Get-InfraPulseCheck'
+        'Import-InfraPulseReport'
         'Invoke-InfraPulse'
         'New-InfraPulseConfiguration'
         'Test-InfraPulseConfiguration'
+        'Test-InfraPulseReport'
     )
     $manifestCommands = @($manifest.ExportedFunctions.Keys | Sort-Object)
     $difference = Compare-Object -ReferenceObject ($expectedCommands | Sort-Object) -DifferenceObject $manifestCommands
@@ -258,6 +262,10 @@ function Invoke-TestSuite {
     $configuration.TestResult.Enabled = $true
     $configuration.TestResult.OutputFormat = 'NUnitXml'
     $configuration.TestResult.OutputPath = Join-Path -Path $testResultRoot -ChildPath 'pester-results.xml'
+    $configuration.CodeCoverage.Enabled = $true
+    $configuration.CodeCoverage.Path = @($sourceRoot)
+    $configuration.CodeCoverage.OutputFormat = 'JaCoCo'
+    $configuration.CodeCoverage.OutputPath = Join-Path -Path $testResultRoot -ChildPath 'coverage.xml'
 
     $testRun = Invoke-Pester -Configuration $configuration
     if ($testRun.FailedCount -gt 0 -or $testRun.Result -ne 'Passed') {

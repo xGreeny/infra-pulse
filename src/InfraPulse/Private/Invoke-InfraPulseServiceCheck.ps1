@@ -43,20 +43,37 @@ function Invoke-InfraPulseServiceCheck {
                 }
 
                 [pscustomobject]@{
-                    Name        = $service.Name
-                    DisplayName = $service.DisplayName
-                    Status      = $service.Status.ToString()
-                    StartMode   = $startMode
-                    Exists      = $true
+                    Name           = $service.Name
+                    DisplayName    = $service.DisplayName
+                    Status         = $service.Status.ToString()
+                    StartMode      = $startMode
+                    Exists         = $true
+                    QuerySucceeded = $true
+                    Error          = $null
+                }
+            }
+            catch [Microsoft.PowerShell.Commands.ServiceCommandException] {
+                [pscustomobject]@{
+                    Name           = $serviceName
+                    DisplayName    = $serviceName
+                    Status         = 'NotFound'
+                    StartMode      = $null
+                    Exists         = $false
+                    QuerySucceeded = $true
+                    Error          = $null
                 }
             }
             catch {
+                # Access-denied and SCM communication failures do not prove the
+                # service is missing, so they must stay distinguishable.
                 [pscustomobject]@{
-                    Name        = $serviceName
-                    DisplayName = $serviceName
-                    Status      = 'NotFound'
-                    StartMode   = $null
-                    Exists      = $false
+                    Name           = $serviceName
+                    DisplayName    = $serviceName
+                    Status         = 'QueryFailed'
+                    StartMode      = $null
+                    Exists         = $false
+                    QuerySucceeded = $false
+                    Error          = $_.Exception.Message
                 }
             }
         }
@@ -70,7 +87,26 @@ function Invoke-InfraPulseServiceCheck {
         $definition = $requiredServices[$index]
         $service = $raw | Where-Object { $_.Name -eq [string]$definition.Name } | Select-Object -First 1
 
-        if ($null -eq $service -or -not [bool]$service.Exists) {
+        $querySucceeded = $true
+        $queryError = ''
+        if ($null -ne $service -and $null -ne $service.PSObject.Properties['QuerySucceeded']) {
+            $querySucceeded = [bool]$service.QuerySucceeded
+            $queryError = [string]$service.Error
+        }
+
+        if ($null -ne $service -and -not $querySucceeded) {
+            $status = 'Unknown'
+            $message = "The state of service '$($definition.Name)' could not be queried."
+            $recommendation = 'Validate Service Control Manager access and the captured query error before treating the service as missing.'
+            $observed = 'QueryFailed'
+            $evidence = [ordered]@{
+                Name           = [string]$definition.Name
+                ExpectedStatus = [string]$definition.ExpectedStatus
+                QuerySucceeded = $false
+                Error          = $queryError
+            }
+        }
+        elseif ($null -eq $service -or -not [bool]$service.Exists) {
             $status = [string]$definition.Severity
             $message = "Required service '$($definition.Name)' was not found."
             $recommendation = 'Validate the service name and installation state before changing the configuration.'
@@ -119,7 +155,7 @@ function Invoke-InfraPulseServiceCheck {
             $warningThreshold = "Expected: $($definition.ExpectedStatus)"
         }
 
-        $results += New-InfraPulseResult -Status $status -CheckName 'Services' -Category 'Availability' -ComputerName $Context.ComputerName -Target ([string]$definition.Name) -Message $message -ObservedValue $observed -WarningThreshold $warningThreshold -CriticalThreshold $criticalThreshold -Recommendation $recommendation -Evidence $evidence -DurationMs ($stopwatch.Elapsed.TotalMilliseconds / $requiredServices.Count)
+        $results += New-InfraPulseResult -Status $status -CheckName 'Services' -Category 'Availability' -ComputerName $Context.ComputerName -Target ([string]$definition.Name) -Message $message -ObservedValue $observed -WarningThreshold $warningThreshold -CriticalThreshold $criticalThreshold -Recommendation $recommendation -Evidence $evidence -DurationMs ($stopwatch.Elapsed.TotalMilliseconds / $requiredServices.Count) -ErrorMessage $queryError
     }
 
     return $results

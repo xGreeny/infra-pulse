@@ -58,6 +58,37 @@ Describe 'InfraPulse object contract' {
         }
     }
 
+    It 'stamps schema 1.1 run metadata onto every report' {
+        InModuleScope InfraPulse {
+            $results = @(
+                New-InfraPulseResult -Status Healthy -CheckName Memory -Category Capacity -ComputerName 'SRV-01' -Target 'Memory' -Message 'Healthy.'
+            )
+            $report = New-InfraPulseReport -RequestedComputerName 'srv-01' -ComputerName 'SRV-01' -Inventory $null -Results $results -DurationMs 10 -RunId 'f0e1d2c3-0000-4000-8000-000000000001' -ConfigurationFingerprint 'abc123'
+
+            $report.SchemaVersion | Should -Be '1.1'
+            $report.RunId | Should -Be 'f0e1d2c3-0000-4000-8000-000000000001'
+            $report.ConfigurationFingerprint | Should -Be 'abc123'
+            $report.StartedAtUtc.Kind | Should -Be ([DateTimeKind]::Utc)
+            $report.CompletedAtUtc.Kind | Should -Be ([DateTimeKind]::Utc)
+            $report.CompletedAtUtc | Should -BeGreaterOrEqual $report.StartedAtUtc
+
+            $second = New-InfraPulseReport -RequestedComputerName 'srv-01' -ComputerName 'SRV-01' -Inventory $null -Results $results -DurationMs 10
+            $second.RunId | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    It 'produces identical configuration fingerprints for logically equal configurations' {
+        InModuleScope InfraPulse {
+            $first = Get-InfraPulseConfigurationFingerprint -Configuration (Get-DefaultInfraPulseConfiguration)
+            $second = Get-InfraPulseConfigurationFingerprint -Configuration (Get-DefaultInfraPulseConfiguration)
+            $changed = Resolve-InfraPulseConfiguration -Configuration @{ Checks = @{ Disk = @{ WarningFreePercent = 19 } } }
+
+            $first | Should -Match '^[0-9a-f]{64}$'
+            $first | Should -Be $second
+            (Get-InfraPulseConfigurationFingerprint -Configuration $changed) | Should -Not -Be $first
+        }
+    }
+
     It 'normalizes DateTime values to round-trip UTC strings for serialization' {
         InModuleScope InfraPulse {
             $utc = [datetime]::new(2026, 7, 11, 9, 30, 0, [DateTimeKind]::Utc)

@@ -51,6 +51,7 @@ function Get-InfraPulseConfigurationTemplate {
             'EventLog'
             'Dns'
             'Tcp'
+            'Tls'
             'TimeSync'
         )
 
@@ -158,6 +159,22 @@ function Get-InfraPulseConfigurationTemplate {
             Endpoints = @(
                 # @{ Name = 'Microsoft identity'; Host = 'login.microsoftonline.com'; Port = 443 }
                 # @{ Name = 'Domain controller LDAP'; Host = 'dc01.contoso.invalid'; Port = 389 }
+            )
+        }
+
+        Tls = @{
+            Enabled             = $true
+            TimeoutMilliseconds = 5000
+            WarningDays         = 30
+            CriticalDays        = 14
+
+            # Untrusted chains and SNI/certificate identity mismatches are
+            # critical unless explicitly tolerated.
+            RequireTrustedChain = $true
+            RequireNameMatch    = $true
+
+            Endpoints = @(
+                # @{ Name = 'Application portal'; Host = 'portal.contoso.invalid'; Port = 443; Sni = 'portal.contoso.invalid' }
             )
         }
 

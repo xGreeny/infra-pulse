@@ -53,3 +53,16 @@ jobs:
             test-results/*.xml
           if-no-files-found: error
           retention-days: 14
+
+  verify-powershell-7-linux:
+    name: Verify / PowerShell 7 (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Verify module
+        shell: pwsh
+        run: ./build.ps1 -Task Verify -Bootstrap

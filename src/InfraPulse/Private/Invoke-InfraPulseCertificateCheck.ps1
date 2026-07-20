@@ -107,6 +107,10 @@ function Invoke-InfraPulseCertificateCheck {
     $results = @()
     $healthyCertificates = @()
 
+    foreach ($missingStore in $missingStores) {
+        $results += New-InfraPulseResult -Status 'Unknown' -CheckName 'Certificates' -Category 'Security' -ComputerName $Context.ComputerName -Target ([string]$missingStore) -Message "Configured certificate store '$missingStore' does not exist on the target." -ObservedValue 'Missing' -Recommendation 'Remove the store from Checks.Certificates.StorePaths or confirm the target role provisions it.' -Evidence ([ordered]@{ StorePath = [string]$missingStore; Exists = $false }) -DurationMs ($stopwatch.Elapsed.TotalMilliseconds / [math]::Max($storePaths.Count, 1))
+    }
+
     foreach ($certificate in $certificates) {
         $daysRemaining = [double]$certificate.DaysRemaining
         if ($daysRemaining -lt 0) {

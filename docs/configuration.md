@@ -127,6 +127,39 @@ Per-target dictionary keys are `Name` (required), `Type`, and `Server`.
 
 Each endpoint requires `Host` and `Port` (`1`–`65535`). `Name` and per-endpoint `TimeoutMilliseconds` are optional.
 
+## Tls
+
+| Key | Type | Default | Constraint / behavior |
+|---|---|---:|---|
+| `Enabled` | Boolean | `$true` | Used by default selection |
+| `TimeoutMilliseconds` | number | `5000` | `100`–`60000` |
+| `WarningDays` | number | `30` | `>= 0` |
+| `CriticalDays` | number | `14` | `0`–warning |
+| `RequireTrustedChain` | Boolean | `$true` | Untrusted chains become critical |
+| `RequireNameMatch` | Boolean | `$true` | SNI/certificate identity mismatch becomes critical |
+| `Endpoints` | array | Empty | Empty means skipped |
+
+Each endpoint requires `Host`. Optional keys are `Name`, `Port` (default `443`), `Sni` (default `Host`), and per-endpoint `TimeoutMilliseconds`.
+
+```powershell
+Tls = @{
+    Enabled             = $true
+    TimeoutMilliseconds = 5000
+    WarningDays         = 30
+    CriticalDays        = 14
+    RequireTrustedChain = $true
+    RequireNameMatch    = $true
+    Endpoints = @(
+        @{
+            Name = 'Application portal'
+            Host = 'portal.contoso.invalid'
+            Port = 443
+            Sni  = 'portal.contoso.invalid'
+        }
+    )
+}
+```
+
 ## TimeSync
 
 | Key | Type | Default | Constraint / behavior |
@@ -146,3 +179,25 @@ Invoke-InfraPulse -Check Disk, Certificates -ConfigurationPath .\config\my-envir
 ```
 
 The selected checks still use their effective configuration sections.
+
+## Change policy files
+
+Report policy is deliberately separate from collection configuration. Collection configuration defines what is measured; a policy defines which results block a release, migration, or change.
+
+```powershell
+@{
+    SchemaVersion = '1.0'
+    FailOn = @('Critical', 'Unknown')
+    MaximumWarnings = 0
+    Ignore = @(
+        @{
+            ComputerName = 'lab-*'
+            CheckName    = 'Uptime'
+            Target       = '*'
+            Status       = 'Warning'
+        }
+    )
+}
+```
+
+`FailOn` accepts any result status, `MaximumWarnings` is the warning budget after ignore rules are applied, and every populated field in an `Ignore` rule must match. Values support PowerShell wildcards; supported rule keys are `ComputerName`, `CheckName`, `Category`, `Target`, and `Status`. Apply a policy with `Test-InfraPulseReport -PolicyPath`.

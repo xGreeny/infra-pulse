@@ -11,75 +11,197 @@
 
 # InfraPulse
 
-**Read-only, on-demand health telemetry for Windows infrastructure.**
+**Read-only, change-aware infrastructure validation for Windows and hybrid environments.**
 
-InfraPulse turns routine server validation into repeatable PowerShell checks, structured objects, and self-contained reports. It is designed for operational triage, maintenance windows, migration validation, and pre-change/post-change evidence—not as a replacement for continuous monitoring.
+InfraPulse turns routine server validation into repeatable PowerShell checks, typed objects, self-contained reports, and defensible pre-change/post-change evidence. It is designed for maintenance windows, migrations, operational triage, and CI/CD gates—not as a replacement for continuous monitoring.
 
 <p align="center">
   <a href="examples/sample-report.html"><img src="assets/report-preview.png" alt="InfraPulse HTML report preview" width="100%"></a>
 </p>
 
-## What it does
+## Why InfraPulse
 
-- Runs ten built-in health checks against a local host or remote PowerShell sessions.
-- Produces typed `InfraPulse.Report` and `InfraPulse.Result` objects instead of parsing console text.
-- Applies role-specific thresholds from a validated PowerShell data file.
-- Exports searchable, self-contained HTML with a restrictive content-security policy plus machine-readable JSON and CSV.
-- Continues through individual check failures by default while preserving errors as `Unknown` results.
-- Requires no third-party modules at runtime.
-- Leaves target state unchanged.
+- Eleven built-in read-only checks for local or remote targets.
+- Stable `InfraPulse.Report` and `InfraPulse.Result` objects instead of parsed console text.
+- Validated configuration-as-code with deterministic deep merging.
+- Searchable, self-contained HTML plus JSON and CSV exports.
+- JSON report import with schema validation and type rehydration.
+- Snapshot comparison that classifies regressions, resolved findings, and evidence changes.
+- Reusable policy gates with blocking statuses, warning budgets, and wildcard ignore rules.
+- Windows PowerShell 5.1 and PowerShell 7 support; cross-platform paths are tested on Linux.
+- No third-party runtime modules and no target-state changes.
 
 ## Quick start
 
 ```powershell
-# Clone and import the module
-# git clone https://github.com/xGreeny/infra-pulse.git
 Import-Module .\src\InfraPulse\InfraPulse.psd1 -Force
 
-# Run the core checks locally
-$report = Invoke-InfraPulse -Check Disk, Memory, Uptime, PendingReboot
+$report = Invoke-InfraPulse `
+    -Check Disk, Memory, Uptime, PendingReboot
 
-# Review the report and anything that needs attention
-$report
 $report.Results |
     Where-Object Status -NotIn 'Healthy', 'Skipped' |
     Format-Table Status, CheckName, Target, Message -AutoSize
 
-# Build a self-contained dashboard
-$report | Export-InfraPulseReport -Path .\out\infra-pulse.html -Force
+$report |
+    Export-InfraPulseReport `
+        -Path .\out\infra-pulse.html `
+        -Force
 ```
 
-A report stays useful after the console session ends:
+The same object graph can be preserved for automation:
 
 ```powershell
 $report | Export-InfraPulseReport -Path .\out\infra-pulse.json -Force
 $report | Export-InfraPulseReport -Path .\out\infra-pulse.csv -Force
 ```
 
+## Change validation workflow
+
+InfraPulse 1.1 records a run identifier, UTC start/completion timestamps, and a SHA-256 fingerprint of the effective configuration. That makes pre-change and post-change evidence comparable without treating different policies as equivalent.
+
+```powershell
+$before = Invoke-InfraPulse `
+    -ComputerName 'srv-app-01' `
+    -ConfigurationPath .\config\app-server.psd1
+
+$before |
+    Export-InfraPulseReport `
+        -Path .\evidence\before.json `
+        -Force
+
+# Perform the approved infrastructure change.
+
+$after = Invoke-InfraPulse `
+    -ComputerName 'srv-app-01' `
+    -ConfigurationPath .\config\app-server.psd1
+
+$comparison = Compare-InfraPulseReport `
+    -ReferenceObject $before `
+    -DifferenceObject $after
+
+$comparison |
+    Export-InfraPulseComparison `
+        -Path .\evidence\change-report.html `
+        -Force
+```
+
+Comparison deltas are classified as:
+
+| Change type | Meaning |
+|---|---|
+| `NewFinding` | A new warning, critical, or unknown result appeared. |
+| `Regressed` | The result status became more severe. |
+| `Resolved` | A previous warning, critical, or unknown result became healthy. |
+| `Improved` | The result status improved without becoming healthy. |
+| `Changed` | Status stayed the same, but relevant evidence or observed values changed. |
+| `NotComparable` | A previous result is missing from the post-change run. |
+| `Added` | A new healthy or skipped result appeared. |
+| `Unchanged` | Status and relevant evidence stayed the same. |
+
+Saved JSON reports can be restored as typed objects:
+
+```powershell
+$before = Import-InfraPulseReport .\evidence\before.json
+$after  = Import-InfraPulseReport .\evidence\after.json
+
+Compare-InfraPulseReport $before $after -ExcludeUnchanged
+```
+
+## Policy gates
+
+Use `Test-InfraPulseReport` to apply a consistent release or change policy:
+
+```powershell
+$evaluation = $after |
+    Test-InfraPulseReport `
+        -FailOn Critical, Unknown `
+        -MaximumWarnings 0
+
+if (-not $evaluation.Passed) {
+    throw $evaluation.Message
+}
+```
+
+A reusable policy file keeps exceptions reviewable:
+
+```powershell
+@{
+    SchemaVersion = '1.0'
+    FailOn = @('Critical', 'Unknown')
+    MaximumWarnings = 0
+
+    Ignore = @(
+        @{
+            ComputerName = 'lab-*'
+            CheckName    = 'Uptime'
+            Target       = '*'
+            Status       = 'Warning'
+        }
+    )
+}
+```
+
+```powershell
+$after |
+    Test-InfraPulseReport `
+        -PolicyPath .\config\change-policy.example.psd1 `
+        -ThrowOnFailure
+```
+
+`Test-InfraPulseReport` returns an `InfraPulse.PolicyEvaluation` object. It never exits the PowerShell host process and throws only when `-ThrowOnFailure` is explicitly requested.
+
 ## Built-in checks
 
 | Check | Default | Platform | Evaluation |
 |---|:---:|---|---|
-| `Disk` | On | Windows | Fixed-volume free percentage and free GiB |
+| `Disk` | On | Windows | Fixed-volume free percentage and free GiB using unrounded values |
 | `Memory` | On | Windows | Available physical memory percentage |
 | `Uptime` | On | Windows | Time since the last operating-system boot |
 | `PendingReboot` | On | Windows | Servicing, Windows Update, rename, and Configuration Manager indicators |
-| `Services` | On | Windows | Required service existence and expected state |
-| `Certificates` | On | Windows | Expired and expiring certificates in configured machine stores |
+| `Services` | On | Windows | Required service existence and expected state; collection failures remain `Unknown` |
+| `Certificates` | On | Windows | Expired and expiring machine certificates plus missing-store evidence |
 | `EventLog` | On | Windows | Recent critical/error volume, top providers, and optional samples |
 | `Dns` | On | Cross-platform | Configured DNS names and record types; skipped until targets are defined |
 | `Tcp` | On | Cross-platform | Configured host/port reachability; skipped until endpoints are defined |
+| `Tls` | On | Cross-platform | TLS handshake, identity, chain trust, negotiated protocol, and expiry |
 | `TimeSync` | Off | Cross-platform | SNTP offset and round-trip time against configured NTP servers |
-
-List the catalog directly from the module:
 
 ```powershell
 Get-InfraPulseCheck
 ```
 
+### TLS endpoint validation
+
+The TCP check intentionally validates listener reachability only. The TLS check adds certificate and protocol evidence:
+
+```powershell
+@{
+    Checks = @{
+        Tls = @{
+            WarningDays         = 30
+            CriticalDays        = 14
+            RequireTrustedChain = $true
+            RequireNameMatch    = $true
+
+            Endpoints = @(
+                @{
+                    Name = 'Application portal'
+                    Host = 'portal.contoso.invalid'
+                    Port = 443
+                    Sni  = 'portal.contoso.invalid'
+                }
+            )
+        }
+    }
+}
+```
+
+The check captures the certificate subject, issuer, thumbprint, validity window, DNS identity, trust-chain result, policy errors, negotiated TLS protocol, and handshake duration.
+
 ## Configuration as code
 
-Generate a complete, documented configuration and validate it before execution:
+Generate and validate a complete configuration before contacting a target:
 
 ```powershell
 New-InfraPulseConfiguration -Path .\config\my-environment.psd1
@@ -88,14 +210,23 @@ Test-InfraPulseConfiguration -Path .\config\my-environment.psd1
 Invoke-InfraPulse -ConfigurationPath .\config\my-environment.psd1
 ```
 
-A compact role-specific override can remain small because it is merged with safe defaults:
+A partial role override stays concise because it is merged with versioned defaults:
 
 ```powershell
 @{
     SchemaVersion = '1.0'
 
     General = @{
-        DefaultChecks = @('Disk', 'Memory', 'Uptime', 'PendingReboot', 'Services', 'Dns', 'Tcp')
+        DefaultChecks = @(
+            'Disk'
+            'Memory'
+            'Uptime'
+            'PendingReboot'
+            'Services'
+            'Dns'
+            'Tcp'
+            'Tls'
+        )
     }
 
     Checks = @{
@@ -112,25 +243,11 @@ A compact role-specific override can remain small because it is merged with safe
                 @{ Name = 'W32Time';  ExpectedStatus = 'Running'; Severity = 'Warning'  }
             )
         }
-
-        Dns = @{
-            Targets = @(
-                'login.microsoftonline.com'
-                @{ Name = '_ldap._tcp.dc._msdcs.contoso.invalid'; Type = 'SRV' }
-            )
-        }
-
-        Tcp = @{
-            Endpoints = @(
-                @{ Name = 'Microsoft identity'; Host = 'login.microsoftonline.com'; Port = 443 }
-                @{ Name = 'Domain controller LDAP'; Host = 'dc01.contoso.invalid'; Port = 389 }
-            )
-        }
     }
 }
 ```
 
-The complete schema and every threshold are documented in [`docs/configuration.md`](docs/configuration.md). Ready-to-adapt baselines are available under [`config/`](config/).
+Dictionaries merge recursively. Scalars and arrays replace defaults. The complete schema is documented in [`docs/configuration.md`](docs/configuration.md).
 
 ## Remote scans
 
@@ -146,13 +263,19 @@ $reports = Invoke-InfraPulse `
     -ConfigurationPath .\config\infra-pulse.example.psd1 `
     -Tag 'production', 'maintenance-window'
 
-$reports | Export-InfraPulseReport -Path .\out\production-health.html -Force
+$reports |
+    Export-InfraPulseReport `
+        -Path .\out\production-health.html `
+        -Force
 ```
 
-It can also reuse caller-owned sessions. This keeps transport, authentication, session configuration, and lifecycle under the operator's control:
+Caller-owned sessions keep transport, authentication, endpoint configuration, and lifecycle under operator control:
 
 ```powershell
-$sessions = New-PSSession -ComputerName 'srv-app-01', 'srv-file-01' -Credential $credential
+$sessions = New-PSSession `
+    -ComputerName 'srv-app-01', 'srv-file-01' `
+    -Credential $credential
+
 try {
     $sessions | Invoke-InfraPulse -Check Disk, Memory, Services
 }
@@ -161,107 +284,95 @@ finally {
 }
 ```
 
-InfraPulse closes only sessions it creates. See [`docs/remoting.md`](docs/remoting.md) for WinRM prerequisites, least-privilege considerations, and troubleshooting.
+InfraPulse closes only sessions it creates. See [`docs/remoting.md`](docs/remoting.md) for prerequisites and least-privilege guidance.
 
 ## Status model
-
-Each result has one of five states:
 
 | Status | Meaning |
 |---|---|
 | `Healthy` | The observed value is inside the configured operating threshold. |
 | `Warning` | Attention is required, but the critical threshold has not been reached. |
 | `Critical` | The critical threshold was reached or a required dependency is unavailable. |
-| `Unknown` | The check could not establish health because collection or evaluation failed. |
-| `Skipped` | The check is not applicable or has no targets configured. |
+| `Unknown` | Collection or evaluation could not establish a defensible health state. |
+| `Skipped` | The check is not applicable or has no configured targets. |
 
-The report status is calculated with this precedence: `Critical` → `Warning` → `Unknown` → `Healthy` → `Skipped`.
+Report precedence is `Critical` → `Warning` → `Unknown` → `Healthy` → `Skipped`.
 
-## Structured output
+## Report contracts
 
-InfraPulse deliberately keeps display formatting separate from data:
+InfraPulse deliberately keeps data separate from display formatting. Report schema 1.1 adds:
 
-```powershell
-$reports = Invoke-InfraPulse -ComputerName 'srv-app-01', 'srv-file-01'
-
-# Automation gate
-$blocking = $reports.Results | Where-Object Status -In 'Critical', 'Unknown'
-if ($blocking) {
-    $blocking | Select-Object ComputerName, CheckName, Target, Status, Message
-    throw "Infrastructure validation failed with $($blocking.Count) blocking result(s)."
-}
-
-# JSON for downstream systems
-$reports | Export-InfraPulseReport -Path .\out\health.json -Format Json -Force
+```text
+RunId
+StartedAtUtc
+CompletedAtUtc
+ConfigurationFingerprint
 ```
 
-The stable object contract is documented in [`docs/report-schema.md`](docs/report-schema.md).
+Schema 1.0 JSON reports remain importable. Details are documented in [`docs/report-schema.md`](docs/report-schema.md).
 
-## Security and operational boundaries
+## Security boundaries
 
-InfraPulse is intentionally read-only. It queries state through CIM/WMI, `Get-Service`, the certificate provider, `Get-WinEvent`, DNS, TCP sockets, and SNTP. It does not restart services, remove files, renew certificates, clear event logs, or remediate findings.
+InfraPulse is intentionally read-only. It queries state through CIM/WMI, the Service Control Manager, the certificate provider, `Get-WinEvent`, DNS, TCP sockets, TLS, and SNTP. It does not restart services, delete files, renew certificates, clear event logs, alter firewall rules, or remediate findings.
 
-Operators should still treat generated reports as operational data. Depending on the enabled checks, they can contain hostnames, domain names, certificate subjects, service names, event providers, and optional event-message excerpts. Event messages are disabled by default. Review and sanitize reports before sharing them outside the intended operational boundary.
+Generated reports can contain hostnames, domain names, certificate identities, service names, event providers, and optional event-message excerpts. Protect them as operational data and sanitize them before sharing outside the intended boundary.
 
-Credentials supplied to `Invoke-InfraPulse` are passed directly to `New-PSSession` and are not written to configuration files or reports. Repository examples use reserved or non-routable names and contain no environment-specific secrets.
+Credentials are passed directly to `New-PSSession` and are never persisted in configuration or reports.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
     A[Invoke-InfraPulse] --> B[Configuration merge + validation]
-    B --> C{Execution context}
-    C -->|Local| D[Target orchestrator]
-    C -->|Temporary WSMan session| D
-    C -->|Caller-owned PSSession| D
-    D --> E[Inventory]
-    D --> F[Check catalog]
-    F --> G[Typed results]
-    E --> H[InfraPulse.Report]
-    G --> H
-    H --> I[Console formatting]
-    H --> J[HTML]
-    H --> K[JSON]
-    H --> L[CSV]
+    B --> C[Configuration SHA-256 fingerprint]
+    C --> D{Execution context}
+    D -->|Local| E[Target orchestrator]
+    D -->|Temporary WSMan| E
+    D -->|Caller-owned PSSession| E
+    E --> F[Inventory]
+    E --> G[Check catalog]
+    G --> H[Typed results]
+    F --> I[InfraPulse.Report 1.1]
+    H --> I
+    I --> J[HTML / JSON / CSV]
+    I --> K[Policy evaluation]
+    I --> L[Snapshot comparison]
+    L --> M[Change HTML / JSON / CSV]
 ```
 
-Implementation details and extension points are covered in [`docs/architecture.md`](docs/architecture.md).
+Implementation details are covered in [`docs/architecture.md`](docs/architecture.md).
 
 ## Compatibility
 
 | Component | Supported baseline |
 |---|---|
 | Controller | Windows PowerShell 5.1 or PowerShell 7+ |
-| Windows target | Windows with PowerShell remoting and the built-in management interfaces required by the selected checks |
-| Cross-platform target | PowerShell 7+ for DNS, TCP, and SNTP checks |
-| Remote transport created by InfraPulse | WSMan/WinRM through `New-PSSession -ComputerName` |
-| Caller-owned sessions | Any working `PSSession` accepted by the host PowerShell version |
+| Windows target | Windows with PowerShell remoting and built-in interfaces required by selected checks |
+| Cross-platform target | PowerShell 7+ for DNS, TCP, TLS, and SNTP checks |
+| InfraPulse-created transport | WSMan/WinRM through `New-PSSession -ComputerName` |
+| Caller-owned sessions | Any working `PSSession` accepted by the controller PowerShell version |
 
-CI validates the module on Windows PowerShell 5.1 and PowerShell 7, runs PSScriptAnalyzer, executes unit and Windows integration tests, verifies help and manifest metadata, and creates a versioned release archive.
+CI validates Windows PowerShell 5.1, PowerShell 7 on Windows, and PowerShell 7 on Linux. It runs parser validation, manifest checks, PSScriptAnalyzer, Pester, code coverage collection, package extraction, manifest verification, and SHA-256 generation.
 
 ## Development
 
 ```powershell
-# Installs pinned development dependencies for the current user,
-# analyzes the code, runs tests, and builds the release archive.
 .\build.ps1 -Task Verify -Bootstrap
 ```
 
 | Task | Purpose |
 |---|---|
 | `Clean` | Removes generated output and test results. |
-| `Analyze` | Parses every PowerShell file and runs PSScriptAnalyzer. |
-| `Test` | Executes Pester unit and integration tests. |
+| `Analyze` | Parses PowerShell and format files, validates the manifest, and runs PSScriptAnalyzer. |
+| `Test` | Executes Pester unit/integration tests and writes NUnit plus JaCoCo coverage XML. |
 | `Package` | Creates `out/InfraPulse-<version>.zip` and a SHA-256 file. |
 | `Verify` | Runs analysis, tests, and packaging in sequence. |
-
-Repository layout:
 
 ```text
 infra-pulse/
 ├── src/InfraPulse/          # Module manifest, public commands, private implementation
-├── config/                  # Validated example configurations
-├── examples/                # Local, remote, scheduled, and CI-gate usage
+├── config/                  # Validated configuration and policy examples
+├── examples/                # Local, remote, scheduled, change, and CI-gate usage
 ├── docs/                    # Architecture and operator documentation
 ├── tests/                   # Pester unit and integration tests
 ├── tools/                   # Development utilities

@@ -73,8 +73,12 @@ function Invoke-InfraPulseDiskCheck {
 
     $results = @()
     foreach ($disk in $raw) {
-        $isCritical = ([double]$disk.FreePercent -le [double]$Settings.CriticalFreePercent) -or ([double]$disk.FreeGB -le [double]$Settings.CriticalFreeGB)
-        $isWarning = ([double]$disk.FreePercent -le [double]$Settings.WarningFreePercent) -or ([double]$disk.FreeGB -le [double]$Settings.WarningFreeGB)
+        # Thresholds are evaluated against unrounded values derived from the raw
+        # byte counts; the rounded FreeGB/FreePercent fields remain display values.
+        $exactFreeGB = [double]$disk.FreeBytes / 1GB
+        $exactFreePercent = if ([double]$disk.SizeBytes -gt 0) { ([double]$disk.FreeBytes / [double]$disk.SizeBytes) * 100 } else { 0 }
+        $isCritical = ($exactFreePercent -le [double]$Settings.CriticalFreePercent) -or ($exactFreeGB -le [double]$Settings.CriticalFreeGB)
+        $isWarning = ($exactFreePercent -le [double]$Settings.WarningFreePercent) -or ($exactFreeGB -le [double]$Settings.WarningFreeGB)
 
         if ($isCritical) {
             $status = 'Critical'

@@ -15,6 +15,7 @@ function Get-DefaultInfraPulseConfiguration {
                 'EventLog'
                 'Dns'
                 'Tcp'
+                'Tls'
                 'TimeSync'
             )
             ContinueOnError         = $true
@@ -95,6 +96,15 @@ function Get-DefaultInfraPulseConfiguration {
             Tcp           = [ordered]@{
                 Enabled             = $true
                 TimeoutMilliseconds = 3000
+                Endpoints           = @()
+            }
+            Tls           = [ordered]@{
+                Enabled             = $true
+                TimeoutMilliseconds = 5000
+                WarningDays         = 30
+                CriticalDays        = 14
+                RequireTrustedChain = $true
+                RequireNameMatch    = $true
                 Endpoints           = @()
             }
             TimeSync      = [ordered]@{
