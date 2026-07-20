@@ -260,7 +260,7 @@ footer { margin-top: 28px; color: var(--muted); text-align: center; font-size: .
         $generated = if ($report.GeneratedAtUtc) { ([datetime]$report.GeneratedAtUtc).ToUniversalTime().ToString('yyyy-MM-dd HH:mm:ss') + ' UTC' } else { 'n/a' }
         $duration = '{0:N0} ms' -f [double]$report.DurationMs
         $tags = @($report.Tags | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
-        $inventorySearch = if ($null -eq $report.Inventory) { '' } else { ConvertTo-Json -InputObject $report.Inventory -Depth 4 -Compress }
+        $inventorySearch = if ($null -eq $report.Inventory) { '' } else { ConvertTo-Json -InputObject (ConvertTo-InfraPulseSerializableValue -Value $report.Inventory) -Depth 4 -Compress }
         $hostSearch = (@([string]$report.ComputerName, [string]$report.RequestedComputerName, ($tags -join ' '), $inventorySearch) -join ' ').ToLowerInvariant()
 
         $null = $builder.AppendLine('<article class="host" data-search="' + (ConvertTo-InfraPulseHtmlEncoded -Value $hostSearch) + '">')
@@ -307,7 +307,7 @@ footer { margin-top: 28px; color: var(--muted); text-align: center; font-size: .
             }
             $thresholds = if ($thresholdParts.Count -eq 0) { '-' } else { $thresholdParts -join '' }
             $recommendation = if ([string]::IsNullOrWhiteSpace([string]$result.Recommendation)) { '<span class="muted">No action required.</span>' } else { ConvertTo-InfraPulseHtmlEncoded -Value $result.Recommendation }
-            $evidenceJson = ConvertTo-Json -InputObject $result.Evidence -Depth 8
+            $evidenceJson = ConvertTo-Json -InputObject (ConvertTo-InfraPulseSerializableValue -Value $result.Evidence) -Depth 8
             $rowSearch = (@([string]$result.Status, [string]$result.CheckName, [string]$result.Category, [string]$result.Target, [string]$result.Message, [string]$result.ObservedValue, [string]$result.Recommendation, [string]$result.Error) -join ' ').ToLowerInvariant()
 
             $null = $builder.AppendLine('<tr data-status="' + (ConvertTo-InfraPulseHtmlEncoded -Value (([string]$result.Status).ToLowerInvariant())) + '" data-search="' + (ConvertTo-InfraPulseHtmlEncoded -Value $rowSearch) + '">')

@@ -28,7 +28,7 @@ Example:
   "ToolVersion": "1.0.0",
   "RequestedComputerName": "srv-app-01",
   "ComputerName": "SRV-APP-01",
-  "GeneratedAtUtc": "2026-07-11T09:30:00Z",
+  "GeneratedAtUtc": "2026-07-11T09:30:00.0000000Z",
   "OverallStatus": "Warning",
   "Summary": {
     "Total": 8,
@@ -84,6 +84,12 @@ Example:
 | `TimestampUtc` | DateTime | UTC result creation time |
 | `DurationMs` | double | Check/result collection duration |
 | `Error` | string | Original error message when collection failed |
+
+## Timestamp serialization
+
+In-memory report objects carry real `DateTime` values. When a report is exported (JSON, CSV, or the HTML evidence blocks), every `DateTime` is converted to a round-trip ISO 8601 UTC string (`yyyy-MM-ddTHH:mm:ss.fffffffZ`, .NET format specifier `o`), for example `2026-07-11T09:30:00.0000000Z`.
+
+This applies recursively to all timestamp-bearing fields, including `GeneratedAtUtc`, `TimestampUtc`, `Inventory.CollectedAtUtc`, and evidence keys such as `LastBootTime`, `NotBefore`, `NotAfter`, and `TimeCreated`. The normalization guarantees identical output on Windows PowerShell 5.1 and PowerShell 7; without it, `ConvertTo-Json` on PowerShell 5.1 would emit the legacy `\/Date(<epoch-ms>)\/` form.
 
 ## Status aggregation
 
