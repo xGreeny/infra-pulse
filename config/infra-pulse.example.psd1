@@ -70,8 +70,12 @@
             WarningDays            = 30
             CriticalDays           = 14
             SubjectExcludePatterns = @()
+            IssuerExcludePatterns  = @(
+                # 'CN=MS-Organization-P2P-Access*'
+            )
             ThumbprintExclude      = @()
             RequirePrivateKey      = $false
+            MinTotalLifetimeDays   = 0
         }
 
         EventLog = @{

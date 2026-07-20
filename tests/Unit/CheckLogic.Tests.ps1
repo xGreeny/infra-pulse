@@ -1,3 +1,5 @@
+$script:IsWindowsTarget = $env:OS -eq 'Windows_NT'
+
 BeforeAll {
     $script:RepositoryRoot = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
     $script:ModulePath = Join-Path -Path $script:RepositoryRoot -ChildPath 'src/InfraPulse/InfraPulse.psd1'
@@ -243,6 +245,120 @@ Describe 'InfraPulse check evaluation logic' {
 
             $result = @(Invoke-InfraPulseTimeSyncCheck -Context $script:Context -Settings $settings)
             $result[0].Status | Should -Be 'Warning'
+        }
+    }
+}
+
+Describe 'InfraPulse certificate store filtering' -Skip:(-not $script:IsWindowsTarget) {
+    BeforeAll {
+        InModuleScope InfraPulse {
+            function script:New-InfraPulseTestCertificate {
+                param(
+                    [Parameter(Mandatory)]
+                    [string]$Subject,
+
+                    [Parameter(Mandatory)]
+                    [datetime]$NotBefore,
+
+                    [Parameter(Mandatory)]
+                    [datetime]$NotAfter,
+
+                    [System.Security.Cryptography.X509Certificates.X509Certificate2]$Issuer
+                )
+
+                $key = [System.Security.Cryptography.ECDsa]::Create()
+                try {
+                    $request = [System.Security.Cryptography.X509Certificates.CertificateRequest]::new(
+                        $Subject,
+                        $key,
+                        [System.Security.Cryptography.HashAlgorithmName]::SHA256)
+
+                    if ($PSBoundParameters.ContainsKey('Issuer')) {
+                        return $request.Create($Issuer, $NotBefore, $NotAfter, [byte[]]@(1, 2, 3, 4, 5, 6, 7, 8))
+                    }
+
+                    $request.CertificateExtensions.Add(
+                        [System.Security.Cryptography.X509Certificates.X509BasicConstraintsExtension]::new($true, $false, 0, $true))
+                    return $request.CreateSelfSigned($NotBefore, $NotAfter)
+                }
+                finally {
+                    $key.Dispose()
+                }
+            }
+        }
+    }
+
+    BeforeEach {
+        InModuleScope InfraPulse {
+            $script:Context = [pscustomobject]@{
+                RequestedComputerName = 'SRV-TEST-01'
+                ComputerName          = 'SRV-TEST-01'
+                Session               = $null
+                OwnsSession           = $false
+            }
+            $script:Defaults = Get-DefaultInfraPulseConfiguration
+        }
+    }
+
+    It 'excludes certificates whose issuer matches IssuerExcludePatterns' {
+        InModuleScope InfraPulse {
+            $authority = New-InfraPulseTestCertificate -Subject 'CN=MS-Organization-P2P-Access [2026]' -NotBefore (Get-Date).AddDays(-10) -NotAfter (Get-Date).AddDays(365)
+            $script:StoreCertificates = @(
+                New-InfraPulseTestCertificate -Subject 'CN=11111111-2222-3333-4444-555555555555' -NotBefore (Get-Date).AddHours(-1) -NotAfter (Get-Date).AddHours(23) -Issuer $authority
+                New-InfraPulseTestCertificate -Subject 'CN=app.contoso.invalid' -NotBefore (Get-Date).AddDays(-30) -NotAfter (Get-Date).AddDays(300)
+            )
+            Mock Test-Path { $true }
+            Mock Get-ChildItem { $script:StoreCertificates }
+
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.Certificates
+            $settings.StorePaths = @('Cert:\LocalMachine\My')
+            $settings.IssuerExcludePatterns = @('CN=MS-Organization-P2P-Access*')
+
+            $result = @(Invoke-InfraPulseCertificateCheck -Context $script:Context -Settings $settings)
+
+            @($result | Where-Object Status -In @('Warning', 'Critical')).Count | Should -Be 0
+            $summary = @($result | Where-Object Target -EQ 'Certificate inventory')[0]
+            $summary.Evidence.TotalCertificates | Should -Be 1
+            $summary.Evidence.HealthyCertificates | Should -Be 1
+        }
+    }
+
+    It 'excludes certificates whose total lifetime is below MinTotalLifetimeDays' {
+        InModuleScope InfraPulse {
+            $script:StoreCertificates = @(
+                New-InfraPulseTestCertificate -Subject 'CN=RDSAGENT.WVD' -NotBefore (Get-Date).AddDays(-1) -NotAfter (Get-Date).AddDays(25)
+                New-InfraPulseTestCertificate -Subject 'CN=app.contoso.invalid' -NotBefore (Get-Date).AddDays(-30) -NotAfter (Get-Date).AddDays(300)
+            )
+            Mock Test-Path { $true }
+            Mock Get-ChildItem { $script:StoreCertificates }
+
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.Certificates
+            $settings.StorePaths = @('Cert:\LocalMachine\My')
+            $settings.MinTotalLifetimeDays = 27
+
+            $result = @(Invoke-InfraPulseCertificateCheck -Context $script:Context -Settings $settings)
+
+            @($result | Where-Object Status -In @('Warning', 'Critical')).Count | Should -Be 0
+            $summary = @($result | Where-Object Target -EQ 'Certificate inventory')[0]
+            $summary.Evidence.TotalCertificates | Should -Be 1
+            $summary.Evidence.HealthyCertificates | Should -Be 1
+        }
+    }
+
+    It 'still reports a short-lived certificate when no lifetime filter is configured' {
+        InModuleScope InfraPulse {
+            $script:StoreCertificates = @(
+                New-InfraPulseTestCertificate -Subject 'CN=RDSAGENT.WVD' -NotBefore (Get-Date).AddDays(-1) -NotAfter (Get-Date).AddDays(25)
+            )
+            Mock Test-Path { $true }
+            Mock Get-ChildItem { $script:StoreCertificates }
+
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.Certificates
+            $settings.StorePaths = @('Cert:\LocalMachine\My')
+
+            $result = @(Invoke-InfraPulseCertificateCheck -Context $script:Context -Settings $settings)
+
+            @($result | Where-Object Target -Like 'CN=RDSAGENT.WVD*')[0].Status | Should -Be 'Warning'
         }
     }
 }

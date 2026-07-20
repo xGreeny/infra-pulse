@@ -69,8 +69,10 @@ function Get-DefaultInfraPulseConfiguration {
                 WarningDays            = 30
                 CriticalDays           = 14
                 SubjectExcludePatterns = @()
+                IssuerExcludePatterns  = @()
                 ThumbprintExclude      = @()
                 RequirePrivateKey      = $false
+                MinTotalLifetimeDays   = 0
             }
             EventLog      = [ordered]@{
                 Enabled          = $true

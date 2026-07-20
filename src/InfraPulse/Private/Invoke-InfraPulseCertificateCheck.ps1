@@ -61,6 +61,21 @@ function Invoke-InfraPulseCertificateCheck {
                     continue
                 }
 
+                foreach ($pattern in @($CheckSettings.IssuerExcludePatterns)) {
+                    if ([string]$certificate.Issuer -like [string]$pattern) {
+                        $excluded = $true
+                        break
+                    }
+                }
+                if ($excluded) {
+                    continue
+                }
+
+                $totalLifetimeDays = (([datetime]$certificate.NotAfter) - ([datetime]$certificate.NotBefore)).TotalDays
+                if ($totalLifetimeDays -lt [double]$CheckSettings.MinTotalLifetimeDays) {
+                    continue
+                }
+
                 [pscustomobject]@{
                     RecordType   = 'Certificate'
                     StorePath    = [string]$storePath

@@ -88,9 +88,11 @@ An empty `Required` array yields one `Skipped` result.
 | `StorePaths` | string array | Machine `My`, `WebHosting` | Each path must begin `Cert:\` |
 | `WarningDays` | number | `30` | `>= 0` |
 | `CriticalDays` | number | `14` | `0`–warning |
-| `SubjectExcludePatterns` | string array | Empty | PowerShell wildcard patterns |
+| `SubjectExcludePatterns` | string array | Empty | PowerShell wildcard patterns; no empty entries |
+| `IssuerExcludePatterns` | string array | Empty | PowerShell wildcard patterns matched against the issuer; no empty entries |
 | `ThumbprintExclude` | string array | Empty | Exact match |
 | `RequirePrivateKey` | Boolean | `$false` | Filters inventory |
+| `MinTotalLifetimeDays` | number | `0` | `>= 0`; excludes certificates whose total lifetime (`NotAfter` minus `NotBefore`) is shorter; `0` keeps every certificate |
 
 ## EventLog
 
