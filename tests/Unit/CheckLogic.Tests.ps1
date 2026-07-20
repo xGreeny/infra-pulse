@@ -128,6 +128,86 @@ Describe 'InfraPulse check evaluation logic' {
         }
     }
 
+    It 'reports a valid short-lived certificate as auto-rotating and healthy' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                @(
+                    [pscustomobject]@{ RecordType = 'Store'; StorePath = 'Cert:\LocalMachine\My'; Exists = $true }
+                    [pscustomobject]@{
+                        RecordType = 'Certificate'; StorePath = 'Cert:\LocalMachine\My'
+                        Subject = 'CN=11111111-2222-3333-4444-555555555555'
+                        Issuer = 'CN=MS-Organization-P2P-Access [2026]'
+                        Thumbprint = '00112233445566778899AABBCCDDEEFF00112244'
+                        NotBefore = (Get-Date).AddHours(-1); NotAfter = (Get-Date).AddHours(23); DaysRemaining = 0.96
+                        HasPrivateKey = $true; SerialNumber = '02'
+                    }
+                )
+            }
+
+            $result = @(Invoke-InfraPulseCertificateCheck -Context $script:Context -Settings $script:Defaults.Checks.Certificates)
+
+            $rotating = @($result | Where-Object Target -Like 'CN=11111111*')
+            $rotating.Count | Should -Be 1
+            $rotating[0].Status | Should -Be 'Healthy'
+            $rotating[0].Evidence.Rotating | Should -BeTrue
+            $rotating[0].Evidence.TotalLifetimeDays | Should -BeLessThan 2
+            $summary = @($result | Where-Object Target -EQ 'Certificate inventory')[0]
+            $summary.Evidence.HealthyCertificates | Should -Be 1
+            $summary.Evidence.RotatingCertificates | Should -Be 1
+        }
+    }
+
+    It 'marks an expired short-lived certificate critical because rotation stopped' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                @(
+                    [pscustomobject]@{ RecordType = 'Store'; StorePath = 'Cert:\LocalMachine\My'; Exists = $true }
+                    [pscustomobject]@{
+                        RecordType = 'Certificate'; StorePath = 'Cert:\LocalMachine\My'
+                        Subject = 'CN=11111111-2222-3333-4444-555555555555'
+                        Issuer = 'CN=MS-Organization-P2P-Access [2026]'
+                        Thumbprint = '00112233445566778899AABBCCDDEEFF00112255'
+                        NotBefore = (Get-Date).AddHours(-26); NotAfter = (Get-Date).AddHours(-2); DaysRemaining = -0.08
+                        HasPrivateKey = $true; SerialNumber = '03'
+                    }
+                )
+            }
+
+            $result = @(Invoke-InfraPulseCertificateCheck -Context $script:Context -Settings $script:Defaults.Checks.Certificates)
+
+            $expired = @($result | Where-Object Target -Like 'CN=11111111*')
+            $expired[0].Status | Should -Be 'Critical'
+            $expired[0].Message | Should -Match 'rotation appears broken'
+            $expired[0].Evidence.Rotating | Should -BeTrue
+        }
+    }
+
+    It 'evaluates short-lived certificates against thresholds when rotation handling is disabled' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                @(
+                    [pscustomobject]@{ RecordType = 'Store'; StorePath = 'Cert:\LocalMachine\My'; Exists = $true }
+                    [pscustomobject]@{
+                        RecordType = 'Certificate'; StorePath = 'Cert:\LocalMachine\My'
+                        Subject = 'CN=11111111-2222-3333-4444-555555555555'
+                        Issuer = 'CN=MS-Organization-P2P-Access [2026]'
+                        Thumbprint = '00112233445566778899AABBCCDDEEFF00112266'
+                        NotBefore = (Get-Date).AddHours(-1); NotAfter = (Get-Date).AddHours(23); DaysRemaining = 0.96
+                        HasPrivateKey = $true; SerialNumber = '04'
+                    }
+                )
+            }
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.Certificates
+            $settings.TreatShortLivedAsRotating = $false
+
+            $result = @(Invoke-InfraPulseCertificateCheck -Context $script:Context -Settings $settings)
+
+            $shortLived = @($result | Where-Object Target -Like 'CN=11111111*')
+            $shortLived[0].Status | Should -Be 'Critical'
+            $shortLived[0].Evidence.Rotating | Should -BeFalse
+        }
+    }
+
     It 'marks an event log critical at the critical count boundary' {
         InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {
@@ -535,7 +615,7 @@ Describe 'InfraPulse certificate store filtering' -Skip:(-not $script:IsWindowsT
         }
     }
 
-    It 'still reports a short-lived certificate when no lifetime filter is configured' {
+    It 'classifies a real short-lived certificate as auto-rotating by default' {
         InModuleScope InfraPulse {
             $script:StoreCertificates = @(
                 New-InfraPulseTestCertificate -Subject 'CN=RDSAGENT.WVD' -NotBefore (Get-Date).AddDays(-1) -NotAfter (Get-Date).AddDays(25)
@@ -545,6 +625,26 @@ Describe 'InfraPulse certificate store filtering' -Skip:(-not $script:IsWindowsT
 
             $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.Certificates
             $settings.StorePaths = @('Cert:\LocalMachine\My')
+
+            $result = @(Invoke-InfraPulseCertificateCheck -Context $script:Context -Settings $settings)
+
+            $rotating = @($result | Where-Object Target -Like 'CN=RDSAGENT.WVD*')
+            $rotating[0].Status | Should -Be 'Healthy'
+            $rotating[0].Evidence.Rotating | Should -BeTrue
+        }
+    }
+
+    It 'still reports a real short-lived certificate when rotation handling is disabled' {
+        InModuleScope InfraPulse {
+            $script:StoreCertificates = @(
+                New-InfraPulseTestCertificate -Subject 'CN=RDSAGENT.WVD' -NotBefore (Get-Date).AddDays(-1) -NotAfter (Get-Date).AddDays(25)
+            )
+            Mock Test-Path { $true }
+            Mock Get-ChildItem { $script:StoreCertificates }
+
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.Certificates
+            $settings.StorePaths = @('Cert:\LocalMachine\My')
+            $settings.TreatShortLivedAsRotating = $false
 
             $result = @(Invoke-InfraPulseCertificateCheck -Context $script:Context -Settings $settings)
 

@@ -104,6 +104,19 @@ Describe 'InfraPulse configuration lifecycle' {
         ($result.Errors -join ' ') | Should -Match 'IssuerExcludePatterns'
     }
 
+    It 'rejects a non-Boolean rotation handling switch' {
+        $result = Test-InfraPulseConfiguration -Configuration @{
+            Checks = @{
+                Certificates = @{
+                    TreatShortLivedAsRotating = 'yes'
+                }
+            }
+        }
+
+        $result.IsValid | Should -BeFalse
+        ($result.Errors -join ' ') | Should -Match 'TreatShortLivedAsRotating'
+    }
+
     It 'rejects a negative certificate minimum lifetime' {
         $result = Test-InfraPulseConfiguration -Configuration @{
             Checks = @{

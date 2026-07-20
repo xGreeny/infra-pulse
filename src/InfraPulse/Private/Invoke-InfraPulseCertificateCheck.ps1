@@ -111,12 +111,34 @@ function Invoke-InfraPulseCertificateCheck {
         $results += New-InfraPulseResult -Status 'Unknown' -CheckName 'Certificates' -Category 'Security' -ComputerName $Context.ComputerName -Target ([string]$missingStore) -Message "Configured certificate store '$missingStore' does not exist on the target." -ObservedValue 'Missing' -Recommendation 'Remove the store from Checks.Certificates.StorePaths or confirm the target role provisions it.' -Evidence ([ordered]@{ StorePath = [string]$missingStore; Exists = $false }) -DurationMs ($stopwatch.Elapsed.TotalMilliseconds / [math]::Max($storePaths.Count, 1))
     }
 
+    $rotatingCertificates = 0
     foreach ($certificate in $certificates) {
         $daysRemaining = [double]$certificate.DaysRemaining
+        $totalLifetimeDays = [math]::Round((([datetime]$certificate.NotAfter) - ([datetime]$certificate.NotBefore)).TotalDays, 2)
+        # A certificate that never lives longer than the warning window cannot
+        # satisfy the expiry policy by construction; by default it is treated
+        # as auto-rotating, and only a missed rotation (expiry) is alarming.
+        $isRotating = [bool]$Settings.TreatShortLivedAsRotating -and $totalLifetimeDays -le [double]$Settings.WarningDays
+        if ($isRotating) {
+            $rotatingCertificates++
+        }
+
         if ($daysRemaining -lt 0) {
             $status = 'Critical'
-            $message = "Certificate expired $([math]::Abs([math]::Round($daysRemaining, 0))) day(s) ago on $(([datetime]$certificate.NotAfter).ToString('yyyy-MM-dd'))."
-            $recommendation = 'Replace or remove the expired certificate after confirming its bindings and dependent services.'
+            if ($isRotating) {
+                $message = "Auto-rotating certificate expired $([math]::Abs([math]::Round($daysRemaining, 0))) day(s) ago on $(([datetime]$certificate.NotAfter).ToString('yyyy-MM-dd')); the automatic rotation appears broken."
+                $recommendation = 'Investigate why the issuing agent or service stopped renewing this automatically rotated certificate.'
+            }
+            else {
+                $message = "Certificate expired $([math]::Abs([math]::Round($daysRemaining, 0))) day(s) ago on $(([datetime]$certificate.NotAfter).ToString('yyyy-MM-dd'))."
+                $recommendation = 'Replace or remove the expired certificate after confirming its bindings and dependent services.'
+            }
+        }
+        elseif ($isRotating) {
+            $status = 'Healthy'
+            $message = "Auto-rotating certificate (total lifetime $([math]::Round($totalLifetimeDays, 0)) day(s)) is valid until $(([datetime]$certificate.NotAfter).ToString('yyyy-MM-dd'))."
+            $recommendation = ''
+            $healthyCertificates += $certificate
         }
         elseif ($daysRemaining -le [double]$Settings.CriticalDays) {
             $status = 'Critical'
@@ -137,15 +159,17 @@ function Invoke-InfraPulseCertificateCheck {
         $shortThumbprint = if ($thumbprint.Length -gt 12) { $thumbprint.Substring($thumbprint.Length - 12) } else { $thumbprint }
         $target = if ([string]::IsNullOrWhiteSpace([string]$certificate.Subject)) { $shortThumbprint } else { '{0} [{1}]' -f [string]$certificate.Subject, $shortThumbprint }
         $evidence = [ordered]@{
-            Subject       = [string]$certificate.Subject
-            Issuer        = [string]$certificate.Issuer
-            Thumbprint    = $thumbprint
-            SerialNumber  = [string]$certificate.SerialNumber
-            StorePath     = [string]$certificate.StorePath
-            NotBefore     = [datetime]$certificate.NotBefore
-            NotAfter      = [datetime]$certificate.NotAfter
-            DaysRemaining = $daysRemaining
-            HasPrivateKey = [bool]$certificate.HasPrivateKey
+            Subject           = [string]$certificate.Subject
+            Issuer            = [string]$certificate.Issuer
+            Thumbprint        = $thumbprint
+            SerialNumber      = [string]$certificate.SerialNumber
+            StorePath         = [string]$certificate.StorePath
+            NotBefore         = [datetime]$certificate.NotBefore
+            NotAfter          = [datetime]$certificate.NotAfter
+            DaysRemaining     = $daysRemaining
+            TotalLifetimeDays = $totalLifetimeDays
+            Rotating          = $isRotating
+            HasPrivateKey     = [bool]$certificate.HasPrivateKey
         }
 
         $results += New-InfraPulseResult -Status $status -CheckName 'Certificates' -Category 'Security' -ComputerName $Context.ComputerName -Target $target -Message $message -ObservedValue ("{0:N2} days" -f $daysRemaining) -WarningThreshold ("<= {0} days" -f $Settings.WarningDays) -CriticalThreshold ("<= {0} days or expired" -f $Settings.CriticalDays) -Recommendation $recommendation -Evidence $evidence -DurationMs ($stopwatch.Elapsed.TotalMilliseconds / [math]::Max($certificates.Count, 1))
@@ -155,14 +179,15 @@ function Invoke-InfraPulseCertificateCheck {
         'No certificates matched the configured filters in the available stores.'
     }
     else {
-        "$($healthyCertificates.Count) of $($certificates.Count) certificate(s) are valid beyond the warning threshold."
+        "$($healthyCertificates.Count) of $($certificates.Count) certificate(s) satisfy the expiry policy."
     }
 
     $summaryEvidence = [ordered]@{
-        TotalCertificates   = $certificates.Count
-        HealthyCertificates = $healthyCertificates.Count
-        ExistingStores      = @($stores | Where-Object { $_.Exists } | ForEach-Object { $_.StorePath })
-        MissingStores       = $missingStores
+        TotalCertificates    = $certificates.Count
+        HealthyCertificates  = $healthyCertificates.Count
+        RotatingCertificates = $rotatingCertificates
+        ExistingStores       = @($stores | Where-Object { $_.Exists } | ForEach-Object { $_.StorePath })
+        MissingStores        = $missingStores
     }
     $results += New-InfraPulseResult -Status 'Healthy' -CheckName 'Certificates' -Category 'Security' -ComputerName $Context.ComputerName -Target 'Certificate inventory' -Message $summaryMessage -ObservedValue $healthyCertificates.Count -WarningThreshold ("Expiry <= {0} days" -f $Settings.WarningDays) -CriticalThreshold ("Expiry <= {0} days" -f $Settings.CriticalDays) -Evidence $summaryEvidence -DurationMs $stopwatch.Elapsed.TotalMilliseconds
 

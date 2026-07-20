@@ -186,8 +186,10 @@ function Test-InfraPulseConfigurationData {
                     }
                 }
             }
-            if (-not $certificates.Contains('RequirePrivateKey') -or -not ($certificates.RequirePrivateKey -is [bool])) {
-                [void]$errors.Add('Checks.Certificates.RequirePrivateKey must be Boolean.')
+            foreach ($booleanName in @('RequirePrivateKey', 'TreatShortLivedAsRotating')) {
+                if (-not $certificates.Contains($booleanName) -or -not ($certificates[$booleanName] -is [bool])) {
+                    [void]$errors.Add("Checks.Certificates.$booleanName must be Boolean.")
+                }
             }
             if (-not $certificates.Contains('MinTotalLifetimeDays') -or -not (Test-InfraPulseNumber -Value $certificates.MinTotalLifetimeDays -Minimum 0)) {
                 [void]$errors.Add('Checks.Certificates.MinTotalLifetimeDays must be zero or greater.')

@@ -1,6 +1,6 @@
 @{
     RootModule           = 'InfraPulse.psm1'
-    ModuleVersion        = '1.1.1'
+    ModuleVersion        = '1.2.0'
     GUID                 = '381fa9f8-98e3-43b2-893d-909bbfc10378'
     Author               = 'Flurin Gubler'
     CompanyName          = 'xGreeny'
@@ -41,7 +41,7 @@
             )
             LicenseUri = 'https://github.com/xGreeny/infra-pulse/blob/main/LICENSE'
             ProjectUri = 'https://github.com/xGreeny/infra-pulse'
-            ReleaseNotes = 'Adds report schema 1.1 with run identifiers and configuration fingerprints, JSON report import, snapshot comparison with change classification, policy gates, a cross-platform TLS endpoint check, and check accuracy fixes.'
+            ReleaseNotes = 'Recognizes auto-rotating short-lived certificates by construction: healthy and visible while valid, critical only when the rotation breaks. Configurable through Checks.Certificates.TreatShortLivedAsRotating.'
         }
     }
 }

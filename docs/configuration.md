@@ -93,6 +93,7 @@ An empty `Required` array yields one `Skipped` result.
 | `ThumbprintExclude` | string array | Empty | Exact match |
 | `RequirePrivateKey` | Boolean | `$false` | Filters inventory |
 | `MinTotalLifetimeDays` | number | `0` | `>= 0`; excludes certificates whose total lifetime (`NotAfter` minus `NotBefore`) is shorter; `0` keeps every certificate |
+| `TreatShortLivedAsRotating` | Boolean | `$true` | Certificates whose total lifetime is at or below `WarningDays` are reported as auto-rotating: `Healthy` while valid, `Critical` once expired |
 
 ## EventLog
 

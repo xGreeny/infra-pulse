@@ -77,6 +77,10 @@
             ThumbprintExclude      = @()
             RequirePrivateKey      = $false
             MinTotalLifetimeDays   = 0
+
+            # Short-lived certificates (total lifetime <= WarningDays) are
+            # reported as auto-rotating and only alert when rotation breaks.
+            TreatShortLivedAsRotating = $true
         }
 
         EventLog = @{

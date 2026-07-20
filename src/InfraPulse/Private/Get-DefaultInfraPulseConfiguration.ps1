@@ -74,6 +74,7 @@ function Get-DefaultInfraPulseConfiguration {
                 ThumbprintExclude      = @()
                 RequirePrivateKey      = $false
                 MinTotalLifetimeDays   = 0
+                TreatShortLivedAsRotating = $true
             }
             EventLog      = [ordered]@{
                 Enabled          = $true

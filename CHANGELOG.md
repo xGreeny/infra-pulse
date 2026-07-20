@@ -2,6 +2,17 @@
 
 All notable changes to InfraPulse are documented in this file. The project follows [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-07-20
+
+### Added
+
+- `Checks.Certificates.TreatShortLivedAsRotating` (default `$true`): certificates whose total lifetime is at or below `WarningDays` can never satisfy the expiry policy by construction and are now classified as auto-rotating.
+
+### Changed
+
+- Auto-rotating short-lived certificates (for example Entra ID P2P device certificates) stay visible as `Healthy` results with `Rotating` and `TotalLifetimeDays` evidence while valid, and turn `Critical` only when they expire — the signal that the automatic rotation stopped. Explicit exclusions (`IssuerExcludePatterns`, `MinTotalLifetimeDays`, `SubjectExcludePatterns`, `ThumbprintExclude`) keep taking precedence.
+- The certificate inventory summary now reports certificates that "satisfy the expiry policy" and includes a `RotatingCertificates` count.
+
 ## [1.1.1] - 2026-07-20
 
 ### Fixed
@@ -46,6 +57,7 @@ All notable changes to InfraPulse are documented in this file. The project follo
 - Pester test suite, PSScriptAnalyzer policy, dual-engine CI, and tagged-release packaging.
 - Operator documentation, examples, issue forms, security policy, and contribution workflow.
 
+[1.2.0]: https://github.com/xGreeny/infra-pulse/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/xGreeny/infra-pulse/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/xGreeny/infra-pulse/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/xGreeny/infra-pulse/releases/tag/v1.0.0

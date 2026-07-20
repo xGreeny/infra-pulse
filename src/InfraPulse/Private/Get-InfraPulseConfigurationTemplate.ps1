@@ -128,6 +128,13 @@ function Get-InfraPulseConfigurationTemplate {
             # than this many days are excluded from the expiry evaluation.
             # 0 keeps every certificate.
             MinTotalLifetimeDays = 0
+
+            # A certificate whose total lifetime is at or below WarningDays can
+            # never satisfy the expiry policy. By default such certificates are
+            # treated as auto-rotating: they stay visible as Healthy while valid
+            # and only alert when the rotation breaks (expiry). Set to $false to
+            # evaluate them against the thresholds like any other certificate.
+            TreatShortLivedAsRotating = $true
         }
 
         EventLog = @{
