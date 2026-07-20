@@ -2,6 +2,12 @@
 
 All notable changes to InfraPulse are documented in this file. The project follows [Semantic Versioning](https://semver.org/).
 
+## [1.1.1] - 2026-07-20
+
+### Fixed
+
+- The DNS check no longer misreports CNAME-chained lookups as critical resolution failures on local scans: answer properties are now probed StrictMode-safely instead of being read from record types that do not carry them.
+
 ## [1.1.0] - 2026-07-20
 
 ### Added
@@ -39,5 +45,6 @@ All notable changes to InfraPulse are documented in this file. The project follo
 - Pester test suite, PSScriptAnalyzer policy, dual-engine CI, and tagged-release packaging.
 - Operator documentation, examples, issue forms, security policy, and contribution workflow.
 
+[1.1.1]: https://github.com/xGreeny/infra-pulse/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/xGreeny/infra-pulse/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/xGreeny/infra-pulse/releases/tag/v1.0.0

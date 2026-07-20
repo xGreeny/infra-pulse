@@ -191,6 +191,33 @@ Describe 'InfraPulse check evaluation logic' {
         }
     }
 
+    It 'resolves CNAME-chained answers through the real scriptblock under module strict mode' {
+        InModuleScope InfraPulse {
+            # Stub so the mock also resolves on hosts without the DnsClient
+            # module (Linux CI); the real scriptblock path must run locally
+            # because only the module scope carries StrictMode.
+            function script:Resolve-DnsName {
+                [CmdletBinding()]
+                param($Name, $Type, [switch]$DnsOnly, $Server)
+            }
+            Mock Resolve-DnsName {
+                @(
+                    [pscustomobject]@{ Name = 'login.microsoftonline.com'; QueryType = 'CNAME'; NameHost = 'ak.privatelink.msidentity.com' }
+                    [pscustomobject]@{ Name = 'ak.privatelink.msidentity.com'; QueryType = 'A'; IPAddress = '20.190.128.1' }
+                )
+            }
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.Dns
+            $settings.Targets = @('login.microsoftonline.com')
+
+            $result = @(Invoke-InfraPulseDnsCheck -Context $script:Context -Settings $settings)
+
+            $result[0].Status | Should -Be 'Healthy'
+            $result[0].Error | Should -BeNullOrEmpty
+            @($result[0].Evidence.Answers) | Should -Contain '20.190.128.1'
+            @($result[0].Evidence.Answers) | Should -Contain 'ak.privatelink.msidentity.com'
+        }
+    }
+
     It 'marks an unsupported DNS query unknown instead of critical' {
         InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {

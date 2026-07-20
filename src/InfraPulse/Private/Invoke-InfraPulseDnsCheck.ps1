@@ -44,23 +44,22 @@ function Invoke-InfraPulseDnsCheck {
                     }
                     $records = @(Resolve-DnsName @parameters)
                     foreach ($record in $records) {
-                        if ($record.IPAddress) {
-                            $answers += [string]$record.IPAddress
-                        }
-                        elseif ($record.NameHost) {
-                            $answers += [string]$record.NameHost
-                        }
-                        elseif ($record.NameExchange) {
-                            $answers += [string]$record.NameExchange
-                        }
-                        elseif ($record.NameTarget) {
-                            $answers += [string]$record.NameTarget
-                        }
-                        elseif ($record.Strings) {
-                            $answers += (@($record.Strings) -join ' ')
-                        }
-                        elseif ($record.PrimaryServer) {
-                            $answers += [string]$record.PrimaryServer
+                        # Record types carry different answer properties (a CNAME
+                        # has no IPAddress), and the local execution path runs
+                        # under the module's StrictMode, so every property must
+                        # be probed before it is read.
+                        foreach ($propertyName in @('IPAddress', 'NameHost', 'NameExchange', 'NameTarget', 'Strings', 'PrimaryServer')) {
+                            $property = $record.PSObject.Properties[$propertyName]
+                            if ($null -eq $property -or -not $property.Value) {
+                                continue
+                            }
+                            if ($propertyName -eq 'Strings') {
+                                $answers += (@($property.Value) -join ' ')
+                            }
+                            else {
+                                $answers += [string]$property.Value
+                            }
+                            break
                         }
                     }
                 }

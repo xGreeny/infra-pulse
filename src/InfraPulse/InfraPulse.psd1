@@ -1,6 +1,6 @@
 @{
     RootModule           = 'InfraPulse.psm1'
-    ModuleVersion        = '1.1.0'
+    ModuleVersion        = '1.1.1'
     GUID                 = '381fa9f8-98e3-43b2-893d-909bbfc10378'
     Author               = 'Flurin Gubler'
     CompanyName          = 'xGreeny'
