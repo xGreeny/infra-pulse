@@ -1,3 +1,5 @@
+$script:IsWindowsTarget = $env:OS -eq 'Windows_NT'
+
 BeforeAll {
     $script:RepositoryRoot = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
     $script:ModulePath = Join-Path -Path $script:RepositoryRoot -ChildPath 'src/InfraPulse/InfraPulse.psd1'
@@ -30,7 +32,9 @@ Describe 'Invoke-InfraPulse orchestration' {
         }
     }
 
-    It 'returns a connection-failure report when a remote session cannot open' {
+    # New-PSSessionOption exposes no WSMan timeout parameters on Linux, so the
+    # mocked remote-connection path can only bind on a Windows controller.
+    It 'returns a connection-failure report when a remote session cannot open' -Skip:(-not $script:IsWindowsTarget) {
         InModuleScope InfraPulse {
             Mock Test-InfraPulseLocalTarget { $false }
             Mock New-PSSessionOption { [pscustomobject]@{} }
@@ -44,7 +48,7 @@ Describe 'Invoke-InfraPulse orchestration' {
         }
     }
 
-    It 'throws a connection error when FailFast is enabled' {
+    It 'throws a connection error when FailFast is enabled' -Skip:(-not $script:IsWindowsTarget) {
         InModuleScope InfraPulse {
             Mock Test-InfraPulseLocalTarget { $false }
             Mock New-PSSessionOption { [pscustomobject]@{} }
