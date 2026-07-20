@@ -95,7 +95,7 @@ function Export-InfraPulseReport {
                 $content = ConvertTo-InfraPulseHtmlReport -Reports $reportArray -Title $Title
             }
             'Json' {
-                $content = ConvertTo-Json -InputObject $reportArray -Depth 12
+                $content = ConvertTo-Json -InputObject (ConvertTo-InfraPulseSerializableValue -Value $reportArray) -Depth 12
             }
             'Csv' {
                 $rows = foreach ($report in $reportArray) {
@@ -115,7 +115,7 @@ function Export-InfraPulseReport {
                             Recommendation        = [string]$result.Recommendation
                             CheckDurationMs       = [double]$result.DurationMs
                             Error                 = [string]$result.Error
-                            EvidenceJson          = ConvertTo-Json -InputObject $result.Evidence -Depth 8 -Compress
+                            EvidenceJson          = ConvertTo-Json -InputObject (ConvertTo-InfraPulseSerializableValue -Value $result.Evidence) -Depth 8 -Compress
                         }
                     }
                 }

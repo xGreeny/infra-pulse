@@ -58,6 +58,33 @@ Describe 'InfraPulse object contract' {
         }
     }
 
+    It 'normalizes DateTime values to round-trip UTC strings for serialization' {
+        InModuleScope InfraPulse {
+            $utc = [datetime]::new(2026, 7, 11, 9, 30, 0, [DateTimeKind]::Utc)
+            $local = [datetime]::new(2026, 7, 1, 6, 15, 30, [DateTimeKind]::Local)
+            $value = [pscustomobject]@{
+                GeneratedAtUtc = $utc
+                Inventory      = [pscustomobject]@{ CollectedAtUtc = $utc }
+                Evidence       = [ordered]@{
+                    LastBootTime = $local
+                    Nested       = @(@{ TimeCreated = $utc }, 'text', 42)
+                }
+            }
+
+            $normalized = ConvertTo-InfraPulseSerializableValue -Value $value
+
+            $normalized.GeneratedAtUtc | Should -Be '2026-07-11T09:30:00.0000000Z'
+            $normalized.Inventory.CollectedAtUtc | Should -Be '2026-07-11T09:30:00.0000000Z'
+            $normalized.Evidence.LastBootTime | Should -Be $local.ToUniversalTime().ToString('o')
+            $normalized.Evidence.Nested[0].TimeCreated | Should -Be '2026-07-11T09:30:00.0000000Z'
+            $normalized.Evidence.Nested[1] | Should -Be 'text'
+            $normalized.Evidence.Nested[2] | Should -Be 42
+
+            $value.GeneratedAtUtc | Should -BeOfType [datetime]
+            ConvertTo-Json -InputObject $normalized -Depth 8 | Should -Not -Match '/Date\('
+        }
+    }
+
     It 'represents a connection failure as a complete report' {
         InModuleScope InfraPulse {
             $report = New-InfraPulseConnectionFailureReport -ComputerName 'srv-offline-01' -ErrorMessage 'Connection refused.' -DurationMs 500
