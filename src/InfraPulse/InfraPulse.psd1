@@ -1,6 +1,6 @@
 @{
     RootModule           = 'InfraPulse.psm1'
-    ModuleVersion        = '1.4.0'
+    ModuleVersion        = '1.4.1'
     GUID                 = '381fa9f8-98e3-43b2-893d-909bbfc10378'
     Author               = 'Flurin Gubler'
     CompanyName          = 'xGreeny'
@@ -42,7 +42,7 @@
             )
             LicenseUri = 'https://github.com/xGreeny/infra-pulse/blob/main/LICENSE'
             ProjectUri = 'https://github.com/xGreeny/infra-pulse'
-            ReleaseNotes = 'Fleet release: parallel multi-host scans with ThrottleLimit, fleet overview in HTML reports, configuration discovery with a recorded source, the PatchAge check, and Test-InfraPulseComparison as a regression gate.'
+            ReleaseNotes = 'Truncated event-log counts that meet a threshold are now reported as a lower bound (at least N, observed value N+) instead of an exact count.'
         }
     }
 }

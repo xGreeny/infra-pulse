@@ -109,7 +109,7 @@ An expiring certificate must still be mapped to its bindings and workload before
 
 For each configured log, InfraPulse counts matching events inside `LookbackHours`, applies level/provider/event-ID filters, and records the five highest-volume providers plus up to five samples.
 
-Default levels are `1` (Critical) and `2` (Error). `MaxEvents` caps collection cost. The query reads one record beyond the cap, so a result set that exactly fills the cap is still reported precisely; only a genuinely truncated query is treated as incomplete. A truncated query is preserved as `Unknown` unless the returned matching events already meet a warning or critical threshold. This prevents an incomplete query from being reported as healthy. Keep `MaxEvents` comfortably above `CriticalCount` and reduce `LookbackHours` for high-volume logs.
+Default levels are `1` (Critical) and `2` (Error). `MaxEvents` caps collection cost. The query reads one record beyond the cap, so a result set that exactly fills the cap is still reported precisely; only a genuinely truncated query is treated as incomplete. A truncated query is preserved as `Unknown` unless the returned matching events already meet a warning or critical threshold; in that case the result reports the count as a lower bound (`At least N …`, observed value `N+`) because the true volume is unknown. This prevents an incomplete query from being reported as healthy or a capped count from being read as exact. Keep `MaxEvents` comfortably above `CriticalCount` and reduce `LookbackHours` for high-volume logs.
 
 `IncludeMessages` is off by default because message rendering can be expensive and may expose operational or user data.
 

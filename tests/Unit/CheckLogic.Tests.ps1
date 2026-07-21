@@ -328,6 +328,24 @@ Describe 'InfraPulse check evaluation logic' {
         }
     }
 
+    It 'reports a truncated event count that meets a threshold as a lower bound' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    LogName = 'Application'; Exists = $true; QuerySucceeded = $true
+                    Count = 500; RetrievedCount = 500; Truncated = $true
+                    TopProviders = @(); Samples = @(); Error = $null
+                }
+            }
+
+            $result = @(Invoke-InfraPulseEventLogCheck -Context $script:Context -Settings $script:Defaults.Checks.EventLog)
+            $result[0].Status | Should -Be 'Critical'
+            $result[0].Message | Should -Match '^At least 500 '
+            $result[0].Message | Should -Match 'collection capped at 500'
+            $result[0].ObservedValue | Should -Be '500+'
+        }
+    }
+
     It 'does not report a capped event-log query as healthy' {
         InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {

@@ -172,12 +172,23 @@ function Invoke-InfraPulseEventLogCheck {
         }
         elseif ([int]$log.Count -ge [int]$Settings.CriticalCount) {
             $status = 'Critical'
-            $message = "$($log.Count) critical/error event(s) in '$($log.LogName)' during the last $($Settings.LookbackHours) hour(s)."
+            # A truncated result set is a lower bound, not an exact count.
+            $message = if ([bool]$log.Truncated) {
+                "At least $($log.Count) critical/error event(s) in '$($log.LogName)' during the last $($Settings.LookbackHours) hour(s) (collection capped at $($Settings.MaxEvents))."
+            }
+            else {
+                "$($log.Count) critical/error event(s) in '$($log.LogName)' during the last $($Settings.LookbackHours) hour(s)."
+            }
             $recommendation = 'Triage the highest-volume providers and correlate events with service impact and recent changes.'
         }
         elseif ([int]$log.Count -ge [int]$Settings.WarningCount) {
             $status = 'Warning'
-            $message = "$($log.Count) critical/error event(s) in '$($log.LogName)' during the last $($Settings.LookbackHours) hour(s)."
+            $message = if ([bool]$log.Truncated) {
+                "At least $($log.Count) critical/error event(s) in '$($log.LogName)' during the last $($Settings.LookbackHours) hour(s) (collection capped at $($Settings.MaxEvents))."
+            }
+            else {
+                "$($log.Count) critical/error event(s) in '$($log.LogName)' during the last $($Settings.LookbackHours) hour(s)."
+            }
             $recommendation = 'Review recurring providers and event IDs before the error rate becomes operationally significant.'
         }
         elseif ([bool]$log.Truncated) {
@@ -196,6 +207,13 @@ function Invoke-InfraPulseEventLogCheck {
             $retrievedCount = [int]$log.RetrievedCount
         }
 
+        $observedValue = if ([bool]$log.Truncated -and $status -in @('Warning', 'Critical')) {
+            "$([int]$log.Count)+"
+        }
+        else {
+            [int]$log.Count
+        }
+
         $evidence = [ordered]@{
             LogName        = [string]$log.LogName
             Count          = [int]$log.Count
@@ -208,7 +226,7 @@ function Invoke-InfraPulseEventLogCheck {
             QueryError     = [string]$log.Error
         }
 
-        $results += New-InfraPulseResult -Status $status -CheckName 'EventLog' -Category 'Reliability' -ComputerName $Context.ComputerName -Target ([string]$log.LogName) -Message $message -ObservedValue ([int]$log.Count) -WarningThreshold (">= {0} events" -f $Settings.WarningCount) -CriticalThreshold (">= {0} events" -f $Settings.CriticalCount) -Recommendation $recommendation -Evidence $evidence -DurationMs ($stopwatch.Elapsed.TotalMilliseconds / [math]::Max($raw.Count, 1)) -ErrorMessage ([string]$log.Error)
+        $results += New-InfraPulseResult -Status $status -CheckName 'EventLog' -Category 'Reliability' -ComputerName $Context.ComputerName -Target ([string]$log.LogName) -Message $message -ObservedValue $observedValue -WarningThreshold (">= {0} events" -f $Settings.WarningCount) -CriticalThreshold (">= {0} events" -f $Settings.CriticalCount) -Recommendation $recommendation -Evidence $evidence -DurationMs ($stopwatch.Elapsed.TotalMilliseconds / [math]::Max($raw.Count, 1)) -ErrorMessage ([string]$log.Error)
     }
 
     return $results
