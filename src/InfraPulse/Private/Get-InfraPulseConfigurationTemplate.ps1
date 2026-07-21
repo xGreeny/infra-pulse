@@ -86,6 +86,14 @@ function Get-InfraPulseConfigurationTemplate {
         PendingReboot = @{
             Enabled       = $true
             PendingStatus = 'Warning'
+
+            # Wildcard patterns matched against detected indicator names.
+            # Excluded indicators no longer set the pending state but stay
+            # visible in the result evidence. Useful for hosts where pending
+            # file renames are continuously re-created by agents and updates.
+            ExcludeReasons = @(
+                # 'Pending file rename operations'
+            )
         }
 
         Services = @{

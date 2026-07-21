@@ -41,6 +41,11 @@
 
         PendingReboot = @{
             PendingStatus = 'Warning'
+
+            # Exclude indicators that agents and updates re-create continuously.
+            ExcludeReasons = @(
+                # 'Pending file rename operations'
+            )
         }
 
         Services = @{

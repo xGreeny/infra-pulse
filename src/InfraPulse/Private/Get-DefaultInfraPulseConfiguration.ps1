@@ -43,8 +43,9 @@ function Get-DefaultInfraPulseConfiguration {
                 CriticalDays = 90
             }
             PendingReboot = [ordered]@{
-                Enabled       = $true
-                PendingStatus = 'Warning'
+                Enabled        = $true
+                PendingStatus  = 'Warning'
+                ExcludeReasons = @()
             }
             Services      = [ordered]@{
                 Enabled  = $true

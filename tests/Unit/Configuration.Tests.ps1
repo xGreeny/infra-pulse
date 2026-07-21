@@ -104,6 +104,19 @@ Describe 'InfraPulse configuration lifecycle' {
         ($result.Errors -join ' ') | Should -Match 'IssuerExcludePatterns'
     }
 
+    It 'rejects an empty pending-reboot exclusion pattern' {
+        $result = Test-InfraPulseConfiguration -Configuration @{
+            Checks = @{
+                PendingReboot = @{
+                    ExcludeReasons = @('Pending file rename operations', '   ')
+                }
+            }
+        }
+
+        $result.IsValid | Should -BeFalse
+        ($result.Errors -join ' ') | Should -Match 'PendingReboot\.ExcludeReasons'
+    }
+
     It 'rejects a non-Boolean rotation handling switch' {
         $result = Test-InfraPulseConfiguration -Configuration @{
             Checks = @{

@@ -1,6 +1,6 @@
 @{
     RootModule           = 'InfraPulse.psm1'
-    ModuleVersion        = '1.2.0'
+    ModuleVersion        = '1.3.0'
     GUID                 = '381fa9f8-98e3-43b2-893d-909bbfc10378'
     Author               = 'Flurin Gubler'
     CompanyName          = 'xGreeny'
@@ -41,7 +41,7 @@
             )
             LicenseUri = 'https://github.com/xGreeny/infra-pulse/blob/main/LICENSE'
             ProjectUri = 'https://github.com/xGreeny/infra-pulse'
-            ReleaseNotes = 'Recognizes auto-rotating short-lived certificates by construction: healthy and visible while valid, critical only when the rotation breaks. Configurable through Checks.Certificates.TreatShortLivedAsRotating.'
+            ReleaseNotes = 'Adds Checks.PendingReboot.ExcludeReasons: wildcard exclusions for structurally noisy reboot indicators such as pending file renames, with excluded indicators preserved in evidence.'
         }
     }
 }

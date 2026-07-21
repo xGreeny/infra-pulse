@@ -80,11 +80,38 @@ function Invoke-InfraPulsePendingRebootCheck {
     $pending = Invoke-InfraPulseCommand -Context $Context -ScriptBlock $scriptBlock
     $stopwatch.Stop()
 
-    if ([bool]$pending.Pending) {
+    # Exclusions are applied before deciding Pending so that hosts whose only
+    # indicators are excluded report Healthy; every detected reason still
+    # reaches the evidence through Reasons plus ExcludedReasons.
+    $activeReasons = New-Object System.Collections.Generic.List[string]
+    $excludedReasons = New-Object System.Collections.Generic.List[string]
+    foreach ($reason in @($pending.Reasons)) {
+        $excluded = $false
+        foreach ($pattern in @($Settings.ExcludeReasons)) {
+            if ([string]$reason -like [string]$pattern) {
+                $excluded = $true
+                break
+            }
+        }
+        if ($excluded) {
+            [void]$excludedReasons.Add([string]$reason)
+        }
+        else {
+            [void]$activeReasons.Add([string]$reason)
+        }
+    }
+    $isPending = $activeReasons.Count -gt 0
+
+    if ($isPending) {
         $status = [string]$Settings.PendingStatus
-        $reasonText = @($pending.Reasons) -join ', '
+        $reasonText = @($activeReasons.ToArray()) -join ', '
         $message = "A reboot is pending: $reasonText."
         $recommendation = 'Schedule a controlled restart, confirm service restoration, and verify that all reboot indicators clear afterward.'
+    }
+    elseif ($excludedReasons.Count -gt 0) {
+        $status = 'Healthy'
+        $message = "All detected reboot indicators ($(@($excludedReasons.ToArray()) -join ', ')) are excluded by configuration."
+        $recommendation = ''
     }
     else {
         $status = 'Healthy'
@@ -93,8 +120,9 @@ function Invoke-InfraPulsePendingRebootCheck {
     }
 
     $evidence = [ordered]@{
-        Pending = [bool]$pending.Pending
-        Reasons = @($pending.Reasons)
+        Pending         = $isPending
+        Reasons         = @($activeReasons.ToArray())
+        ExcludedReasons = @($excludedReasons.ToArray())
     }
 
     $warningThreshold = $null
@@ -106,5 +134,5 @@ function Invoke-InfraPulsePendingRebootCheck {
         $warningThreshold = 'Any supported reboot indicator'
     }
 
-    return New-InfraPulseResult -Status $status -CheckName 'PendingReboot' -Category 'Lifecycle' -ComputerName $Context.ComputerName -Target 'Operating system' -Message $message -ObservedValue ([bool]$pending.Pending) -WarningThreshold $warningThreshold -CriticalThreshold $criticalThreshold -Recommendation $recommendation -Evidence $evidence -DurationMs $stopwatch.Elapsed.TotalMilliseconds
+    return New-InfraPulseResult -Status $status -CheckName 'PendingReboot' -Category 'Lifecycle' -ComputerName $Context.ComputerName -Target 'Operating system' -Message $message -ObservedValue $isPending -WarningThreshold $warningThreshold -CriticalThreshold $criticalThreshold -Recommendation $recommendation -Evidence $evidence -DurationMs $stopwatch.Elapsed.TotalMilliseconds
 }

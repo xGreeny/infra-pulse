@@ -68,6 +68,7 @@ Inventory is still collected internally to identify the target platform and cano
 | Key | Type | Default | Constraint |
 |---|---|---|---|
 | `PendingStatus` | string | `Warning` | `Warning` or `Critical` |
+| `ExcludeReasons` | string array | Empty | PowerShell wildcard patterns matched against indicator names; excluded indicators stay in evidence but no longer set the pending state |
 
 ## Services
 

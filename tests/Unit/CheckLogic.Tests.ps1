@@ -85,6 +85,54 @@ Describe 'InfraPulse check evaluation logic' {
         }
     }
 
+    It 'reports healthy when the only reboot indicator is excluded' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{ Pending = $true; Reasons = @('Pending file rename operations') }
+            }
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.PendingReboot
+            $settings.ExcludeReasons = @('Pending file rename operations')
+
+            $result = Invoke-InfraPulsePendingRebootCheck -Context $script:Context -Settings $settings
+            $result.Status | Should -Be 'Healthy'
+            $result.ObservedValue | Should -BeFalse
+            $result.Evidence.Pending | Should -BeFalse
+            @($result.Evidence.Reasons).Count | Should -Be 0
+            $result.Evidence.ExcludedReasons | Should -Contain 'Pending file rename operations'
+            $result.Message | Should -Match 'excluded by configuration'
+        }
+    }
+
+    It 'stays pending when a non-excluded reboot indicator remains' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{ Pending = $true; Reasons = @('Pending file rename operations', 'Windows Update') }
+            }
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.PendingReboot
+            $settings.ExcludeReasons = @('Pending file rename operations')
+
+            $result = Invoke-InfraPulsePendingRebootCheck -Context $script:Context -Settings $settings
+            $result.Status | Should -Be 'Warning'
+            $result.Message | Should -Match 'Windows Update'
+            $result.Message | Should -Not -Match 'file rename'
+            $result.Evidence.Reasons | Should -Contain 'Windows Update'
+            $result.Evidence.ExcludedReasons | Should -Contain 'Pending file rename operations'
+        }
+    }
+
+    It 'matches reboot indicator exclusions with wildcards' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{ Pending = $true; Reasons = @('Pending file rename operations') }
+            }
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.PendingReboot
+            $settings.ExcludeReasons = @('Pending file rename*')
+
+            $result = Invoke-InfraPulsePendingRebootCheck -Context $script:Context -Settings $settings
+            $result.Status | Should -Be 'Healthy'
+        }
+    }
+
     It 'uses the configured service severity when a required service is absent' {
         InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {

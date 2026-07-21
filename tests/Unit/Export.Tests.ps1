@@ -31,7 +31,7 @@ Describe 'InfraPulse report export' {
 
         $content | Should -Match '<!doctype html>'
         $content | Should -Match 'filter-query'
-        $content | Should -Match 'InfraPulse 1.2.0'
+        $content | Should -Match 'InfraPulse 1.3.0'
         $content | Should -Match '&lt;script&gt;alert\(1\)&lt;/script&gt;'
         $content | Should -Not -Match '<script>alert\(1\)</script>'
         $content | Should -Not -Match '<link[^>]+stylesheet'

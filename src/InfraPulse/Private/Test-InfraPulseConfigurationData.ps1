@@ -131,6 +131,11 @@ function Test-InfraPulseConfigurationData {
             if (-not $pending.Contains('PendingStatus') -or [string]$pending.PendingStatus -notin @('Warning', 'Critical')) {
                 [void]$errors.Add('Checks.PendingReboot.PendingStatus must be Warning or Critical.')
             }
+            foreach ($pattern in @($pending['ExcludeReasons'])) {
+                if ([string]::IsNullOrWhiteSpace([string]$pattern)) {
+                    [void]$errors.Add('Checks.PendingReboot.ExcludeReasons cannot contain an empty pattern.')
+                }
+            }
         }
 
         if ($checks.Contains('Services')) {

@@ -51,6 +51,8 @@ Flags hosts whose uptime reaches the warning or critical day threshold. Long upt
 
 Any detected indicator produces the configured `PendingStatus` (`Warning` or `Critical`) and records every reason in evidence. Missing optional registry values and absent Configuration Manager namespaces are not errors.
 
+`ExcludeReasons` accepts PowerShell wildcard patterns matched against the indicator names (`Component Based Servicing`, `Windows Update`, `Pending file rename operations`, `UpdateExeVolatile`, `Computer rename`, `Configuration Manager client`). Excluded indicators no longer set the pending state — a host whose only indicators are excluded reports `Healthy` — but they remain visible in the result evidence under `ExcludedReasons`. This is intended for environments where an indicator is structurally noisy, for example multi-session hosts whose agents re-create pending file renames within hours of every scheduled reboot; prefer excluding the specific indicator over tolerating a permanent warning.
+
 ## Services
 
 **Category:** Availability

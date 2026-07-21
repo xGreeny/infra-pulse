@@ -2,6 +2,12 @@
 
 All notable changes to InfraPulse are documented in this file. The project follows [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-07-21
+
+### Added
+
+- `Checks.PendingReboot.ExcludeReasons`: PowerShell wildcard patterns for reboot indicators that should not set the pending state, for example pending file renames that agents re-create continuously on multi-session hosts. Excluded indicators remain visible in the result evidence under `ExcludedReasons`, and a host whose only indicators are excluded reports `Healthy`.
+
 ## [1.2.0] - 2026-07-20
 
 ### Added
@@ -57,6 +63,7 @@ All notable changes to InfraPulse are documented in this file. The project follo
 - Pester test suite, PSScriptAnalyzer policy, dual-engine CI, and tagged-release packaging.
 - Operator documentation, examples, issue forms, security policy, and contribution workflow.
 
+[1.3.0]: https://github.com/xGreeny/infra-pulse/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/xGreeny/infra-pulse/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/xGreeny/infra-pulse/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/xGreeny/infra-pulse/compare/v1.0.0...v1.1.0
