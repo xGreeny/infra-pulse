@@ -5,6 +5,7 @@
 <p align="center">
   <a href="https://github.com/xGreeny/infra-pulse/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/xGreeny/infra-pulse/ci.yml?branch=main&style=flat-square&label=CI"></a>
   <a href="https://github.com/xGreeny/infra-pulse/releases"><img alt="Release" src="https://img.shields.io/github/v/release/xGreeny/infra-pulse?display_name=tag&sort=semver&style=flat-square"></a>
+  <a href="https://www.powershellgallery.com/packages/InfraPulse"><img alt="PowerShell Gallery" src="https://img.shields.io/powershellgallery/v/InfraPulse?style=flat-square&label=PSGallery&color=5391FE"></a>
   <img alt="PowerShell 5.1 and later" src="https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?logo=powershell&logoColor=white&style=flat-square">
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-45d483?style=flat-square"></a>
 </p>
@@ -32,10 +33,28 @@ InfraPulse turns routine server validation into repeatable PowerShell checks, ty
 - Windows PowerShell 5.1 and PowerShell 7 support; cross-platform paths are tested on Linux.
 - No third-party runtime modules and no target-state changes.
 
-## Quick start
+## Installation
+
+InfraPulse is published to the [PowerShell Gallery](https://www.powershellgallery.com/packages/InfraPulse):
+
+```powershell
+# PSResourceGet (PowerShell 7.4+, or the Microsoft.PowerShell.PSResourceGet module)
+Install-PSResource -Name InfraPulse
+
+# PowerShellGet (Windows PowerShell 5.1 and PowerShell 7)
+Install-Module -Name InfraPulse -Scope CurrentUser
+```
+
+Update later with `Update-PSResource InfraPulse` or `Update-Module InfraPulse`. To run from a source checkout instead, import the manifest directly:
 
 ```powershell
 Import-Module .\src\InfraPulse\InfraPulse.psd1 -Force
+```
+
+## Quick start
+
+```powershell
+Import-Module InfraPulse
 
 $report = Invoke-InfraPulse `
     -Check Disk, Memory, Uptime, PendingReboot
@@ -59,7 +78,7 @@ $report | Export-InfraPulseReport -Path .\out\infra-pulse.csv -Force
 
 ## Change validation workflow
 
-InfraPulse 1.1 records a run identifier, UTC start/completion timestamps, and a SHA-256 fingerprint of the effective configuration. That makes pre-change and post-change evidence comparable without treating different policies as equivalent.
+Every report records a run identifier, UTC start/completion timestamps, a SHA-256 fingerprint of the effective configuration, the configuration source, and an optional environment label. That makes pre-change and post-change evidence comparable without treating different policies as equivalent.
 
 ```powershell
 $before = Invoke-InfraPulse `
@@ -168,7 +187,7 @@ Compare-InfraPulseReport $before $after | Test-InfraPulseComparison -ThrowOnFail
 | `PendingReboot` | On | Windows | Servicing, Windows Update, rename, and Configuration Manager indicators |
 | `PatchAge` | On | Windows | Days since the most recent installed Windows update |
 | `Services` | On | Windows | Required service existence and expected state; collection failures remain `Unknown` |
-| `Certificates` | On | Windows | Expired and expiring machine certificates plus missing-store evidence |
+| `Certificates` | On | Windows | Expired and expiring machine certificates; auto-rotating short-lived certificates stay healthy while valid |
 | `EventLog` | On | Windows | Recent critical/error volume, top providers, and optional samples |
 | `Dns` | On | Cross-platform | Configured DNS names and record types; skipped until targets are defined |
 | `Tcp` | On | Cross-platform | Configured host/port reachability; skipped until endpoints are defined |
@@ -225,6 +244,8 @@ A partial role override stays concise because it is merged with versioned defaul
     SchemaVersion = '1.0'
 
     General = @{
+        EnvironmentName = 'Kunde XYZ'
+
         DefaultChecks = @(
             'Disk'
             'Memory'
@@ -243,6 +264,11 @@ A partial role override stays concise because it is merged with versioned defaul
             CriticalFreePercent = 8
             WarningFreeGB       = 30
             CriticalFreeGB      = 12
+
+            # Large data volumes: per-volume overrides beat the global thresholds.
+            Volumes = @(
+                @{ DeviceId = 'D:'; WarningFreePercent = 10; CriticalFreePercent = 5 }
+            )
         }
 
         Services = @{
@@ -308,7 +334,7 @@ Report precedence is `Critical` → `Warning` → `Unknown` → `Healthy` → `S
 
 ## Report contracts
 
-InfraPulse deliberately keeps data separate from display formatting. Report schema 1.2 carries run identity and configuration provenance:
+InfraPulse deliberately keeps data separate from display formatting. Report schema 1.3 carries run identity, configuration provenance, and the environment label:
 
 ```text
 RunId
@@ -316,9 +342,10 @@ StartedAtUtc
 CompletedAtUtc
 ConfigurationFingerprint
 ConfigurationSource
+EnvironmentName
 ```
 
-Schema 1.0 and 1.1 JSON reports remain importable. Details are documented in [`docs/report-schema.md`](docs/report-schema.md).
+Schema 1.0 through 1.2 JSON reports remain importable. Details are documented in [`docs/report-schema.md`](docs/report-schema.md).
 
 ## Security boundaries
 
