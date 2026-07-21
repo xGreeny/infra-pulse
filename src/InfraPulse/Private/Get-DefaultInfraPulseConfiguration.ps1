@@ -22,6 +22,7 @@ function Get-DefaultInfraPulseConfiguration {
             ContinueOnError         = $true
             ConnectionTimeoutSeconds = 15
             IncludeInventory        = $true
+            EnvironmentName         = ''
         }
         Checks        = [ordered]@{
             Disk          = [ordered]@{
@@ -32,6 +33,7 @@ function Get-DefaultInfraPulseConfiguration {
                 CriticalFreePercent  = 10
                 WarningFreeGB        = 20
                 CriticalFreeGB       = 10
+                Volumes              = @()
             }
             Memory        = [ordered]@{
                 Enabled                  = $true
@@ -72,7 +74,6 @@ function Get-DefaultInfraPulseConfiguration {
                 Enabled                = $true
                 StorePaths             = @(
                     'Cert:\LocalMachine\My'
-                    'Cert:\LocalMachine\WebHosting'
                 )
                 WarningDays            = 30
                 CriticalDays           = 14

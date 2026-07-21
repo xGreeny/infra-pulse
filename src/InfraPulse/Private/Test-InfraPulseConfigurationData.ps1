@@ -42,6 +42,10 @@ function Test-InfraPulseConfigurationData {
                 [void]$errors.Add("General.$booleanName must be Boolean.")
             }
         }
+
+        if (-not $general.Contains('EnvironmentName') -or -not ($general['EnvironmentName'] -is [string])) {
+            [void]$errors.Add('General.EnvironmentName must be a string.')
+        }
     }
 
     if (-not $Configuration.Contains('Checks') -or -not ($Configuration.Checks -is [System.Collections.IDictionary])) {
@@ -91,6 +95,51 @@ function Test-InfraPulseConfigurationData {
                 [double]$disk.CriticalFreeGB -gt [double]$disk.WarningFreeGB
             ) {
                 [void]$errors.Add('Checks.Disk.CriticalFreeGB must be less than or equal to WarningFreeGB.')
+            }
+
+            $volumeIndex = 0
+            $validVolumeKeys = @('DeviceId', 'WarningFreePercent', 'CriticalFreePercent', 'WarningFreeGB', 'CriticalFreeGB')
+            foreach ($volume in @($disk['Volumes'])) {
+                if (-not ($volume -is [System.Collections.IDictionary])) {
+                    [void]$errors.Add("Checks.Disk.Volumes[$volumeIndex] must be a hashtable.")
+                }
+                else {
+                    if (-not $volume.Contains('DeviceId') -or [string]::IsNullOrWhiteSpace([string]$volume.DeviceId)) {
+                        [void]$errors.Add("Checks.Disk.Volumes[$volumeIndex].DeviceId is required.")
+                    }
+                    foreach ($key in $volume.Keys) {
+                        if ([string]$key -notin $validVolumeKeys) {
+                            [void]$errors.Add("Checks.Disk.Volumes[$volumeIndex] contains unsupported key '$key'. Supported keys: $($validVolumeKeys -join ', ').")
+                        }
+                    }
+                    foreach ($name in @('WarningFreePercent', 'CriticalFreePercent')) {
+                        if ($volume.Contains($name) -and -not (Test-InfraPulseNumber -Value $volume[$name] -Minimum 0 -Maximum 100)) {
+                            [void]$errors.Add("Checks.Disk.Volumes[$volumeIndex].$name must be between 0 and 100.")
+                        }
+                    }
+                    foreach ($name in @('WarningFreeGB', 'CriticalFreeGB')) {
+                        if ($volume.Contains($name) -and -not (Test-InfraPulseNumber -Value $volume[$name] -Minimum 0)) {
+                            [void]$errors.Add("Checks.Disk.Volumes[$volumeIndex].$name must be zero or greater.")
+                        }
+                    }
+                    if (
+                        $volume.Contains('WarningFreePercent') -and $volume.Contains('CriticalFreePercent') -and
+                        (Test-InfraPulseNumber -Value $volume.WarningFreePercent) -and
+                        (Test-InfraPulseNumber -Value $volume.CriticalFreePercent) -and
+                        [double]$volume.CriticalFreePercent -gt [double]$volume.WarningFreePercent
+                    ) {
+                        [void]$errors.Add("Checks.Disk.Volumes[$volumeIndex].CriticalFreePercent must be less than or equal to WarningFreePercent.")
+                    }
+                    if (
+                        $volume.Contains('WarningFreeGB') -and $volume.Contains('CriticalFreeGB') -and
+                        (Test-InfraPulseNumber -Value $volume.WarningFreeGB) -and
+                        (Test-InfraPulseNumber -Value $volume.CriticalFreeGB) -and
+                        [double]$volume.CriticalFreeGB -gt [double]$volume.WarningFreeGB
+                    ) {
+                        [void]$errors.Add("Checks.Disk.Volumes[$volumeIndex].CriticalFreeGB must be less than or equal to WarningFreeGB.")
+                    }
+                }
+                $volumeIndex++
             }
         }
 

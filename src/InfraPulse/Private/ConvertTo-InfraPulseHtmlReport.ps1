@@ -221,7 +221,21 @@ footer { margin-top: 28px; color: var(--muted); text-align: center; font-size: .
     $null = $builder.AppendLine('<div>')
     $null = $builder.AppendLine('<div class="eyebrow">InfraPulse // infrastructure telemetry</div>')
     $null = $builder.AppendLine('<h1>' + (ConvertTo-InfraPulseHtmlEncoded -Value $Title) + '</h1>')
-    $null = $builder.AppendLine('<p class="subtitle">Read-only health telemetry for Windows infrastructure. Generated ' + $generatedAt + '.</p>')
+    $environmentNames = @(
+        $reportArray | ForEach-Object {
+            $environmentProperty = $_.PSObject.Properties['EnvironmentName']
+            if ($null -ne $environmentProperty) { [string]$environmentProperty.Value } else { '' }
+        } |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+            Select-Object -Unique
+    )
+    $subtitle = if ($environmentNames.Count -gt 0) {
+        'Read-only health telemetry for Windows infrastructure — ' + (ConvertTo-InfraPulseHtmlEncoded -Value ($environmentNames -join ', ')) + '. Generated ' + $generatedAt + '.'
+    }
+    else {
+        'Read-only health telemetry for Windows infrastructure. Generated ' + $generatedAt + '.'
+    }
+    $null = $builder.AppendLine('<p class="subtitle">' + $subtitle + '</p>')
     $null = $builder.AppendLine('<div class="overall ' + $aggregateClass + '">' + (ConvertTo-InfraPulseHtmlEncoded -Value $aggregate.OverallStatus) + '</div>')
     $null = $builder.AppendLine('</div>')
     $null = $builder.AppendLine('<svg class="pulse-mark" viewBox="0 0 260 100" role="img" aria-label="InfraPulse heartbeat"><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#63e6be" stop-opacity=".15"/><stop offset=".5" stop-color="#63e6be"/><stop offset="1" stop-color="#63e6be" stop-opacity=".15"/></linearGradient></defs><path d="M5 56h42l14-28 22 58 24-72 24 54 17-28 14 16h93" fill="none" stroke="url(#g)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="129" cy="68" r="4" fill="#63e6be"/></svg>')
@@ -290,8 +304,17 @@ footer { margin-top: 28px; color: var(--muted); text-align: center; font-size: .
         $inventorySearch = if ($null -eq $report.Inventory) { '' } else { ConvertTo-Json -InputObject (ConvertTo-InfraPulseSerializableValue -Value $report.Inventory) -Depth 4 -Compress }
         $hostSearch = (@([string]$report.ComputerName, [string]$report.RequestedComputerName, ($tags -join ' '), $inventorySearch) -join ' ').ToLowerInvariant()
 
+        $reportEnvironmentProperty = $report.PSObject.Properties['EnvironmentName']
+        $reportEnvironment = if ($null -ne $reportEnvironmentProperty) { [string]$reportEnvironmentProperty.Value } else { '' }
+        $hostMetaParts = @()
+        if (-not [string]::IsNullOrWhiteSpace($reportEnvironment)) {
+            $hostMetaParts += (ConvertTo-InfraPulseHtmlEncoded -Value $reportEnvironment)
+        }
+        $hostMetaParts += 'generated ' + (ConvertTo-InfraPulseHtmlEncoded -Value $generated)
+        $hostMetaParts += 'duration ' + (ConvertTo-InfraPulseHtmlEncoded -Value $duration)
+
         $null = $builder.AppendLine('<article class="host" id="host-' + $hostIndex + '" data-search="' + (ConvertTo-InfraPulseHtmlEncoded -Value $hostSearch) + '">')
-        $null = $builder.AppendLine('<header class="host-header"><div><h2 class="host-title">' + (ConvertTo-InfraPulseHtmlEncoded -Value $report.ComputerName) + '</h2><div class="host-meta">generated ' + (ConvertTo-InfraPulseHtmlEncoded -Value $generated) + ' | duration ' + (ConvertTo-InfraPulseHtmlEncoded -Value $duration) + '</div>')
+        $null = $builder.AppendLine('<header class="host-header"><div><h2 class="host-title">' + (ConvertTo-InfraPulseHtmlEncoded -Value $report.ComputerName) + '</h2><div class="host-meta">' + ($hostMetaParts -join ' | ') + '</div>')
         if ($tags.Count -gt 0) {
             $null = $builder.AppendLine('<div class="tags">')
             foreach ($tag in $tags) {

@@ -73,12 +73,26 @@ function Invoke-InfraPulseDiskCheck {
 
     $results = @()
     foreach ($disk in $raw) {
+        # A matching per-volume entry overrides individual thresholds; every
+        # key it omits falls back to the global value.
+        $volumeOverride = $null
+        foreach ($volume in @($Settings.Volumes)) {
+            if ([string]$disk.DeviceId -like [string]$volume.DeviceId) {
+                $volumeOverride = $volume
+                break
+            }
+        }
+        $warningFreePercent = if ($null -ne $volumeOverride -and $volumeOverride.Contains('WarningFreePercent')) { [double]$volumeOverride.WarningFreePercent } else { [double]$Settings.WarningFreePercent }
+        $criticalFreePercent = if ($null -ne $volumeOverride -and $volumeOverride.Contains('CriticalFreePercent')) { [double]$volumeOverride.CriticalFreePercent } else { [double]$Settings.CriticalFreePercent }
+        $warningFreeGB = if ($null -ne $volumeOverride -and $volumeOverride.Contains('WarningFreeGB')) { [double]$volumeOverride.WarningFreeGB } else { [double]$Settings.WarningFreeGB }
+        $criticalFreeGB = if ($null -ne $volumeOverride -and $volumeOverride.Contains('CriticalFreeGB')) { [double]$volumeOverride.CriticalFreeGB } else { [double]$Settings.CriticalFreeGB }
+
         # Thresholds are evaluated against unrounded values derived from the raw
         # byte counts; the rounded FreeGB/FreePercent fields remain display values.
         $exactFreeGB = [double]$disk.FreeBytes / 1GB
         $exactFreePercent = if ([double]$disk.SizeBytes -gt 0) { ([double]$disk.FreeBytes / [double]$disk.SizeBytes) * 100 } else { 0 }
-        $isCritical = ($exactFreePercent -le [double]$Settings.CriticalFreePercent) -or ($exactFreeGB -le [double]$Settings.CriticalFreeGB)
-        $isWarning = ($exactFreePercent -le [double]$Settings.WarningFreePercent) -or ($exactFreeGB -le [double]$Settings.WarningFreeGB)
+        $isCritical = ($exactFreePercent -le $criticalFreePercent) -or ($exactFreeGB -le $criticalFreeGB)
+        $isWarning = ($exactFreePercent -le $warningFreePercent) -or ($exactFreeGB -le $warningFreeGB)
 
         if ($isCritical) {
             $status = 'Critical'
@@ -105,7 +119,7 @@ function Invoke-InfraPulseDiskCheck {
             FreePercent = [double]$disk.FreePercent
         }
 
-        $results += New-InfraPulseResult -Status $status -CheckName 'Disk' -Category 'Capacity' -ComputerName $Context.ComputerName -Target ([string]$disk.DeviceId) -Message $message -ObservedValue ("{0:N2}% / {1:N2} GB" -f [double]$disk.FreePercent, [double]$disk.FreeGB) -WarningThreshold ("<= {0}% or <= {1} GB" -f $Settings.WarningFreePercent, $Settings.WarningFreeGB) -CriticalThreshold ("<= {0}% or <= {1} GB" -f $Settings.CriticalFreePercent, $Settings.CriticalFreeGB) -Recommendation $recommendation -Evidence $evidence -DurationMs ($stopwatch.Elapsed.TotalMilliseconds / $raw.Count)
+        $results += New-InfraPulseResult -Status $status -CheckName 'Disk' -Category 'Capacity' -ComputerName $Context.ComputerName -Target ([string]$disk.DeviceId) -Message $message -ObservedValue ("{0:N2}% / {1:N2} GB" -f [double]$disk.FreePercent, [double]$disk.FreeGB) -WarningThreshold ("<= {0}% or <= {1} GB" -f $warningFreePercent, $warningFreeGB) -CriticalThreshold ("<= {0}% or <= {1} GB" -f $criticalFreePercent, $criticalFreeGB) -Recommendation $recommendation -Evidence $evidence -DurationMs ($stopwatch.Elapsed.TotalMilliseconds / $raw.Count)
     }
 
     return $results

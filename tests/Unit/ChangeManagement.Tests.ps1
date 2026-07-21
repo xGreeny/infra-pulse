@@ -43,7 +43,7 @@ Describe 'InfraPulse report import' {
         $imported = Import-InfraPulseReport -Path $path
 
         $imported.PSObject.TypeNames | Should -Contain 'InfraPulse.Report'
-        $imported.SchemaVersion | Should -Be '1.2'
+        $imported.SchemaVersion | Should -Be '1.3'
         $imported.RunId | Should -Be '11111111-1111-4111-8111-111111111111'
         $imported.ConfigurationFingerprint | Should -Be 'fingerprint-a'
         $imported.GeneratedAtUtc | Should -BeOfType [datetime]
@@ -100,6 +100,7 @@ Describe 'InfraPulse report import' {
         ([datetime]$imported.GeneratedAtUtc).Year | Should -Be 2026
         $imported.RunId | Should -Be ''
         $imported.ConfigurationFingerprint | Should -Be ''
+        $imported.EnvironmentName | Should -Be ''
         @($imported.Results)[0].TimestampUtc | Should -BeOfType [datetime]
     }
 

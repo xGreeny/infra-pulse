@@ -58,17 +58,18 @@ Describe 'InfraPulse object contract' {
         }
     }
 
-    It 'stamps schema 1.2 run metadata onto every report' {
+    It 'stamps schema 1.3 run metadata onto every report' {
         InModuleScope InfraPulse {
             $results = @(
                 New-InfraPulseResult -Status Healthy -CheckName Memory -Category Capacity -ComputerName 'SRV-01' -Target 'Memory' -Message 'Healthy.'
             )
-            $report = New-InfraPulseReport -RequestedComputerName 'srv-01' -ComputerName 'SRV-01' -Inventory $null -Results $results -DurationMs 10 -RunId 'f0e1d2c3-0000-4000-8000-000000000001' -ConfigurationFingerprint 'abc123' -ConfigurationSource 'Built-in defaults'
+            $report = New-InfraPulseReport -RequestedComputerName 'srv-01' -ComputerName 'SRV-01' -Inventory $null -Results $results -DurationMs 10 -RunId 'f0e1d2c3-0000-4000-8000-000000000001' -ConfigurationFingerprint 'abc123' -ConfigurationSource 'Built-in defaults' -EnvironmentName 'Kunde Demo'
 
-            $report.SchemaVersion | Should -Be '1.2'
+            $report.SchemaVersion | Should -Be '1.3'
             $report.RunId | Should -Be 'f0e1d2c3-0000-4000-8000-000000000001'
             $report.ConfigurationFingerprint | Should -Be 'abc123'
             $report.ConfigurationSource | Should -Be 'Built-in defaults'
+            $report.EnvironmentName | Should -Be 'Kunde Demo'
             $report.StartedAtUtc.Kind | Should -Be ([DateTimeKind]::Utc)
             $report.CompletedAtUtc.Kind | Should -Be ([DateTimeKind]::Utc)
             $report.CompletedAtUtc | Should -BeGreaterOrEqual $report.StartedAtUtc

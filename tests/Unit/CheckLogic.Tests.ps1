@@ -466,6 +466,77 @@ Describe 'InfraPulse check evaluation logic' {
         }
     }
 
+    It 'applies per-volume threshold overrides to matching volumes' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                # 81.83 GB free (19.48%) - warns under global thresholds only.
+                [pscustomobject]@{
+                    DeviceId = 'D:'; VolumeName = 'Daten'; SizeBytes = 450952687616; FreeBytes = 87861338112
+                    FreeGB = 81.83; FreePercent = 19.48; FileSystem = 'NTFS'
+                }
+            }
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.Disk
+            $settings.Volumes = @(
+                [ordered]@{ DeviceId = 'D:'; WarningFreePercent = 10; CriticalFreePercent = 5 }
+            )
+
+            $result = @(Invoke-InfraPulseDiskCheck -Context $script:Context -Settings $settings)
+            $result[0].Status | Should -Be 'Healthy'
+            $result[0].WarningThreshold | Should -Match '<= 10%'
+        }
+    }
+
+    It 'falls back to global thresholds for volumes without an override' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    DeviceId = 'D:'; VolumeName = 'Daten'; SizeBytes = 450952687616; FreeBytes = 87861338112
+                    FreeGB = 81.83; FreePercent = 19.48; FileSystem = 'NTFS'
+                }
+            }
+            $settings = Copy-InfraPulseValue -Value $script:Defaults.Checks.Disk
+            $settings.Volumes = @(
+                [ordered]@{ DeviceId = 'X:'; WarningFreePercent = 10 }
+            )
+
+            $result = @(Invoke-InfraPulseDiskCheck -Context $script:Context -Settings $settings)
+            $result[0].Status | Should -Be 'Warning'
+            $result[0].WarningThreshold | Should -Match '<= 20%'
+        }
+    }
+
+    It 'flags a patch installed after the last boot as awaiting a reboot' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    TotalPatches = 6; LastPatchDate = (Get-Date).AddDays(-4); LastPatchId = 'KB5099540'
+                    LastBootTime = (Get-Date).AddDays(-26); RecentPatches = @()
+                }
+            }
+
+            $result = Invoke-InfraPulsePatchAgeCheck -Context $script:Context -Settings $script:Defaults.Checks.PatchAge
+            $result.Status | Should -Be 'Healthy'
+            $result.Message | Should -Match 'a restart is required to activate it'
+            $result.Evidence.AwaitingReboot | Should -BeTrue
+            $result.Evidence.LastBootTime | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    It 'does not flag a patch that is older than the last boot' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    TotalPatches = 6; LastPatchDate = (Get-Date).AddDays(-10); LastPatchId = 'KB5099540'
+                    LastBootTime = (Get-Date).AddDays(-2); RecentPatches = @()
+                }
+            }
+
+            $result = Invoke-InfraPulsePatchAgeCheck -Context $script:Context -Settings $script:Defaults.Checks.PatchAge
+            $result.Message | Should -Not -Match 'restart is required'
+            $result.Evidence.AwaitingReboot | Should -BeFalse
+        }
+    }
+
     It 'keeps a failed service query unknown instead of reporting a missing service' {
         InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {

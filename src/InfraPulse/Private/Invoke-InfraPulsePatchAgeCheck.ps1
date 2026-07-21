@@ -58,10 +58,27 @@ function Invoke-InfraPulsePatchAgeCheck {
         $ordered = @($patches | Sort-Object -Property InstalledOn -Descending)
         $latest = if ($ordered.Count -gt 0) { $ordered[0] } else { $null }
 
+        # The boot time decides whether the newest update is already active.
+        $lastBootTime = $null
+        try {
+            if (Get-Command -Name Get-CimInstance -ErrorAction SilentlyContinue) {
+                $operatingSystem = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction Stop
+                $lastBootTime = [datetime]$operatingSystem.LastBootUpTime
+            }
+            else {
+                $operatingSystem = Get-WmiObject -Class Win32_OperatingSystem -ErrorAction Stop
+                $lastBootTime = $operatingSystem.ConvertToDateTime($operatingSystem.LastBootUpTime)
+            }
+        }
+        catch {
+            $lastBootTime = $null
+        }
+
         [pscustomobject]@{
             TotalPatches  = $ordered.Count
             LastPatchDate = if ($null -ne $latest) { [datetime]$latest.InstalledOn } else { $null }
             LastPatchId   = if ($null -ne $latest) { [string]$latest.HotFixId } else { $null }
+            LastBootTime  = $lastBootTime
             RecentPatches = @(
                 $ordered |
                     Select-Object -First 5 |
@@ -98,13 +115,24 @@ function Invoke-InfraPulsePatchAgeCheck {
         $recommendation = ''
     }
 
-    $message = "Last update ($($patchState.LastPatchId)) was installed $([math]::Round($daysSince, 0)) day(s) ago on $(([datetime]$patchState.LastPatchDate).ToString('yyyy-MM-dd'))."
+    $lastBootTime = $null
+    $awaitingReboot = $false
+    if ($null -ne $patchState.PSObject.Properties['LastBootTime'] -and $null -ne $patchState.LastBootTime) {
+        $lastBootTime = [datetime]$patchState.LastBootTime
+        $awaitingReboot = ([datetime]$patchState.LastPatchDate) -gt $lastBootTime
+    }
+
+    $message = "Last update ($($patchState.LastPatchId)) was installed $([math]::Round($daysSince, 0)) day(s) ago on $(([datetime]$patchState.LastPatchDate).ToString('yyyy-MM-dd'))"
+    $message += if ($awaitingReboot) { '; installed after the last boot, a restart is required to activate it.' } else { '.' }
+
     $evidence = [ordered]@{
-        LastPatchDate = [datetime]$patchState.LastPatchDate
-        LastPatchId   = [string]$patchState.LastPatchId
-        DaysSince     = $daysSince
-        TotalPatches  = [int]$patchState.TotalPatches
-        RecentPatches = @($patchState.RecentPatches)
+        LastPatchDate  = [datetime]$patchState.LastPatchDate
+        LastPatchId    = [string]$patchState.LastPatchId
+        DaysSince      = $daysSince
+        LastBootTime   = $lastBootTime
+        AwaitingReboot = $awaitingReboot
+        TotalPatches   = [int]$patchState.TotalPatches
+        RecentPatches  = @($patchState.RecentPatches)
     }
 
     return New-InfraPulseResult -Status $status -CheckName 'PatchAge' -Category 'Lifecycle' -ComputerName $Context.ComputerName -Target 'Operating system' -Message $message -ObservedValue ("{0:N2} days" -f $daysSince) -WarningThreshold (">= {0} days" -f $Settings.WarningDays) -CriticalThreshold (">= {0} days" -f $Settings.CriticalDays) -Recommendation $recommendation -Evidence $evidence -DurationMs $stopwatch.Elapsed.TotalMilliseconds

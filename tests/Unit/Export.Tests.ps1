@@ -31,11 +31,26 @@ Describe 'InfraPulse report export' {
 
         $content | Should -Match '<!doctype html>'
         $content | Should -Match 'filter-query'
-        $content | Should -Match 'InfraPulse 1.4.1'
+        $content | Should -Match 'InfraPulse 1.5.0'
         $content | Should -Match '&lt;script&gt;alert\(1\)&lt;/script&gt;'
         $content | Should -Not -Match '<script>alert\(1\)</script>'
         $content | Should -Not -Match '<link[^>]+stylesheet'
         $content | Should -Not -Match '<script[^>]+src='
+    }
+
+    It 'shows the environment label in the HTML output when configured' {
+        $labeled = InModuleScope InfraPulse {
+            $results = @(
+                New-InfraPulseResult -Status Healthy -CheckName Memory -Category Capacity -ComputerName 'SRV-ENV-01' -Target 'Physical memory' -Message 'Fine.'
+            )
+            New-InfraPulseReport -RequestedComputerName 'srv-env-01' -ComputerName 'SRV-ENV-01' -Inventory $null -Results $results -DurationMs 5 -EnvironmentName 'Kunde Demo AG'
+        }
+
+        $path = Join-Path -Path $TestDrive -ChildPath 'environment.html'
+        $labeled | Export-InfraPulseReport -Path $path -Force
+        $content = Get-Content -LiteralPath $path -Raw
+
+        $content | Should -Match 'Kunde Demo AG'
     }
 
     It 'emits no pipeline output unless PassThru is requested' {

@@ -2,6 +2,18 @@
 
 All notable changes to InfraPulse are documented in this file. The project follows [Semantic Versioning](https://semver.org/).
 
+## [1.5.0] - 2026-07-21
+
+### Added
+
+- Per-volume disk thresholds: `Checks.Disk.Volumes` entries override individual thresholds for matching volumes (wildcard `DeviceId`), with omitted keys falling back to the global values — large data volumes no longer warn on the percentage threshold alone.
+- The PatchAge check records the last boot time and reports `AwaitingReboot` evidence with a message hint when the newest update was installed after the last boot and is not active yet.
+- `General.EnvironmentName`: an operator-defined environment or customer label recorded in every report (schema 1.3) and shown in the HTML hero and host headers; `Import-InfraPulseReport` accepts schemas 1.0 through 1.3.
+
+### Changed
+
+- **The default certificate store list no longer includes `Cert:\LocalMachine\WebHosting`.** Every production server scanned so far reported a missing-store `Unknown` for it; the default is now `Cert:\LocalMachine\My` only. Add the WebHosting store explicitly for IIS web-hosting roles.
+
 ## [1.4.1] - 2026-07-21
 
 ### Fixed
@@ -86,6 +98,7 @@ All notable changes to InfraPulse are documented in this file. The project follo
 - Pester test suite, PSScriptAnalyzer policy, dual-engine CI, and tagged-release packaging.
 - Operator documentation, examples, issue forms, security policy, and contribution workflow.
 
+[1.5.0]: https://github.com/xGreeny/infra-pulse/compare/v1.4.1...v1.5.0
 [1.4.1]: https://github.com/xGreeny/infra-pulse/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/xGreeny/infra-pulse/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/xGreeny/infra-pulse/compare/v1.2.0...v1.3.0

@@ -144,6 +144,63 @@ Describe 'InfraPulse configuration lifecycle' {
         ($result.Errors -join ' ') | Should -Match 'MinTotalLifetimeDays'
     }
 
+    It 'defaults the certificate stores to LocalMachine My only' {
+        $result = Test-InfraPulseConfiguration -Configuration @{}
+
+        $result.IsValid | Should -BeTrue
+        @($result.EffectiveConfiguration.Checks.Certificates.StorePaths) | Should -Be @('Cert:\LocalMachine\My')
+    }
+
+    It 'defaults the environment name to an empty string and rejects non-strings' {
+        $result = Test-InfraPulseConfiguration -Configuration @{}
+        $result.EffectiveConfiguration.General.EnvironmentName | Should -Be ''
+
+        $invalid = Test-InfraPulseConfiguration -Configuration @{
+            General = @{
+                EnvironmentName = 42
+            }
+        }
+        $invalid.IsValid | Should -BeFalse
+        ($invalid.Errors -join ' ') | Should -Match 'EnvironmentName'
+    }
+
+    It 'validates per-volume disk threshold overrides' {
+        $valid = Test-InfraPulseConfiguration -Configuration @{
+            Checks = @{
+                Disk = @{
+                    Volumes = @(
+                        @{ DeviceId = 'D:'; WarningFreePercent = 10; CriticalFreePercent = 5 }
+                    )
+                }
+            }
+        }
+        $valid.IsValid | Should -BeTrue
+
+        $inverted = Test-InfraPulseConfiguration -Configuration @{
+            Checks = @{
+                Disk = @{
+                    Volumes = @(
+                        @{ DeviceId = 'D:'; WarningFreePercent = 5; CriticalFreePercent = 10 }
+                    )
+                }
+            }
+        }
+        $inverted.IsValid | Should -BeFalse
+        ($inverted.Errors -join ' ') | Should -Match 'Volumes\[0\]\.CriticalFreePercent'
+
+        $missingDevice = Test-InfraPulseConfiguration -Configuration @{
+            Checks = @{
+                Disk = @{
+                    Volumes = @(
+                        @{ WarningFreePercent = 10 }
+                    )
+                }
+            }
+        }
+        $missingDevice.IsValid | Should -BeFalse
+        ($missingDevice.Errors -join ' ') | Should -Match 'Volumes\[0\]\.DeviceId'
+    }
+
     It 'defaults the Tls check to enabled with safe thresholds' {
         $result = Test-InfraPulseConfiguration -Configuration @{}
 

@@ -15,9 +15,11 @@ function New-InfraPulseConnectionFailureReport {
 
         [string]$ConfigurationFingerprint = '',
 
-        [string]$ConfigurationSource = ''
+        [string]$ConfigurationSource = '',
+
+        [string]$EnvironmentName = ''
     )
 
     $result = New-InfraPulseResult -Status 'Critical' -CheckName 'Connection' -Category 'Control' -ComputerName $ComputerName -Target $ComputerName -Message "Unable to establish a PowerShell remoting session to '$ComputerName'." -ObservedValue $false -CriticalThreshold 'Remote session must open' -Recommendation 'Validate WinRM/WSMan, authentication, firewall policy, name resolution, and administrative access.' -Evidence ([ordered]@{ ComputerName = $ComputerName; Error = $ErrorMessage }) -DurationMs $DurationMs -ErrorMessage $ErrorMessage
-    return New-InfraPulseReport -RequestedComputerName $ComputerName -ComputerName $ComputerName -Inventory $null -Results @($result) -DurationMs $DurationMs -Tags $Tags -RunId $RunId -ConfigurationFingerprint $ConfigurationFingerprint -ConfigurationSource $ConfigurationSource
+    return New-InfraPulseReport -RequestedComputerName $ComputerName -ComputerName $ComputerName -Inventory $null -Results @($result) -DurationMs $DurationMs -Tags $Tags -RunId $RunId -ConfigurationFingerprint $ConfigurationFingerprint -ConfigurationSource $ConfigurationSource -EnvironmentName $EnvironmentName
 }

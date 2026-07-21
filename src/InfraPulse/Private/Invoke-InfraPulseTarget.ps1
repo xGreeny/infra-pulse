@@ -18,7 +18,9 @@ function Invoke-InfraPulseTarget {
 
         [string]$ConfigurationFingerprint = '',
 
-        [string]$ConfigurationSource = ''
+        [string]$ConfigurationSource = '',
+
+        [string]$EnvironmentName = ''
     )
 
     $startedAtUtc = [DateTime]::UtcNow
@@ -84,5 +86,5 @@ function Invoke-InfraPulseTarget {
     }
 
     $targetStopwatch.Stop()
-    return New-InfraPulseReport -RequestedComputerName $Context.RequestedComputerName -ComputerName $Context.ComputerName -Inventory $reportedInventory -Results $results -DurationMs $targetStopwatch.Elapsed.TotalMilliseconds -Tags $Tags -RunId $RunId -StartedAtUtc $startedAtUtc -ConfigurationFingerprint $ConfigurationFingerprint -ConfigurationSource $ConfigurationSource
+    return New-InfraPulseReport -RequestedComputerName $Context.RequestedComputerName -ComputerName $Context.ComputerName -Inventory $reportedInventory -Results $results -DurationMs $targetStopwatch.Elapsed.TotalMilliseconds -Tags $Tags -RunId $RunId -StartedAtUtc $startedAtUtc -ConfigurationFingerprint $ConfigurationFingerprint -ConfigurationSource $ConfigurationSource -EnvironmentName $EnvironmentName
 }

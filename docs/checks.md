@@ -18,6 +18,8 @@ Both relative and absolute thresholds matter. A large data volume can have a low
 
 Thresholds are evaluated against unrounded values derived from the raw byte counts; the rounded `FreeGB` and `FreePercent` evidence fields are display values only, so a volume sitting exactly on a rounded boundary cannot flip state through rounding.
 
+`Volumes` overrides thresholds per volume: each entry names a `DeviceId` (wildcards supported), and every threshold key it provides replaces the global value for matching volumes while omitted keys fall back. This addresses large data volumes where the percentage threshold alone is misleading — 80 GB free on a 420 GB volume is not a capacity problem even though it is below 20%.
+
 `Include` and `Exclude` use PowerShell wildcard matching against drive identifiers such as `C:`.
 
 ## Memory
@@ -62,6 +64,8 @@ Any detected indicator produces the configured `PendingStatus` (`Warning` or `Cr
 Evaluates the number of days since the most recent installed Windows update and flags hosts that fall behind the expected patch cadence. Evidence includes the latest KB identifier, the installation date, and the five most recent updates.
 
 `Win32_QuickFixEngineering` lists servicing-stack and CBS-installed updates; updates delivered through other channels (for example full feature upgrades or third-party installers) may not appear. When no entry carries an installation date, the check reports `Unknown` instead of guessing.
+
+The check also records the last boot time: when the newest update was installed after the last boot, the evidence carries `AwaitingReboot = true` and the message notes that a restart is required to activate it. The status itself stays driven by the update age.
 
 ## Services
 

@@ -1,6 +1,6 @@
 @{
     RootModule           = 'InfraPulse.psm1'
-    ModuleVersion        = '1.4.1'
+    ModuleVersion        = '1.5.0'
     GUID                 = '381fa9f8-98e3-43b2-893d-909bbfc10378'
     Author               = 'Flurin Gubler'
     CompanyName          = 'xGreeny'
@@ -42,7 +42,7 @@
             )
             LicenseUri = 'https://github.com/xGreeny/infra-pulse/blob/main/LICENSE'
             ProjectUri = 'https://github.com/xGreeny/infra-pulse'
-            ReleaseNotes = 'Truncated event-log counts that meet a threshold are now reported as a lower bound (at least N, observed value N+) instead of an exact count.'
+            ReleaseNotes = 'Field-driven release: per-volume disk thresholds, awaiting-reboot patch evidence, an environment label for multi-customer reports (schema 1.3), and a clean default certificate store list.'
         }
     }
 }

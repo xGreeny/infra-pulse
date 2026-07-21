@@ -17,6 +17,9 @@
         ContinueOnError          = $true
         ConnectionTimeoutSeconds = 15
         IncludeInventory         = $true
+
+        # Label for the scanned environment or customer.
+        EnvironmentName          = ''
     }
 
     Checks = @{
@@ -27,6 +30,11 @@
             CriticalFreePercent = 8
             WarningFreeGB       = 30
             CriticalFreeGB      = 12
+
+            # Large data volumes: relax the percentage threshold per volume.
+            Volumes = @(
+                # @{ DeviceId = 'D:'; WarningFreePercent = 10; CriticalFreePercent = 5 }
+            )
         }
 
         Memory = @{
@@ -76,7 +84,7 @@
         Certificates = @{
             StorePaths = @(
                 'Cert:\LocalMachine\My'
-                'Cert:\LocalMachine\WebHosting'
+                # 'Cert:\LocalMachine\WebHosting'   # IIS web-hosting roles
             )
             WarningDays            = 30
             CriticalDays           = 14

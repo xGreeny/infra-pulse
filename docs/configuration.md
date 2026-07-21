@@ -44,6 +44,7 @@ This makes role-specific overrides concise while keeping the effective configura
 | `ContinueOnError` | Boolean | `$true` | Converts check failures to `Unknown`; `$false` rethrows |
 | `ConnectionTimeoutSeconds` | number | `15` | `1`–`300`; used when InfraPulse opens WSMan sessions |
 | `IncludeInventory` | Boolean | `$true` | Controls whether collected inventory is attached to reports |
+| `EnvironmentName` | string | Empty | Label for the scanned environment or customer; recorded in every report and shown in the HTML output |
 
 Inventory is still collected internally to identify the target platform and canonical computer name.
 
@@ -58,6 +59,17 @@ Inventory is still collected internally to identify the target platform and cano
 | `CriticalFreePercent` | number | `10` | `0`–warning |
 | `WarningFreeGB` | number | `20` | `>= 0` |
 | `CriticalFreeGB` | number | `10` | `0`–warning |
+| `Volumes` | array | Empty | Per-volume threshold overrides; each entry requires `DeviceId` (wildcards supported), every threshold key is optional and falls back to the global value |
+
+```powershell
+Disk = @{
+    WarningFreePercent = 20
+    Volumes = @(
+        # A large data volume where 20% would flag despite ample space:
+        @{ DeviceId = 'D:'; WarningFreePercent = 10; CriticalFreePercent = 5 }
+    )
+}
+```
 
 ## Memory
 
@@ -104,7 +116,7 @@ An empty `Required` array yields one `Skipped` result.
 
 | Key | Type | Default | Constraint / behavior |
 |---|---|---|---|
-| `StorePaths` | string array | Machine `My`, `WebHosting` | Each path must begin `Cert:\` |
+| `StorePaths` | string array | Machine `My` | Each path must begin `Cert:\`; add `Cert:\LocalMachine\WebHosting` for IIS web-hosting roles |
 | `WarningDays` | number | `30` | `>= 0` |
 | `CriticalDays` | number | `14` | `0`–warning |
 | `SubjectExcludePatterns` | string array | Empty | PowerShell wildcard patterns; no empty entries |

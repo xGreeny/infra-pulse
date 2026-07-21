@@ -13,7 +13,7 @@ Describe 'InfraPulse module surface' {
     It 'has a valid module manifest' {
         $manifest = Test-ModuleManifest -Path $script:ModulePath -ErrorAction Stop
         $manifest.Name | Should -Be 'InfraPulse'
-        $manifest.Version.ToString() | Should -Be '1.4.1'
+        $manifest.Version.ToString() | Should -Be '1.5.0'
         $manifest.PowerShellVersion.ToString() | Should -Be '5.1'
     }
 

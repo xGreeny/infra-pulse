@@ -24,8 +24,8 @@ function ConvertTo-InfraPulseImportedReport {
     }
 
     $schemaVersion = [string]$Entry.SchemaVersion
-    if ($schemaVersion -notin @('1.0', '1.1', '1.2')) {
-        throw "File '$Source' uses unsupported report schema version '$schemaVersion'. Supported versions: 1.0, 1.1, 1.2."
+    if ($schemaVersion -notin @('1.0', '1.1', '1.2', '1.3')) {
+        throw "File '$Source' uses unsupported report schema version '$schemaVersion'. Supported versions: 1.0, 1.1, 1.2, 1.3."
     }
 
     foreach ($dateProperty in @('GeneratedAtUtc', 'StartedAtUtc', 'CompletedAtUtc')) {
@@ -37,7 +37,7 @@ function ConvertTo-InfraPulseImportedReport {
 
     # Schema 1.0 reports gain the 1.1 fields with empty values so consumers can
     # rely on one shape regardless of the source schema.
-    foreach ($schemaField in @('RunId', 'ConfigurationFingerprint', 'ConfigurationSource')) {
+    foreach ($schemaField in @('RunId', 'ConfigurationFingerprint', 'ConfigurationSource', 'EnvironmentName')) {
         if ($null -eq $Entry.PSObject.Properties[$schemaField]) {
             Add-Member -InputObject $Entry -NotePropertyName $schemaField -NotePropertyValue ''
         }

@@ -59,6 +59,10 @@ function Get-InfraPulseConfigurationTemplate {
         ContinueOnError          = $true
         ConnectionTimeoutSeconds = 15
         IncludeInventory         = $true
+
+        # Label for the scanned environment or customer; appears in every
+        # report and in the HTML output, for example 'Kunde XYZ'.
+        EnvironmentName          = ''
     }
 
     Checks = @{
@@ -70,6 +74,14 @@ function Get-InfraPulseConfigurationTemplate {
             CriticalFreePercent = 10
             WarningFreeGB       = 20
             CriticalFreeGB      = 10
+
+            # Per-volume overrides win over the global thresholds. DeviceId
+            # supports wildcards; every threshold key is optional and falls
+            # back to the global value. Useful for large data volumes where
+            # the percentage threshold alone is misleading.
+            Volumes = @(
+                # @{ DeviceId = 'D:'; WarningFreePercent = 10; CriticalFreePercent = 5; WarningFreeGB = 25; CriticalFreeGB = 10 }
+            )
         }
 
         Memory = @{
@@ -123,7 +135,7 @@ function Get-InfraPulseConfigurationTemplate {
             Enabled = $true
             StorePaths = @(
                 'Cert:\LocalMachine\My'
-                'Cert:\LocalMachine\WebHosting'
+                # 'Cert:\LocalMachine\WebHosting'   # IIS web-hosting roles
             )
             WarningDays            = 30
             CriticalDays           = 14

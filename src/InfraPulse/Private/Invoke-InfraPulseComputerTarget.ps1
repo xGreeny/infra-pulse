@@ -20,6 +20,8 @@ function Invoke-InfraPulseComputerTarget {
 
         [string]$ConfigurationSource = '',
 
+        [string]$EnvironmentName = '',
+
         [System.Management.Automation.PSCredential]$Credential,
 
         [string]$Authentication = 'Default',
@@ -36,6 +38,7 @@ function Invoke-InfraPulseComputerTarget {
         RunId                    = $RunId
         ConfigurationFingerprint = $ConfigurationFingerprint
         ConfigurationSource      = $ConfigurationSource
+        EnvironmentName          = $EnvironmentName
     }
 
     $trimmedName = ([string]$TargetName).Trim()
@@ -100,7 +103,7 @@ function Invoke-InfraPulseComputerTarget {
     }
 
     try {
-        Invoke-InfraPulseTarget -Context $context -Configuration $Configuration -Checks $Checks -FailFast:$FailFast -Tags $Tags -RunId $RunId -ConfigurationFingerprint $ConfigurationFingerprint -ConfigurationSource $ConfigurationSource
+        Invoke-InfraPulseTarget -Context $context -Configuration $Configuration -Checks $Checks -FailFast:$FailFast -Tags $Tags -RunId $RunId -ConfigurationFingerprint $ConfigurationFingerprint -ConfigurationSource $ConfigurationSource -EnvironmentName $EnvironmentName
     }
     catch {
         if ($FailFast -or -not [bool]$Configuration.General.ContinueOnError) {

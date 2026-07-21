@@ -24,7 +24,9 @@ function New-InfraPulseReport {
 
         [string]$ConfigurationFingerprint = '',
 
-        [string]$ConfigurationSource = ''
+        [string]$ConfigurationSource = '',
+
+        [string]$EnvironmentName = ''
     )
 
     if ([string]::IsNullOrWhiteSpace($RunId)) {
@@ -38,7 +40,7 @@ function New-InfraPulseReport {
 
     $summary = Get-InfraPulseSummary -Results $Results
     $report = [pscustomobject][ordered]@{
-        SchemaVersion            = '1.2'
+        SchemaVersion            = '1.3'
         Tool                     = 'InfraPulse'
         ToolVersion              = $script:InfraPulseModuleVersion
         RunId                    = $RunId
@@ -49,6 +51,7 @@ function New-InfraPulseReport {
         CompletedAtUtc           = $completedAtUtc
         ConfigurationFingerprint = $ConfigurationFingerprint
         ConfigurationSource      = $ConfigurationSource
+        EnvironmentName          = $EnvironmentName
         OverallStatus            = $summary.OverallStatus
         Summary                  = $summary.Counts
         Inventory                = $Inventory

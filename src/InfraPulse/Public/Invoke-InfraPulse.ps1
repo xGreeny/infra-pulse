@@ -111,6 +111,7 @@ function Invoke-InfraPulse {
         $resolved = Resolve-InfraPulseConfiguration -ConfigurationPath $ConfigurationPath -Configuration $Configuration
         $resolvedConfiguration = $resolved.Configuration
         $configurationSource = [string]$resolved.Source
+        $environmentName = [string]$resolvedConfiguration.General.EnvironmentName
         $runId = [guid]::NewGuid().ToString()
         $configurationFingerprint = Get-InfraPulseConfigurationFingerprint -Configuration $resolvedConfiguration
         $pipelineTargets = New-Object System.Collections.Generic.List[string]
@@ -150,7 +151,7 @@ function Invoke-InfraPulse {
                     if ($FailFast -or -not [bool]$resolvedConfiguration.General.ContinueOnError) {
                         throw "Cannot use session for '$requestedName': $message"
                     }
-                    New-InfraPulseConnectionFailureReport -ComputerName $requestedName -ErrorMessage $message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint -ConfigurationSource $configurationSource
+                    New-InfraPulseConnectionFailureReport -ComputerName $requestedName -ErrorMessage $message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint -ConfigurationSource $configurationSource -EnvironmentName $environmentName
                     continue
                 }
 
@@ -162,13 +163,13 @@ function Invoke-InfraPulse {
                 }
 
                 try {
-                    Invoke-InfraPulseTarget -Context $context -Configuration $resolvedConfiguration -Checks $selectedChecks -FailFast:$FailFast -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint -ConfigurationSource $configurationSource
+                    Invoke-InfraPulseTarget -Context $context -Configuration $resolvedConfiguration -Checks $selectedChecks -FailFast:$FailFast -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint -ConfigurationSource $configurationSource -EnvironmentName $environmentName
                 }
                 catch {
                     if ($FailFast -or -not [bool]$resolvedConfiguration.General.ContinueOnError) {
                         throw
                     }
-                    New-InfraPulseExecutionFailureReport -RequestedComputerName $requestedName -ComputerName $context.ComputerName -ErrorMessage $_.Exception.Message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint -ConfigurationSource $configurationSource
+                    New-InfraPulseExecutionFailureReport -RequestedComputerName $requestedName -ComputerName $context.ComputerName -ErrorMessage $_.Exception.Message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint -ConfigurationSource $configurationSource -EnvironmentName $environmentName
                 }
             }
         }
@@ -197,6 +198,7 @@ function Invoke-InfraPulse {
             RunId                    = $runId
             ConfigurationFingerprint = $configurationFingerprint
             ConfigurationSource      = $configurationSource
+            EnvironmentName          = $environmentName
             Authentication           = $Authentication
             UseSSL                   = [bool]$UseSSL
             Port                     = $effectivePort
@@ -245,7 +247,7 @@ function Invoke-InfraPulse {
                     $workerEntry.PowerShell.EndInvoke($workerEntry.Handle)
                 }
                 catch {
-                    New-InfraPulseExecutionFailureReport -RequestedComputerName ([string]$workerEntry.Target) -ComputerName ([string]$workerEntry.Target) -ErrorMessage $_.Exception.Message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint -ConfigurationSource $configurationSource
+                    New-InfraPulseExecutionFailureReport -RequestedComputerName ([string]$workerEntry.Target) -ComputerName ([string]$workerEntry.Target) -ErrorMessage $_.Exception.Message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint -ConfigurationSource $configurationSource -EnvironmentName $environmentName
                 }
                 finally {
                     $workerEntry.PowerShell.Dispose()

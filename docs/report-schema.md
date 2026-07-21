@@ -1,6 +1,6 @@
 # Report schema
 
-InfraPulse returns PowerShell custom objects with ordered properties and explicit type names. The current schema version is `1.2`. Schema `1.0` and `1.1` JSON reports remain importable through `Import-InfraPulseReport`.
+InfraPulse returns PowerShell custom objects with ordered properties and explicit type names. The current schema version is `1.3`. Schema `1.0` through `1.2` JSON reports remain importable through `Import-InfraPulseReport`.
 
 ## `InfraPulse.Report`
 
@@ -17,6 +17,7 @@ InfraPulse returns PowerShell custom objects with ordered properties and explici
 | `CompletedAtUtc` | DateTime | UTC target scan completion time (1.1) |
 | `ConfigurationFingerprint` | string | SHA-256 fingerprint of the effective configuration (1.1) |
 | `ConfigurationSource` | string | Origin of the effective configuration: parameter path, `INFRAPULSE_CONFIG`, working directory, inline, or built-in defaults (1.2) |
+| `EnvironmentName` | string | Operator-defined environment or customer label from `General.EnvironmentName` (1.3) |
 | `OverallStatus` | string | Highest-precedence result status |
 | `Summary` | object | Counts for Total, Healthy, Warning, Critical, Unknown, Skipped |
 | `Inventory` | object/null | Host inventory when enabled and available |
@@ -28,9 +29,9 @@ Example:
 
 ```json
 {
-  "SchemaVersion": "1.2",
+  "SchemaVersion": "1.3",
   "Tool": "InfraPulse",
-  "ToolVersion": "1.4.0",
+  "ToolVersion": "1.5.0",
   "RunId": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
   "RequestedComputerName": "srv-app-01",
   "ComputerName": "SRV-APP-01",
@@ -39,6 +40,7 @@ Example:
   "CompletedAtUtc": "2026-07-20T09:30:02.1234567Z",
   "ConfigurationFingerprint": "0f1e2d3c4b5a69788796a5b4c3d2e1f0f1e2d3c4b5a69788796a5b4c3d2e1f0f",
   "ConfigurationSource": "Parameter: C:\\ops\\config\\app-server.psd1",
+  "EnvironmentName": "Kunde XYZ",
   "OverallStatus": "Warning",
   "Summary": {
     "Total": 8,
@@ -169,7 +171,7 @@ Each `InfraPulse.ResultChange` carries `ChangeType` (`NewFinding`, `Regressed`, 
 
 ## Import and rehydration
 
-`Import-InfraPulseReport` validates that a JSON document is an InfraPulse report with schema `1.0`, `1.1`, or `1.2`, restores DateTime values from ISO 8601 and from the legacy `\/Date(<epoch-ms>)\/` encoding that Windows PowerShell 5.1 produced before schema 1.1, reinstates the `InfraPulse.Report` and `InfraPulse.Result` type names, and adds empty values for schema fields that predate the source schema, including `RunId`, `ConfigurationFingerprint`, and `ConfigurationSource`.
+`Import-InfraPulseReport` validates that a JSON document is an InfraPulse report with schema `1.0` through `1.3`, restores DateTime values from ISO 8601 and from the legacy `\/Date(<epoch-ms>)\/` encoding that Windows PowerShell 5.1 produced before schema 1.1, reinstates the `InfraPulse.Report` and `InfraPulse.Result` type names, and adds empty values for schema fields that predate the source schema, including `RunId`, `ConfigurationFingerprint`, `ConfigurationSource`, and `EnvironmentName`.
 
 ## Schema evolution
 
