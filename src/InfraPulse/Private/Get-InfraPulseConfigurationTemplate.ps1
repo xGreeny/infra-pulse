@@ -46,6 +46,7 @@ function Get-InfraPulseConfigurationTemplate {
             'Memory'
             'Uptime'
             'PendingReboot'
+            'PatchAge'
             'Services'
             'Certificates'
             'EventLog'
@@ -94,6 +95,12 @@ function Get-InfraPulseConfigurationTemplate {
             ExcludeReasons = @(
                 # 'Pending file rename operations'
             )
+        }
+
+        PatchAge = @{
+            Enabled      = $true
+            WarningDays  = 45
+            CriticalDays = 90
         }
 
         Services = @{

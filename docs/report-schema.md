@@ -1,6 +1,6 @@
 # Report schema
 
-InfraPulse returns PowerShell custom objects with ordered properties and explicit type names. The current schema version is `1.1`. Schema `1.0` JSON reports remain importable through `Import-InfraPulseReport`.
+InfraPulse returns PowerShell custom objects with ordered properties and explicit type names. The current schema version is `1.2`. Schema `1.0` and `1.1` JSON reports remain importable through `Import-InfraPulseReport`.
 
 ## `InfraPulse.Report`
 
@@ -16,6 +16,7 @@ InfraPulse returns PowerShell custom objects with ordered properties and explici
 | `StartedAtUtc` | DateTime | UTC target scan start time (1.1) |
 | `CompletedAtUtc` | DateTime | UTC target scan completion time (1.1) |
 | `ConfigurationFingerprint` | string | SHA-256 fingerprint of the effective configuration (1.1) |
+| `ConfigurationSource` | string | Origin of the effective configuration: parameter path, `INFRAPULSE_CONFIG`, working directory, inline, or built-in defaults (1.2) |
 | `OverallStatus` | string | Highest-precedence result status |
 | `Summary` | object | Counts for Total, Healthy, Warning, Critical, Unknown, Skipped |
 | `Inventory` | object/null | Host inventory when enabled and available |
@@ -27,9 +28,9 @@ Example:
 
 ```json
 {
-  "SchemaVersion": "1.1",
+  "SchemaVersion": "1.2",
   "Tool": "InfraPulse",
-  "ToolVersion": "1.1.0",
+  "ToolVersion": "1.4.0",
   "RunId": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
   "RequestedComputerName": "srv-app-01",
   "ComputerName": "SRV-APP-01",
@@ -37,6 +38,7 @@ Example:
   "StartedAtUtc": "2026-07-20T09:30:01.2812345Z",
   "CompletedAtUtc": "2026-07-20T09:30:02.1234567Z",
   "ConfigurationFingerprint": "0f1e2d3c4b5a69788796a5b4c3d2e1f0f1e2d3c4b5a69788796a5b4c3d2e1f0f",
+  "ConfigurationSource": "Parameter: C:\\ops\\config\\app-server.psd1",
   "OverallStatus": "Warning",
   "Summary": {
     "Total": 8,
@@ -151,9 +153,23 @@ Each `InfraPulse.ResultChange` carries `ChangeType` (`NewFinding`, `Regressed`, 
 | `ComputerNames` | string array | Evaluated hosts |
 | `GeneratedAtUtc` | DateTime | UTC evaluation time |
 
+## `InfraPulse.ComparisonEvaluation`
+
+`Test-InfraPulseComparison` returns:
+
+| Property | Type | Description |
+|---|---|---|
+| `Passed` | Boolean | No blocking change types were found |
+| `Message` | string | Human-readable outcome summary |
+| `FailOn` | string array | Blocking change types (default `NewFinding`, `Regressed`) |
+| `TotalChanges` / `ViolationCount` | int | Change accounting |
+| `Violations` | array | Compact blocking-change descriptions |
+| `ComputerNames` | string array | Compared hosts |
+| `GeneratedAtUtc` | DateTime | UTC evaluation time |
+
 ## Import and rehydration
 
-`Import-InfraPulseReport` validates that a JSON document is an InfraPulse report with schema `1.0` or `1.1`, restores DateTime values from ISO 8601 and from the legacy `\/Date(<epoch-ms>)\/` encoding that Windows PowerShell 5.1 produced before schema 1.1, reinstates the `InfraPulse.Report` and `InfraPulse.Result` type names, and adds empty `RunId`, `StartedAtUtc`, `CompletedAtUtc`, and `ConfigurationFingerprint` values to schema `1.0` reports.
+`Import-InfraPulseReport` validates that a JSON document is an InfraPulse report with schema `1.0`, `1.1`, or `1.2`, restores DateTime values from ISO 8601 and from the legacy `\/Date(<epoch-ms>)\/` encoding that Windows PowerShell 5.1 produced before schema 1.1, reinstates the `InfraPulse.Report` and `InfraPulse.Result` type names, and adds empty values for schema fields that predate the source schema, including `RunId`, `ConfigurationFingerprint`, and `ConfigurationSource`.
 
 ## Schema evolution
 

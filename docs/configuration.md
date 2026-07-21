@@ -16,6 +16,16 @@ $result | Format-List Source, IsValid, Errors, Warnings
 $result.EffectiveConfiguration
 ```
 
+## Configuration discovery
+
+When `Invoke-InfraPulse` is called without `-ConfigurationPath` and `-Configuration`, it discovers a configuration in this order:
+
+1. The file referenced by the `INFRAPULSE_CONFIG` environment variable. A set variable that points to a missing file is an error, not a silent fallback.
+2. An `infra-pulse.psd1` file in the current working directory.
+3. The built-in defaults.
+
+Every report records the effective origin in `ConfigurationSource`, and the `ConfigurationFingerprint` makes configuration drift between runs detectable regardless of the source.
+
 ## Merge behavior
 
 - Dictionaries are merged recursively.
@@ -69,6 +79,14 @@ Inventory is still collected internally to identify the target platform and cano
 |---|---|---|---|
 | `PendingStatus` | string | `Warning` | `Warning` or `Critical` |
 | `ExcludeReasons` | string array | Empty | PowerShell wildcard patterns matched against indicator names; excluded indicators stay in evidence but no longer set the pending state |
+
+## PatchAge
+
+| Key | Type | Default | Constraint |
+|---|---|---:|---|
+| `Enabled` | Boolean | `$true` | Used by default selection |
+| `WarningDays` | number | `45` | `>= 0` |
+| `CriticalDays` | number | `90` | `>= WarningDays` |
 
 ## Services
 

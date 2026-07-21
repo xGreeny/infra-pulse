@@ -138,6 +138,22 @@ function Test-InfraPulseConfigurationData {
             }
         }
 
+        if ($checks.Contains('PatchAge')) {
+            $patchAge = $checks.PatchAge
+            foreach ($name in @('WarningDays', 'CriticalDays')) {
+                if (-not $patchAge.Contains($name) -or -not (Test-InfraPulseNumber -Value $patchAge[$name] -Minimum 0)) {
+                    [void]$errors.Add("Checks.PatchAge.$name must be zero or greater.")
+                }
+            }
+            if (
+                (Test-InfraPulseNumber -Value $patchAge.WarningDays) -and
+                (Test-InfraPulseNumber -Value $patchAge.CriticalDays) -and
+                [double]$patchAge.CriticalDays -lt [double]$patchAge.WarningDays
+            ) {
+                [void]$errors.Add('Checks.PatchAge.CriticalDays must be greater than or equal to WarningDays.')
+            }
+        }
+
         if ($checks.Contains('Services')) {
             $services = $checks.Services
             if (-not $services.Contains('Required')) {

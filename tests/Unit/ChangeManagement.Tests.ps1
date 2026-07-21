@@ -43,7 +43,7 @@ Describe 'InfraPulse report import' {
         $imported = Import-InfraPulseReport -Path $path
 
         $imported.PSObject.TypeNames | Should -Contain 'InfraPulse.Report'
-        $imported.SchemaVersion | Should -Be '1.1'
+        $imported.SchemaVersion | Should -Be '1.2'
         $imported.RunId | Should -Be '11111111-1111-4111-8111-111111111111'
         $imported.ConfigurationFingerprint | Should -Be 'fingerprint-a'
         $imported.GeneratedAtUtc | Should -BeOfType [datetime]
@@ -254,6 +254,48 @@ Describe 'InfraPulse policy evaluation' {
         ($script:Snapshots.After | Test-InfraPulseReport -FailOn Critical -MaximumWarnings 0 -Quiet) | Should -BeFalse
         { $script:Snapshots.After | Test-InfraPulseReport -FailOn Critical -MaximumWarnings 0 -ThrowOnFailure } | Should -Throw '*Policy evaluation failed*'
         ($script:Snapshots.After | Test-InfraPulseReport -FailOn Unknown -MaximumWarnings 5 -Quiet) | Should -BeTrue
+    }
+}
+
+Describe 'InfraPulse comparison gate' {
+    BeforeAll {
+        $script:GateComparison = Compare-InfraPulseReport -ReferenceObject $script:Snapshots.Before -DifferenceObject $script:Snapshots.After
+        $script:CleanComparison = Compare-InfraPulseReport -ReferenceObject $script:Snapshots.Before -DifferenceObject $script:Snapshots.Before
+    }
+
+    It 'fails on new findings and regressions by default' {
+        $evaluation = $script:GateComparison | Test-InfraPulseComparison
+
+        $evaluation.PSObject.TypeNames | Should -Contain 'InfraPulse.ComparisonEvaluation'
+        $evaluation.Passed | Should -BeFalse
+        $evaluation.ViolationCount | Should -Be 2
+        @($evaluation.Violations.ChangeType) | Should -Contain 'NewFinding'
+        @($evaluation.Violations.ChangeType) | Should -Contain 'Regressed'
+    }
+
+    It 'passes an identical snapshot pair' {
+        $evaluation = $script:CleanComparison | Test-InfraPulseComparison
+
+        $evaluation.Passed | Should -BeTrue
+        $evaluation.ViolationCount | Should -Be 0
+    }
+
+    It 'honors custom blocking change types' {
+        $evaluation = $script:GateComparison | Test-InfraPulseComparison -FailOn NotComparable
+
+        $evaluation.Passed | Should -BeFalse
+        $evaluation.ViolationCount | Should -Be 1
+        $evaluation.Violations[0].CheckName | Should -Be 'Certificates'
+    }
+
+    It 'returns a Boolean with Quiet and throws only on request' {
+        ($script:GateComparison | Test-InfraPulseComparison -Quiet) | Should -BeFalse
+        ($script:CleanComparison | Test-InfraPulseComparison -Quiet) | Should -BeTrue
+        { $script:GateComparison | Test-InfraPulseComparison -ThrowOnFailure } | Should -Throw '*blocking change*'
+    }
+
+    It 'rejects objects that are not comparisons' {
+        { [pscustomobject]@{ Name = 'x' } | Test-InfraPulseComparison } | Should -Throw '*not an InfraPulse comparison*'
     }
 }
 

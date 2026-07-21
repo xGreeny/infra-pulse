@@ -1,6 +1,6 @@
 @{
     RootModule           = 'InfraPulse.psm1'
-    ModuleVersion        = '1.3.0'
+    ModuleVersion        = '1.4.0'
     GUID                 = '381fa9f8-98e3-43b2-893d-909bbfc10378'
     Author               = 'Flurin Gubler'
     CompanyName          = 'xGreeny'
@@ -17,6 +17,7 @@
         'Import-InfraPulseReport'
         'Invoke-InfraPulse'
         'New-InfraPulseConfiguration'
+        'Test-InfraPulseComparison'
         'Test-InfraPulseConfiguration'
         'Test-InfraPulseReport'
     )
@@ -41,7 +42,7 @@
             )
             LicenseUri = 'https://github.com/xGreeny/infra-pulse/blob/main/LICENSE'
             ProjectUri = 'https://github.com/xGreeny/infra-pulse'
-            ReleaseNotes = 'Adds Checks.PendingReboot.ExcludeReasons: wildcard exclusions for structurally noisy reboot indicators such as pending file renames, with excluded indicators preserved in evidence.'
+            ReleaseNotes = 'Fleet release: parallel multi-host scans with ThrottleLimit, fleet overview in HTML reports, configuration discovery with a recorded source, the PatchAge check, and Test-InfraPulseComparison as a regression gate.'
         }
     }
 }

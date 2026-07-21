@@ -1,5 +1,17 @@
 # Publishing the repository
 
+## PowerShell Gallery
+
+The module folder under `src/InfraPulse` is Gallery-ready (manifest tags, license, and project URI are set). Publish a released version manually with an API key from `https://www.powershellgallery.com/account/apikeys`:
+
+```powershell
+Copy-Item "C:\Users\FlurinGubler\OneDrive - Beltronic - Neseco IT GmbH\Git\infra-pulse\infra-pulse\src\InfraPulse" "$env:TEMP\InfraPulse" -Recurse -Force
+Publish-PSResource -Path "$env:TEMP\InfraPulse" -Repository PSGallery -ApiKey '<DEIN-API-KEY>'
+Remove-Item "$env:TEMP\InfraPulse" -Recurse -Force
+```
+
+Publish only tagged, released states so the Gallery version always matches a GitHub release. Hosts then install and update with `Install-PSResource InfraPulse` (or `Install-Module InfraPulse`).
+
 This repository is prepared for `https://github.com/xGreeny/infra-pulse`.
 
 ## Initial publication

@@ -85,6 +85,47 @@ Describe 'InfraPulse check evaluation logic' {
         }
     }
 
+    It 'marks patch age critical at the critical boundary' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    TotalPatches = 12; LastPatchDate = (Get-Date).AddDays(-90); LastPatchId = 'KB5031234'
+                    RecentPatches = @([pscustomobject]@{ HotFixId = 'KB5031234'; Description = 'Security Update'; InstalledOn = (Get-Date).AddDays(-90) })
+                }
+            }
+
+            $result = Invoke-InfraPulsePatchAgeCheck -Context $script:Context -Settings $script:Defaults.Checks.PatchAge
+            $result.Status | Should -Be 'Critical'
+            $result.Evidence.LastPatchId | Should -Be 'KB5031234'
+        }
+    }
+
+    It 'marks patch age healthy inside the expected cadence' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    TotalPatches = 12; LastPatchDate = (Get-Date).AddDays(-10); LastPatchId = 'KB5039876'
+                    RecentPatches = @()
+                }
+            }
+
+            $result = Invoke-InfraPulsePatchAgeCheck -Context $script:Context -Settings $script:Defaults.Checks.PatchAge
+            $result.Status | Should -Be 'Healthy'
+            [double]$result.Evidence.DaysSince | Should -BeLessThan 11
+        }
+    }
+
+    It 'marks patch age unknown when no dated updates exist' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{ TotalPatches = 0; LastPatchDate = $null; LastPatchId = $null; RecentPatches = @() }
+            }
+
+            $result = Invoke-InfraPulsePatchAgeCheck -Context $script:Context -Settings $script:Defaults.Checks.PatchAge
+            $result.Status | Should -Be 'Unknown'
+        }
+    }
+
     It 'reports healthy when the only reboot indicator is excluded' {
         InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {

@@ -5,6 +5,7 @@ BeforeAll {
     $script:ModulePath = Join-Path -Path $script:RepositoryRoot -ChildPath 'src/InfraPulse/InfraPulse.psd1'
     Remove-Module -Name InfraPulse -Force -ErrorAction SilentlyContinue
     Import-Module -Name $script:ModulePath -Force -ErrorAction Stop
+    $env:INFRAPULSE_CONFIG = $null
 }
 
 AfterAll {
@@ -55,6 +56,25 @@ Describe 'Invoke-InfraPulse orchestration' {
             Mock New-PSSession { throw 'The client cannot connect.' }
 
             { Invoke-InfraPulse -ComputerName 'srv-offline-01' -Check Disk -FailFast } | Should -Throw '*cannot connect*'
+        }
+    }
+
+    It 'scans multiple targets sequentially with a shared run identity when ThrottleLimit is 1' {
+        InModuleScope InfraPulse {
+            Mock Test-InfraPulseLocalTarget { $true }
+            Mock Invoke-InfraPulseTarget {
+                param($Context, $Configuration, $Checks, $FailFast, $Tags, $RunId, $ConfigurationFingerprint, $ConfigurationSource)
+                New-InfraPulseReport -RequestedComputerName $Context.RequestedComputerName -ComputerName $Context.ComputerName -Inventory $null -Results @(
+                    New-InfraPulseResult -Status Healthy -CheckName Memory -Category Capacity -ComputerName $Context.ComputerName -Target 'Memory' -Message 'Healthy.'
+                ) -DurationMs 1 -RunId $RunId -ConfigurationFingerprint $ConfigurationFingerprint -ConfigurationSource $ConfigurationSource
+            }
+
+            $reports = @(Invoke-InfraPulse -ComputerName 'host-a', 'host-b' -Check Memory -ThrottleLimit 1)
+
+            $reports.Count | Should -Be 2
+            @($reports | ForEach-Object { $_.RunId } | Select-Object -Unique).Count | Should -Be 1
+            $reports[0].ConfigurationSource | Should -Be 'Built-in defaults'
+            Should -Invoke Invoke-InfraPulseTarget -Times 2 -Exactly
         }
     }
 

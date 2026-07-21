@@ -116,10 +116,21 @@ function Invoke-InfraPulseEventLogCheck {
                     }
                 }
 
+                # LevelDisplayName is localized; the invariant name keeps the
+                # machine-readable exports comparable across target locales.
+                $levelName = switch ([int]$eventRecord.Level) {
+                    1 { 'Critical' }
+                    2 { 'Error' }
+                    3 { 'Warning' }
+                    4 { 'Information' }
+                    5 { 'Verbose' }
+                    default { [string]$eventRecord.Level }
+                }
+
                 $samples += [pscustomobject]@{
                     TimeCreated  = $eventRecord.TimeCreated
                     Id           = [int]$eventRecord.Id
-                    Level        = [string]$eventRecord.LevelDisplayName
+                    Level        = $levelName
                     ProviderName = [string]$eventRecord.ProviderName
                     Message      = $message
                 }

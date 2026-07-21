@@ -53,6 +53,16 @@ Any detected indicator produces the configured `PendingStatus` (`Warning` or `Cr
 
 `ExcludeReasons` accepts PowerShell wildcard patterns matched against the indicator names (`Component Based Servicing`, `Windows Update`, `Pending file rename operations`, `UpdateExeVolatile`, `Computer rename`, `Configuration Manager client`). Excluded indicators no longer set the pending state — a host whose only indicators are excluded reports `Healthy` — but they remain visible in the result evidence under `ExcludedReasons`. This is intended for environments where an indicator is structurally noisy, for example multi-session hosts whose agents re-create pending file renames within hours of every scheduled reboot; prefer excluding the specific indicator over tolerating a permanent warning.
 
+## PatchAge
+
+**Category:** Lifecycle
+**Platform:** Windows
+**Source:** `Win32_QuickFixEngineering`
+
+Evaluates the number of days since the most recent installed Windows update and flags hosts that fall behind the expected patch cadence. Evidence includes the latest KB identifier, the installation date, and the five most recent updates.
+
+`Win32_QuickFixEngineering` lists servicing-stack and CBS-installed updates; updates delivered through other channels (for example full feature upgrades or third-party installers) may not appear. When no entry carries an installation date, the check reports `Unknown` instead of guessing.
+
 ## Services
 
 **Category:** Availability

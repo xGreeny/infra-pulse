@@ -110,6 +110,30 @@
       </TableControl>
     </View>
     <View>
+      <Name>InfraPulse.ComparisonEvaluation</Name>
+      <ViewSelectedBy>
+        <TypeName>InfraPulse.ComparisonEvaluation</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader><Label>Passed</Label><Width>7</Width></TableColumnHeader>
+          <TableColumnHeader><Label>Violations</Label><Width>11</Width><Alignment>Right</Alignment></TableColumnHeader>
+          <TableColumnHeader><Label>Changes</Label><Width>8</Width><Alignment>Right</Alignment></TableColumnHeader>
+          <TableColumnHeader><Label>Message</Label></TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem><PropertyName>Passed</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>ViolationCount</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>TotalChanges</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>Message</PropertyName></TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+    <View>
       <Name>InfraPulse.PolicyEvaluation</Name>
       <ViewSelectedBy>
         <TypeName>InfraPulse.PolicyEvaluation</TypeName>

@@ -183,6 +183,7 @@ function Invoke-ManifestValidation {
         'Import-InfraPulseReport'
         'Invoke-InfraPulse'
         'New-InfraPulseConfiguration'
+        'Test-InfraPulseComparison'
         'Test-InfraPulseConfiguration'
         'Test-InfraPulseReport'
     )

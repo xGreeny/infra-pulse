@@ -2,6 +2,23 @@
 
 All notable changes to InfraPulse are documented in this file. The project follows [Semantic Versioning](https://semver.org/).
 
+## [1.4.0] - 2026-07-21
+
+### Added
+
+- Parallel multi-host scans: multiple `-ComputerName` targets run in parallel runspaces with a configurable `-ThrottleLimit` (default 8); `-FailFast` and `-ThrottleLimit 1` force sequential processing, and reports are emitted in input order with one shared `RunId`.
+- Fleet overview in HTML reports: a host-by-status matrix with per-host counts and anchors, shown for reports covering two or more hosts.
+- Configuration discovery: without explicit parameters, `Invoke-InfraPulse` uses the `INFRAPULSE_CONFIG` environment variable or an `infra-pulse.psd1` in the working directory before falling back to built-in defaults.
+- Report schema 1.2 with `ConfigurationSource`, recording the origin of the effective configuration; `Import-InfraPulseReport` accepts schemas 1.0 through 1.2.
+- `PatchAge` check: days since the most recent installed Windows update, with the latest KB and recent update history as evidence.
+- `Test-InfraPulseComparison`: a regression gate over `Compare-InfraPulseReport` output that blocks on `NewFinding` and `Regressed` changes by default.
+- PowerShell Gallery publishing instructions in the operator documentation.
+
+### Changed
+
+- The scheduled-scan example now keeps a report history with retention, compares each run against the previous snapshot, and gates on both the change policy and regressions with distinct exit codes.
+- HTML report durations are formatted culture-invariantly, and event-log sample levels use invariant names instead of localized display strings.
+
 ## [1.3.0] - 2026-07-21
 
 ### Added
@@ -63,6 +80,7 @@ All notable changes to InfraPulse are documented in this file. The project follo
 - Pester test suite, PSScriptAnalyzer policy, dual-engine CI, and tagged-release packaging.
 - Operator documentation, examples, issue forms, security policy, and contribution workflow.
 
+[1.4.0]: https://github.com/xGreeny/infra-pulse/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/xGreeny/infra-pulse/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/xGreeny/infra-pulse/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/xGreeny/infra-pulse/compare/v1.1.0...v1.1.1

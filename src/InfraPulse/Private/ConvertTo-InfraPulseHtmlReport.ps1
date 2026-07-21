@@ -118,6 +118,9 @@ tr:hover td { background: rgba(255,255,255,.018); }
 .muted { color: var(--muted); }
 .threshold { display: block; white-space: nowrap; }
 .recommendation { max-width: 380px; }
+.fleet table { min-width: 720px; }
+.fleet a { color: var(--accent-2); text-decoration: none; }
+.fleet a:hover { text-decoration: underline; }
 details { margin-top: 8px; }
 summary { color: var(--accent); cursor: pointer; font-size: .78rem; }
 pre { white-space: pre-wrap; word-break: break-word; max-width: 640px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: #090e19; color: #c9d7e8; font-size: .74rem; }
@@ -154,8 +157,8 @@ footer { margin-top: 28px; color: var(--muted); text-align: center; font-size: .
   const printButton = document.getElementById('print-report');
   const visibleCount = document.getElementById('visible-count');
   const emptyState = document.getElementById('empty-state');
-  const rows = Array.from(document.querySelectorAll('tbody tr'));
-  const hosts = Array.from(document.querySelectorAll('.host'));
+  const rows = Array.from(document.querySelectorAll('article.host tbody tr'));
+  const hosts = Array.from(document.querySelectorAll('article.host'));
 
   function applyFilters() {
     const query = queryInput.value.trim().toLowerCase();
@@ -247,6 +250,29 @@ footer { margin-top: 28px; color: var(--muted); text-align: center; font-size: .
     }
     $null = $builder.AppendLine('</section>')
 
+    if ($reportArray.Count -ge 2) {
+        $null = $builder.AppendLine('<section class="host fleet" aria-label="Fleet overview">')
+        $null = $builder.AppendLine('<header class="host-header"><div><h2 class="host-title">Fleet overview</h2><div class="host-meta">' + $reportArray.Count + ' hosts</div></div><span class="status ' + $aggregateClass + '">' + (ConvertTo-InfraPulseHtmlEncoded -Value $aggregate.OverallStatus) + '</span></header>')
+        $null = $builder.AppendLine('<div class="table-wrap"><table>')
+        $null = $builder.AppendLine('<thead><tr><th>Host</th><th>Status</th><th>Critical</th><th>Warning</th><th>Unknown</th><th>Healthy</th><th>Skipped</th><th>Duration</th></tr></thead><tbody>')
+        for ($fleetIndex = 0; $fleetIndex -lt $reportArray.Count; $fleetIndex++) {
+            $fleetReport = $reportArray[$fleetIndex]
+            $fleetClass = Get-InfraPulseStatusCssClass -Status ([string]$fleetReport.OverallStatus)
+            $fleetDuration = [string]::Format([System.Globalization.CultureInfo]::InvariantCulture, '{0:N0} ms', [double]$fleetReport.DurationMs)
+            $null = $builder.AppendLine('<tr>')
+            $null = $builder.AppendLine('<td><a class="mono" href="#host-' + $fleetIndex + '">' + (ConvertTo-InfraPulseHtmlEncoded -Value $fleetReport.ComputerName) + '</a></td>')
+            $null = $builder.AppendLine('<td><span class="status ' + $fleetClass + '">' + (ConvertTo-InfraPulseHtmlEncoded -Value $fleetReport.OverallStatus) + '</span></td>')
+            $null = $builder.AppendLine('<td class="mono">' + [int]$fleetReport.Summary.Critical + '</td>')
+            $null = $builder.AppendLine('<td class="mono">' + [int]$fleetReport.Summary.Warning + '</td>')
+            $null = $builder.AppendLine('<td class="mono">' + [int]$fleetReport.Summary.Unknown + '</td>')
+            $null = $builder.AppendLine('<td class="mono">' + [int]$fleetReport.Summary.Healthy + '</td>')
+            $null = $builder.AppendLine('<td class="mono">' + [int]$fleetReport.Summary.Skipped + '</td>')
+            $null = $builder.AppendLine('<td class="mono">' + (ConvertTo-InfraPulseHtmlEncoded -Value $fleetDuration) + '</td>')
+            $null = $builder.AppendLine('</tr>')
+        }
+        $null = $builder.AppendLine('</tbody></table></div></section>')
+    }
+
     $null = $builder.AppendLine('<section class="toolbar" aria-label="Report filters">')
     $null = $builder.AppendLine('<input id="filter-query" class="control" type="search" placeholder="Filter host, check, target or message" aria-label="Filter report">')
     $null = $builder.AppendLine('<select id="filter-status" class="control" aria-label="Filter by status"><option value="all">All statuses</option><option value="critical">Critical</option><option value="warning">Warning</option><option value="unknown">Unknown</option><option value="healthy">Healthy</option><option value="skipped">Skipped</option></select>')
@@ -255,15 +281,16 @@ footer { margin-top: 28px; color: var(--muted); text-align: center; font-size: .
     $null = $builder.AppendLine('<span id="visible-count" class="visible-count" aria-live="polite"></span>')
     $null = $builder.AppendLine('</section>')
 
-    foreach ($report in $reportArray) {
+    for ($hostIndex = 0; $hostIndex -lt $reportArray.Count; $hostIndex++) {
+        $report = $reportArray[$hostIndex]
         $hostClass = Get-InfraPulseStatusCssClass -Status ([string]$report.OverallStatus)
         $generated = if ($report.GeneratedAtUtc) { ([datetime]$report.GeneratedAtUtc).ToUniversalTime().ToString('yyyy-MM-dd HH:mm:ss') + ' UTC' } else { 'n/a' }
-        $duration = '{0:N0} ms' -f [double]$report.DurationMs
+        $duration = [string]::Format([System.Globalization.CultureInfo]::InvariantCulture, '{0:N0} ms', [double]$report.DurationMs)
         $tags = @($report.Tags | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
         $inventorySearch = if ($null -eq $report.Inventory) { '' } else { ConvertTo-Json -InputObject (ConvertTo-InfraPulseSerializableValue -Value $report.Inventory) -Depth 4 -Compress }
         $hostSearch = (@([string]$report.ComputerName, [string]$report.RequestedComputerName, ($tags -join ' '), $inventorySearch) -join ' ').ToLowerInvariant()
 
-        $null = $builder.AppendLine('<article class="host" data-search="' + (ConvertTo-InfraPulseHtmlEncoded -Value $hostSearch) + '">')
+        $null = $builder.AppendLine('<article class="host" id="host-' + $hostIndex + '" data-search="' + (ConvertTo-InfraPulseHtmlEncoded -Value $hostSearch) + '">')
         $null = $builder.AppendLine('<header class="host-header"><div><h2 class="host-title">' + (ConvertTo-InfraPulseHtmlEncoded -Value $report.ComputerName) + '</h2><div class="host-meta">generated ' + (ConvertTo-InfraPulseHtmlEncoded -Value $generated) + ' | duration ' + (ConvertTo-InfraPulseHtmlEncoded -Value $duration) + '</div>')
         if ($tags.Count -gt 0) {
             $null = $builder.AppendLine('<div class="tags">')

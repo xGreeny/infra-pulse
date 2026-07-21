@@ -22,7 +22,9 @@ function New-InfraPulseReport {
 
         [datetime]$StartedAtUtc,
 
-        [string]$ConfigurationFingerprint = ''
+        [string]$ConfigurationFingerprint = '',
+
+        [string]$ConfigurationSource = ''
     )
 
     if ([string]::IsNullOrWhiteSpace($RunId)) {
@@ -36,7 +38,7 @@ function New-InfraPulseReport {
 
     $summary = Get-InfraPulseSummary -Results $Results
     $report = [pscustomobject][ordered]@{
-        SchemaVersion            = '1.1'
+        SchemaVersion            = '1.2'
         Tool                     = 'InfraPulse'
         ToolVersion              = $script:InfraPulseModuleVersion
         RunId                    = $RunId
@@ -46,6 +48,7 @@ function New-InfraPulseReport {
         StartedAtUtc             = $StartedAtUtc.ToUniversalTime()
         CompletedAtUtc           = $completedAtUtc
         ConfigurationFingerprint = $ConfigurationFingerprint
+        ConfigurationSource      = $ConfigurationSource
         OverallStatus            = $summary.OverallStatus
         Summary                  = $summary.Counts
         Inventory                = $Inventory

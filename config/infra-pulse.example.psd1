@@ -48,6 +48,11 @@
             )
         }
 
+        PatchAge = @{
+            WarningDays  = 45
+            CriticalDays = 90
+        }
+
         Services = @{
             Required = @(
                 @{

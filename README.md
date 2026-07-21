@@ -21,9 +21,10 @@ InfraPulse turns routine server validation into repeatable PowerShell checks, ty
 
 ## Why InfraPulse
 
-- Eleven built-in read-only checks for local or remote targets.
+- Twelve built-in read-only checks for local or remote targets.
+- Parallel multi-host scans with a configurable throttle and a fleet overview in the HTML report.
 - Stable `InfraPulse.Report` and `InfraPulse.Result` objects instead of parsed console text.
-- Validated configuration-as-code with deterministic deep merging.
+- Validated configuration-as-code with deterministic deep merging and automatic discovery via `INFRAPULSE_CONFIG` or a working-directory `infra-pulse.psd1`.
 - Searchable, self-contained HTML plus JSON and CSV exports.
 - JSON report import with schema validation and type rehydration.
 - Snapshot comparison that classifies regressions, resolved findings, and evidence changes.
@@ -151,6 +152,12 @@ $after |
 
 `Test-InfraPulseReport` returns an `InfraPulse.PolicyEvaluation` object. It never exits the PowerShell host process and throws only when `-ThrowOnFailure` is explicitly requested.
 
+Comparisons gate the same way: `Test-InfraPulseComparison` blocks on `NewFinding` and `Regressed` changes by default, turning a pre-change/post-change comparison into a deterministic regression gate:
+
+```powershell
+Compare-InfraPulseReport $before $after | Test-InfraPulseComparison -ThrowOnFailure
+```
+
 ## Built-in checks
 
 | Check | Default | Platform | Evaluation |
@@ -159,6 +166,7 @@ $after |
 | `Memory` | On | Windows | Available physical memory percentage |
 | `Uptime` | On | Windows | Time since the last operating-system boot |
 | `PendingReboot` | On | Windows | Servicing, Windows Update, rename, and Configuration Manager indicators |
+| `PatchAge` | On | Windows | Days since the most recent installed Windows update |
 | `Services` | On | Windows | Required service existence and expected state; collection failures remain `Unknown` |
 | `Certificates` | On | Windows | Expired and expiring machine certificates plus missing-store evidence |
 | `EventLog` | On | Windows | Recent critical/error volume, top providers, and optional samples |
@@ -251,7 +259,7 @@ Dictionaries merge recursively. Scalars and arrays replace defaults. The complet
 
 ## Remote scans
 
-InfraPulse can create temporary WSMan sessions:
+InfraPulse can create temporary WSMan sessions. Multiple targets are scanned in parallel runspaces (default throttle 8, tunable with `-ThrottleLimit`; `-FailFast` forces sequential processing):
 
 ```powershell
 $credential = Get-Credential
@@ -300,16 +308,17 @@ Report precedence is `Critical` → `Warning` → `Unknown` → `Healthy` → `S
 
 ## Report contracts
 
-InfraPulse deliberately keeps data separate from display formatting. Report schema 1.1 adds:
+InfraPulse deliberately keeps data separate from display formatting. Report schema 1.2 carries run identity and configuration provenance:
 
 ```text
 RunId
 StartedAtUtc
 CompletedAtUtc
 ConfigurationFingerprint
+ConfigurationSource
 ```
 
-Schema 1.0 JSON reports remain importable. Details are documented in [`docs/report-schema.md`](docs/report-schema.md).
+Schema 1.0 and 1.1 JSON reports remain importable. Details are documented in [`docs/report-schema.md`](docs/report-schema.md).
 
 ## Security boundaries
 

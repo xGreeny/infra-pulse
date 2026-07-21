@@ -15,7 +15,7 @@ function Invoke-InfraPulse {
         Existing PSSession objects. InfraPulse never closes sessions supplied by the caller.
 
     .PARAMETER ConfigurationPath
-        Path to a .psd1 configuration file.
+        Path to a .psd1 configuration file. When neither ConfigurationPath nor Configuration is supplied, InfraPulse discovers a configuration from the INFRAPULSE_CONFIG environment variable or an infra-pulse.psd1 file in the working directory before falling back to built-in defaults; the report records the effective source in ConfigurationSource.
 
     .PARAMETER Configuration
         Configuration overrides supplied as a hashtable.
@@ -35,8 +35,11 @@ function Invoke-InfraPulse {
     .PARAMETER Port
         Overrides the remoting port.
 
+    .PARAMETER ThrottleLimit
+        Maximum number of computers scanned concurrently. Multiple targets are scanned in parallel runspaces unless ThrottleLimit is 1 or FailFast is set, which force sequential processing.
+
     .PARAMETER FailFast
-        Stops at the first connection or check failure instead of returning a control result and continuing.
+        Stops at the first connection or check failure instead of returning a control result and continuing. Implies sequential processing.
 
     .PARAMETER Tag
         Adds user-defined tags to every returned report.
@@ -78,7 +81,7 @@ function Invoke-InfraPulse {
         [ValidateNotNull()]
         [System.Collections.IDictionary]$Configuration,
 
-        [ValidateSet('Disk', 'Memory', 'Uptime', 'PendingReboot', 'Services', 'Certificates', 'EventLog', 'Dns', 'Tcp', 'Tls', 'TimeSync')]
+        [ValidateSet('Disk', 'Memory', 'Uptime', 'PendingReboot', 'PatchAge', 'Services', 'Certificates', 'EventLog', 'Dns', 'Tcp', 'Tls', 'TimeSync')]
         [string[]]$Check,
 
         [Parameter(ParameterSetName = 'ComputerName')]
@@ -95,15 +98,22 @@ function Invoke-InfraPulse {
         [ValidateRange(1, 65535)]
         [int]$Port,
 
+        [Parameter(ParameterSetName = 'ComputerName')]
+        [ValidateRange(1, 64)]
+        [int]$ThrottleLimit = 8,
+
         [switch]$FailFast,
 
         [string[]]$Tag = @()
     )
 
     begin {
-        $resolvedConfiguration = Resolve-InfraPulseConfiguration -ConfigurationPath $ConfigurationPath -Configuration $Configuration
+        $resolved = Resolve-InfraPulseConfiguration -ConfigurationPath $ConfigurationPath -Configuration $Configuration
+        $resolvedConfiguration = $resolved.Configuration
+        $configurationSource = [string]$resolved.Source
         $runId = [guid]::NewGuid().ToString()
         $configurationFingerprint = Get-InfraPulseConfigurationFingerprint -Configuration $resolvedConfiguration
+        $pipelineTargets = New-Object System.Collections.Generic.List[string]
         $catalog = @(Get-InfraPulseCheckCatalog)
         $normalizedTags = @(
             $Tag |
@@ -140,7 +150,7 @@ function Invoke-InfraPulse {
                     if ($FailFast -or -not [bool]$resolvedConfiguration.General.ContinueOnError) {
                         throw "Cannot use session for '$requestedName': $message"
                     }
-                    New-InfraPulseConnectionFailureReport -ComputerName $requestedName -ErrorMessage $message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint
+                    New-InfraPulseConnectionFailureReport -ComputerName $requestedName -ErrorMessage $message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint -ConfigurationSource $configurationSource
                     continue
                 }
 
@@ -152,97 +162,99 @@ function Invoke-InfraPulse {
                 }
 
                 try {
-                    Invoke-InfraPulseTarget -Context $context -Configuration $resolvedConfiguration -Checks $selectedChecks -FailFast:$FailFast -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint
+                    Invoke-InfraPulseTarget -Context $context -Configuration $resolvedConfiguration -Checks $selectedChecks -FailFast:$FailFast -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint -ConfigurationSource $configurationSource
                 }
                 catch {
                     if ($FailFast -or -not [bool]$resolvedConfiguration.General.ContinueOnError) {
                         throw
                     }
-                    New-InfraPulseExecutionFailureReport -RequestedComputerName $requestedName -ComputerName $context.ComputerName -ErrorMessage $_.Exception.Message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint
+                    New-InfraPulseExecutionFailureReport -RequestedComputerName $requestedName -ComputerName $context.ComputerName -ErrorMessage $_.Exception.Message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint -ConfigurationSource $configurationSource
                 }
             }
         }
         else {
             foreach ($target in $ComputerName) {
-                $targetName = ([string]$target).Trim()
-                if ([string]::IsNullOrWhiteSpace($targetName)) {
-                    $message = 'ComputerName cannot be empty or whitespace.'
-                    if ($FailFast -or -not [bool]$resolvedConfiguration.General.ContinueOnError) {
-                        throw $message
-                    }
-                    $invalidTargetName = '<empty>'
-                    New-InfraPulseConnectionFailureReport -ComputerName $invalidTargetName -ErrorMessage $message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint
-                    continue
+                [void]$pipelineTargets.Add([string]$target)
+            }
+        }
+    }
+
+    end {
+        if ($PSCmdlet.ParameterSetName -eq 'Session') {
+            return
+        }
+
+        $targets = @($pipelineTargets.ToArray())
+        if ($targets.Count -eq 0) {
+            return
+        }
+
+        $effectivePort = if ($PSBoundParameters.ContainsKey('Port')) { $Port } else { 0 }
+        $targetParameters = @{
+            Configuration            = $resolvedConfiguration
+            Checks                   = $selectedChecks
+            Tags                     = $normalizedTags
+            RunId                    = $runId
+            ConfigurationFingerprint = $configurationFingerprint
+            ConfigurationSource      = $configurationSource
+            Authentication           = $Authentication
+            UseSSL                   = [bool]$UseSSL
+            Port                     = $effectivePort
+            FailFast                 = [bool]$FailFast
+        }
+        if ($null -ne $Credential) {
+            $targetParameters.Credential = $Credential
+        }
+
+        # FailFast requires deterministic early termination, so it always runs
+        # sequentially; parallel runspaces only pay off for multiple targets.
+        $useParallel = $targets.Count -gt 1 -and $ThrottleLimit -gt 1 -and -not $FailFast
+        if (-not $useParallel) {
+            foreach ($target in $targets) {
+                Invoke-InfraPulseComputerTarget -TargetName $target @targetParameters
+            }
+            return
+        }
+
+        $initialSessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
+        [void]$initialSessionState.ImportPSModule($script:InfraPulseManifestPath)
+        $runspacePool = [runspacefactory]::CreateRunspacePool(1, $ThrottleLimit, $initialSessionState, $Host)
+        $runspacePool.Open()
+        $workers = New-Object System.Collections.Generic.List[object]
+
+        try {
+            foreach ($target in $targets) {
+                $workerParameters = @{} + $targetParameters
+                $workerParameters.TargetName = [string]$target
+
+                $worker = [powershell]::Create()
+                $worker.RunspacePool = $runspacePool
+                [void]$worker.AddScript('param($WorkerParameters) & (Get-Module -Name InfraPulse) { param($p) Invoke-InfraPulseComputerTarget @p } $WorkerParameters').AddArgument($workerParameters)
+                $workerRecord = @{
+                    Target     = [string]$target
+                    PowerShell = $worker
+                    Handle     = $worker.BeginInvoke()
                 }
+                [void]$workers.Add($workerRecord)
+            }
 
-                $ownedSession = $null
-                $context = $null
-                $connectionStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-
+            # Results are emitted in input order; workers that finish ahead of
+            # the cursor simply wait in their runspaces.
+            foreach ($workerEntry in @($workers.ToArray())) {
                 try {
-                    if (Test-InfraPulseLocalTarget -ComputerName $targetName) {
-                        $connectionStopwatch.Stop()
-                        $context = [pscustomobject]@{
-                            RequestedComputerName = $targetName
-                            ComputerName          = [Environment]::MachineName
-                            Session               = $null
-                            OwnsSession           = $false
-                        }
-                    }
-                    else {
-                        $sessionOptions = New-PSSessionOption -OpenTimeout ([int]$resolvedConfiguration.General.ConnectionTimeoutSeconds * 1000) -OperationTimeout ([int]$resolvedConfiguration.General.ConnectionTimeoutSeconds * 4000)
-                        $sessionParameters = @{
-                            ComputerName  = $targetName
-                            Authentication = $Authentication
-                            SessionOption = $sessionOptions
-                            ErrorAction   = 'Stop'
-                        }
-                        if ($null -ne $Credential) {
-                            $sessionParameters.Credential = $Credential
-                        }
-                        if ($UseSSL) {
-                            $sessionParameters.UseSSL = $true
-                        }
-                        if ($PSBoundParameters.ContainsKey('Port')) {
-                            $sessionParameters.Port = $Port
-                        }
-
-                        Write-Verbose "[$targetName] Opening PowerShell remoting session."
-                        $ownedSession = New-PSSession @sessionParameters
-                        $connectionStopwatch.Stop()
-                        $context = [pscustomobject]@{
-                            RequestedComputerName = $targetName
-                            ComputerName          = $targetName
-                            Session               = $ownedSession
-                            OwnsSession           = $true
-                        }
-                    }
+                    $workerEntry.PowerShell.EndInvoke($workerEntry.Handle)
                 }
                 catch {
-                    $connectionStopwatch.Stop()
-                    if ($FailFast -or -not [bool]$resolvedConfiguration.General.ContinueOnError) {
-                        throw
-                    }
-                    New-InfraPulseConnectionFailureReport -ComputerName $targetName -ErrorMessage $_.Exception.Message -DurationMs $connectionStopwatch.Elapsed.TotalMilliseconds -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint
-                    continue
-                }
-
-                try {
-                    Invoke-InfraPulseTarget -Context $context -Configuration $resolvedConfiguration -Checks $selectedChecks -FailFast:$FailFast -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint
-                }
-                catch {
-                    if ($FailFast -or -not [bool]$resolvedConfiguration.General.ContinueOnError) {
-                        throw
-                    }
-                    New-InfraPulseExecutionFailureReport -RequestedComputerName $targetName -ComputerName $context.ComputerName -ErrorMessage $_.Exception.Message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint
+                    New-InfraPulseExecutionFailureReport -RequestedComputerName ([string]$workerEntry.Target) -ComputerName ([string]$workerEntry.Target) -ErrorMessage $_.Exception.Message -Tags $normalizedTags -RunId $runId -ConfigurationFingerprint $configurationFingerprint -ConfigurationSource $configurationSource
                 }
                 finally {
-                    if ($null -ne $ownedSession) {
-                        Write-Verbose "[$targetName] Closing PowerShell remoting session."
-                        Remove-PSSession -Session $ownedSession -ErrorAction SilentlyContinue
-                    }
+                    $workerEntry.PowerShell.Dispose()
                 }
             }
+        }
+        finally {
+            $runspacePool.Close()
+            $runspacePool.Dispose()
         }
     }
 }

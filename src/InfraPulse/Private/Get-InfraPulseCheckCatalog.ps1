@@ -32,6 +32,13 @@ function Get-InfraPulseCheckCatalog {
             Description     = 'Checks servicing, Windows Update, file rename, computer rename, and Configuration Manager reboot indicators.'
         }
         [pscustomobject]@{
+            Name            = 'PatchAge'
+            Category        = 'Lifecycle'
+            FunctionName    = 'Invoke-InfraPulsePatchAgeCheck'
+            RequiresWindows = $true
+            Description     = 'Evaluates the age of the most recent installed Windows update.'
+        }
+        [pscustomobject]@{
             Name            = 'Services'
             Category        = 'Availability'
             FunctionName    = 'Invoke-InfraPulseServiceCheck'

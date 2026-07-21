@@ -3,6 +3,7 @@ BeforeAll {
     $script:ModulePath = Join-Path -Path $script:RepositoryRoot -ChildPath 'src/InfraPulse/InfraPulse.psd1'
     Remove-Module -Name InfraPulse -Force -ErrorAction SilentlyContinue
     Import-Module -Name $script:ModulePath -Force -ErrorAction Stop
+    $env:INFRAPULSE_CONFIG = $null
 }
 
 AfterAll {
@@ -199,7 +200,7 @@ Describe 'InfraPulse configuration lifecycle' {
 
     It 'preserves defaults while applying a partial override' {
         InModuleScope InfraPulse {
-            $configuration = Resolve-InfraPulseConfiguration -Configuration @{
+            $resolved = Resolve-InfraPulseConfiguration -Configuration @{
                 Checks = @{
                     Disk = @{
                         WarningFreePercent = 17
@@ -207,11 +208,116 @@ Describe 'InfraPulse configuration lifecycle' {
                 }
             }
 
-            $configuration.Checks.Disk.WarningFreePercent | Should -Be 17
-            $configuration.Checks.Disk.CriticalFreePercent | Should -Be 10
-            $configuration.Checks.Memory.Enabled | Should -BeTrue
-            $configuration.General.ConnectionTimeoutSeconds | Should -Be 15
+            $resolved.Source | Should -Be 'Inline configuration'
+            $resolved.Configuration.Checks.Disk.WarningFreePercent | Should -Be 17
+            $resolved.Configuration.Checks.Disk.CriticalFreePercent | Should -Be 10
+            $resolved.Configuration.Checks.Memory.Enabled | Should -BeTrue
+            $resolved.Configuration.General.ConnectionTimeoutSeconds | Should -Be 15
         }
+    }
+
+    It 'falls back to built-in defaults when nothing is discovered' {
+        InModuleScope InfraPulse -Parameters @{ WorkDir = (Join-Path $TestDrive 'empty-cwd') } {
+            param($WorkDir)
+            $null = New-Item -Path $WorkDir -ItemType Directory -Force
+            Push-Location -LiteralPath $WorkDir
+            try {
+                $resolved = Resolve-InfraPulseConfiguration
+                $resolved.Source | Should -Be 'Built-in defaults'
+                $resolved.Configuration.Checks.Disk.WarningFreePercent | Should -Be 20
+            }
+            finally {
+                Pop-Location
+            }
+        }
+    }
+
+    It 'discovers configuration from the INFRAPULSE_CONFIG environment variable' {
+        $configPath = Join-Path -Path $TestDrive -ChildPath 'env-config.psd1'
+        Set-Content -LiteralPath $configPath -Encoding UTF8 -Value "@{ SchemaVersion = '1.0'; Checks = @{ Disk = @{ WarningFreePercent = 19 } } }"
+
+        InModuleScope InfraPulse -Parameters @{ ConfigPath = $configPath } {
+            param($ConfigPath)
+            $env:INFRAPULSE_CONFIG = $ConfigPath
+            try {
+                $resolved = Resolve-InfraPulseConfiguration
+                $resolved.Source | Should -Match 'INFRAPULSE_CONFIG'
+                $resolved.Configuration.Checks.Disk.WarningFreePercent | Should -Be 19
+            }
+            finally {
+                $env:INFRAPULSE_CONFIG = $null
+            }
+        }
+    }
+
+    It 'discovers an infra-pulse.psd1 from the working directory' {
+        $workDir = Join-Path -Path $TestDrive -ChildPath 'cwd-discovery'
+        $null = New-Item -Path $workDir -ItemType Directory -Force
+        Set-Content -LiteralPath (Join-Path $workDir 'infra-pulse.psd1') -Encoding UTF8 -Value "@{ SchemaVersion = '1.0'; Checks = @{ Disk = @{ WarningFreePercent = 18 } } }"
+
+        InModuleScope InfraPulse -Parameters @{ WorkDir = $workDir } {
+            param($WorkDir)
+            Push-Location -LiteralPath $WorkDir
+            try {
+                $resolved = Resolve-InfraPulseConfiguration
+                $resolved.Source | Should -Match 'Working directory'
+                $resolved.Configuration.Checks.Disk.WarningFreePercent | Should -Be 18
+            }
+            finally {
+                Pop-Location
+            }
+        }
+    }
+
+    It 'prefers an explicit path over discovery' {
+        $envConfig = Join-Path -Path $TestDrive -ChildPath 'env-loses.psd1'
+        Set-Content -LiteralPath $envConfig -Encoding UTF8 -Value "@{ SchemaVersion = '1.0'; Checks = @{ Disk = @{ WarningFreePercent = 11 } } }"
+        $explicitConfig = Join-Path -Path $TestDrive -ChildPath 'explicit-wins.psd1'
+        Set-Content -LiteralPath $explicitConfig -Encoding UTF8 -Value "@{ SchemaVersion = '1.0'; Checks = @{ Disk = @{ WarningFreePercent = 12 } } }"
+
+        InModuleScope InfraPulse -Parameters @{ EnvConfig = $envConfig; ExplicitConfig = $explicitConfig } {
+            param($EnvConfig, $ExplicitConfig)
+            $env:INFRAPULSE_CONFIG = $EnvConfig
+            try {
+                $resolved = Resolve-InfraPulseConfiguration -ConfigurationPath $ExplicitConfig
+                $resolved.Source | Should -Match 'Parameter'
+                $resolved.Configuration.Checks.Disk.WarningFreePercent | Should -Be 12
+            }
+            finally {
+                $env:INFRAPULSE_CONFIG = $null
+            }
+        }
+    }
+
+    It 'throws when INFRAPULSE_CONFIG points to a missing file' {
+        InModuleScope InfraPulse {
+            $env:INFRAPULSE_CONFIG = 'C:\does\not\exist\infra-pulse.psd1'
+            try {
+                { Resolve-InfraPulseConfiguration } | Should -Throw '*INFRAPULSE_CONFIG*'
+            }
+            finally {
+                $env:INFRAPULSE_CONFIG = $null
+            }
+        }
+    }
+
+    It 'defaults and validates the PatchAge thresholds' {
+        $result = Test-InfraPulseConfiguration -Configuration @{}
+
+        $result.IsValid | Should -BeTrue
+        $result.EffectiveConfiguration.Checks.PatchAge.WarningDays | Should -Be 45
+        $result.EffectiveConfiguration.Checks.PatchAge.CriticalDays | Should -Be 90
+
+        $inverted = Test-InfraPulseConfiguration -Configuration @{
+            Checks = @{
+                PatchAge = @{
+                    WarningDays  = 90
+                    CriticalDays = 45
+                }
+            }
+        }
+        $inverted.IsValid | Should -BeFalse
+        ($inverted.Errors -join ' ') | Should -Match 'PatchAge\.CriticalDays'
     }
 
     It 'returns warnings without invalidating unknown check sections' {

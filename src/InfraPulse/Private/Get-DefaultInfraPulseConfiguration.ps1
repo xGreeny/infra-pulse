@@ -10,6 +10,7 @@ function Get-DefaultInfraPulseConfiguration {
                 'Memory'
                 'Uptime'
                 'PendingReboot'
+                'PatchAge'
                 'Services'
                 'Certificates'
                 'EventLog'
@@ -46,6 +47,11 @@ function Get-DefaultInfraPulseConfiguration {
                 Enabled        = $true
                 PendingStatus  = 'Warning'
                 ExcludeReasons = @()
+            }
+            PatchAge      = [ordered]@{
+                Enabled      = $true
+                WarningDays  = 45
+                CriticalDays = 90
             }
             Services      = [ordered]@{
                 Enabled  = $true
