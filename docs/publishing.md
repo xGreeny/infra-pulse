@@ -2,7 +2,11 @@
 
 ## PowerShell Gallery
 
-The module folder under `src/InfraPulse` is Gallery-ready (manifest tags, license, and project URI are set). Publish a released version manually with an API key from `https://www.powershellgallery.com/account/apikeys`:
+The module folder under `src/InfraPulse` is Gallery-ready (manifest tags, license, and project URI are set).
+
+Publishing is automated: with the `PSGALLERY_API_KEY` repository secret configured (API key from `https://www.powershellgallery.com/account/apikeys`), the release workflow publishes every tagged release to the Gallery after the GitHub release is created, and skips versions that are already published. The `Publish to PowerShell Gallery` workflow can additionally be dispatched manually for an existing tag.
+
+Manual fallback without the secret:
 
 ```powershell
 Copy-Item "C:\Users\FlurinGubler\OneDrive - Beltronic - Neseco IT GmbH\Git\infra-pulse\infra-pulse\src\InfraPulse" "$env:TEMP\InfraPulse" -Recurse -Force
