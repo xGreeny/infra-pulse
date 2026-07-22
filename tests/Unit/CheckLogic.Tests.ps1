@@ -54,6 +54,65 @@ Describe 'InfraPulse check evaluation logic' {
         }
     }
 
+    It 'escalates memory status when the commit charge exceeds its threshold' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    TotalBytes = 16GB; AvailableBytes = 8GB; TotalGB = 16
+                    AvailableGB = 8; AvailablePercent = 50
+                    CommitLimitGB = 20; CommitUsedGB = 19.4; CommitUsedPercent = 97
+                    PageFileAllocatedMB = 4096; PageFileUsedMB = 3900
+                }
+            }
+
+            $result = Invoke-InfraPulseMemoryCheck -Context $script:Context -Settings $script:Defaults.Checks.Memory
+            $result.Status | Should -Be 'Critical'
+            $result.Message | Should -Match 'Commit charge'
+            $result.Evidence.CommitUsedPercent | Should -Be 97
+        }
+    }
+
+    It 'evaluates memory on availability alone when commit data is absent' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    TotalBytes = 16GB; AvailableBytes = 8GB; TotalGB = 16
+                    AvailableGB = 8; AvailablePercent = 50
+                }
+            }
+
+            $result = Invoke-InfraPulseMemoryCheck -Context $script:Context -Settings $script:Defaults.Checks.Memory
+            $result.Status | Should -Be 'Healthy'
+        }
+    }
+
+    It 'averages CPU samples and applies the thresholds' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    Samples = @(90.0, 88.0, 92.0); LogicalProcessors = 8
+                    TopProcesses = @([pscustomobject]@{ Name = 'sqlservr'; Id = 1234; WorkingSetMB = 4096.5 })
+                }
+            }
+
+            $result = Invoke-InfraPulseCpuCheck -Context $script:Context -Settings $script:Defaults.Checks.Cpu
+            $result.Status | Should -Be 'Warning'
+            $result.Evidence.AveragePercent | Should -Be 90
+            $result.Evidence.SampleCount | Should -Be 3
+        }
+    }
+
+    It 'marks cpu unknown when no samples could be collected' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{ Samples = @(); LogicalProcessors = $null; TopProcesses = @() }
+            }
+
+            $result = Invoke-InfraPulseCpuCheck -Context $script:Context -Settings $script:Defaults.Checks.Cpu
+            $result.Status | Should -Be 'Unknown'
+        }
+    }
+
     It 'marks excessive uptime critical at the configured boundary' {
         InModuleScope InfraPulse {
             Mock Invoke-InfraPulseCommand {
@@ -359,6 +418,140 @@ Describe 'InfraPulse check evaluation logic' {
             $result = @(Invoke-InfraPulseEventLogCheck -Context $script:Context -Settings $script:Defaults.Checks.EventLog)
             $result[0].Status | Should -Be 'Unknown'
             $result[0].Evidence.RetrievedCount | Should -Be 1000
+        }
+    }
+
+    It 'counts crash indicators and applies the stability thresholds' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    Incidents = @(
+                        [pscustomobject]@{ Kind = 'Bugcheck'; TimeCreated = (Get-Date).AddDays(-1); Id = 1001; Provider = 'Microsoft-Windows-WER-SystemErrorReporting' }
+                        [pscustomobject]@{ Kind = 'Kernel power loss'; TimeCreated = (Get-Date).AddDays(-2); Id = 41; Provider = 'Microsoft-Windows-Kernel-Power' }
+                        [pscustomobject]@{ Kind = 'Unexpected shutdown'; TimeCreated = (Get-Date).AddDays(-3); Id = 6008; Provider = 'EventLog' }
+                    )
+                    MinidumpCount = 2; QueriesAttempted = 4; QueryErrors = @()
+                }
+            }
+
+            $result = Invoke-InfraPulseStabilityCheck -Context $script:Context -Settings $script:Defaults.Checks.Stability
+            $result.Status | Should -Be 'Critical'
+            $result.Evidence.IncidentCount | Should -Be 3
+            $result.Evidence.MinidumpCount | Should -Be 2
+        }
+    }
+
+    It 'reports a stable host healthy and total query failure unknown' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{ Incidents = @(); MinidumpCount = 0; QueriesAttempted = 4; QueryErrors = @() }
+            }
+            $healthy = Invoke-InfraPulseStabilityCheck -Context $script:Context -Settings $script:Defaults.Checks.Stability
+            $healthy.Status | Should -Be 'Healthy'
+
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{ Incidents = @(); MinidumpCount = $null; QueriesAttempted = 4; QueryErrors = @('a', 'b', 'c', 'd') }
+            }
+            $unknown = Invoke-InfraPulseStabilityCheck -Context $script:Context -Settings $script:Defaults.Checks.Stability
+            $unknown.Status | Should -Be 'Unknown'
+        }
+    }
+
+    It 'reports unhealthy physical disks critical with a storage summary' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    Supported = $true
+                    Disks = @(
+                        [pscustomobject]@{ FriendlyName = 'Samsung SSD 870'; MediaType = 'SSD'; HealthStatus = 'Healthy'; OperationalStatus = 'OK'; SizeGB = 931.51 }
+                        [pscustomobject]@{ FriendlyName = 'WDC WD40EFRX'; MediaType = 'HDD'; HealthStatus = 'Unhealthy'; OperationalStatus = 'Lost Communication'; SizeGB = 3726.02 }
+                    )
+                    Volumes = @(
+                        [pscustomobject]@{ DriveLetter = 'C'; FileSystemLabel = 'Windows'; FileSystem = 'NTFS'; HealthStatus = 'Healthy' }
+                    )
+                }
+            }
+
+            $result = @(Invoke-InfraPulseStorageCheck -Context $script:Context -Settings $script:Defaults.Checks.Storage)
+            $bad = @($result | Where-Object Target -EQ 'WDC WD40EFRX')
+            $bad[0].Status | Should -Be 'Critical'
+            @($result | Where-Object Target -EQ 'Storage inventory')[0].Status | Should -Be 'Healthy'
+        }
+    }
+
+    It 'reports storage unknown when the interfaces are unavailable' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{ Supported = $false; Disks = @(); Volumes = @() }
+            }
+
+            $result = @(Invoke-InfraPulseStorageCheck -Context $script:Context -Settings $script:Defaults.Checks.Storage)
+            $result[0].Status | Should -Be 'Unknown'
+        }
+    }
+
+    It 'flags failed scheduled tasks with hex result codes in evidence' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    Supported = $true; EvaluatedCount = 12
+                    FailedTasks = @(
+                        [pscustomobject]@{ TaskPath = '\Backup\'; TaskName = 'NightlyBackup'; LastTaskResult = 1; LastRunTime = (Get-Date).AddHours(-8) }
+                    )
+                }
+            }
+
+            $result = Invoke-InfraPulseScheduledTaskCheck -Context $script:Context -Settings $script:Defaults.Checks.ScheduledTasks
+            $result.Status | Should -Be 'Warning'
+            $result.Evidence.FailedTasks[0].Task | Should -Be '\Backup\NightlyBackup'
+            $result.Evidence.FailedTasks[0].LastTaskResult | Should -Be '0x1'
+        }
+    }
+
+    It 'reports scheduled tasks healthy when every evaluated task succeeded' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{ Supported = $true; EvaluatedCount = 9; FailedTasks = @() }
+            }
+
+            $result = Invoke-InfraPulseScheduledTaskCheck -Context $script:Context -Settings $script:Defaults.Checks.ScheduledTasks
+            $result.Status | Should -Be 'Healthy'
+            $result.Message | Should -Match 'All 9 evaluated'
+        }
+    }
+
+    It 'marks disabled Defender protection critical and stale signatures by age' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    Supported = $true; Error = $null; AntivirusEnabled = $true; RealTimeProtectionEnabled = $false
+                    AntivirusSignatureAge = 0; AntivirusSignatureLastUpdated = (Get-Date); AMEngineVersion = '1.1.24010.1'
+                }
+            }
+            $disabled = Invoke-InfraPulseDefenderCheck -Context $script:Context -Settings $script:Defaults.Checks.Defender
+            $disabled.Status | Should -Be 'Critical'
+            $disabled.Message | Should -Match 'real-time protection is disabled'
+
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{
+                    Supported = $true; Error = $null; AntivirusEnabled = $true; RealTimeProtectionEnabled = $true
+                    AntivirusSignatureAge = 5; AntivirusSignatureLastUpdated = (Get-Date).AddDays(-5); AMEngineVersion = '1.1.24010.1'
+                }
+            }
+            $stale = Invoke-InfraPulseDefenderCheck -Context $script:Context -Settings $script:Defaults.Checks.Defender
+            $stale.Status | Should -Be 'Warning'
+        }
+    }
+
+    It 'skips the Defender check when the interfaces are unavailable' {
+        InModuleScope InfraPulse {
+            Mock Invoke-InfraPulseCommand {
+                [pscustomobject]@{ Supported = $false; Error = 'Get-MpComputerStatus is not recognized.' }
+            }
+
+            $result = Invoke-InfraPulseDefenderCheck -Context $script:Context -Settings $script:Defaults.Checks.Defender
+            $result.Status | Should -Be 'Skipped'
+            $result.Message | Should -Match 'third-party antivirus'
         }
     }
 

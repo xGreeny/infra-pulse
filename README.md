@@ -22,7 +22,7 @@ InfraPulse turns routine server validation into repeatable PowerShell checks, ty
 
 ## Why InfraPulse
 
-- Twelve built-in read-only checks for local or remote targets.
+- Seventeen built-in read-only checks for local or remote targets.
 - Parallel multi-host scans with a configurable throttle and a fleet overview in the HTML report.
 - Stable `InfraPulse.Report` and `InfraPulse.Result` objects instead of parsed console text.
 - Validated configuration-as-code with deterministic deep merging and automatic discovery via `INFRAPULSE_CONFIG` or a working-directory `infra-pulse.psd1`.
@@ -181,14 +181,19 @@ Compare-InfraPulseReport $before $after | Test-InfraPulseComparison -ThrowOnFail
 
 | Check | Default | Platform | Evaluation |
 |---|:---:|---|---|
-| `Disk` | On | Windows | Fixed-volume free percentage and free GiB using unrounded values |
-| `Memory` | On | Windows | Available physical memory percentage |
+| `Disk` | On | Windows | Fixed-volume free percentage and free GiB using unrounded values, with per-volume overrides |
+| `Memory` | On | Windows | Available physical memory and commit charge against the commit limit |
+| `Cpu` | On | Windows | Averaged processor load over a short sample series |
 | `Uptime` | On | Windows | Time since the last operating-system boot |
 | `PendingReboot` | On | Windows | Servicing, Windows Update, rename, and Configuration Manager indicators |
-| `PatchAge` | On | Windows | Days since the most recent installed Windows update |
+| `PatchAge` | On | Windows | Days since the most recent installed Windows update, with awaiting-reboot evidence |
 | `Services` | On | Windows | Required service existence and expected state; collection failures remain `Unknown` |
+| `ScheduledTasks` | On | Windows | Enabled scheduled tasks whose last run failed, outside the Microsoft namespace |
 | `Certificates` | On | Windows | Expired and expiring machine certificates; auto-rotating short-lived certificates stay healthy while valid |
+| `Defender` | On | Windows | Microsoft Defender protection state and signature age; skipped when other antivirus is active |
 | `EventLog` | On | Windows | Recent critical/error volume, top providers, and optional samples |
+| `Stability` | On | Windows | Bugchecks, unexpected shutdowns, power loss, and hardware errors in a lookback window |
+| `Storage` | On | Windows | Physical-disk and volume health status, independent of free space |
 | `Dns` | On | Cross-platform | Configured DNS names and record types; skipped until targets are defined |
 | `Tcp` | On | Cross-platform | Configured host/port reachability; skipped until endpoints are defined |
 | `Tls` | On | Cross-platform | TLS handshake, identity, chain trust, negotiated protocol, and expiry |

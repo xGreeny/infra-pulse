@@ -77,6 +77,49 @@ Disk = @{
 |---|---|---:|---|
 | `WarningAvailablePercent` | number | `20` | `0`–`100` |
 | `CriticalAvailablePercent` | number | `10` | `0`–warning |
+| `WarningCommitPercent` | number | `90` | `0`–`100`; commit charge relative to the commit limit |
+| `CriticalCommitPercent` | number | `95` | warning–`100` |
+
+## Cpu
+
+| Key | Type | Default | Constraint |
+|---|---|---:|---|
+| `SampleCount` | number | `3` | `1`–`10` |
+| `SampleIntervalSeconds` | number | `1` | `1`–`30` |
+| `WarningPercent` | number | `85` | `0`–`100` |
+| `CriticalPercent` | number | `95` | `>= WarningPercent` |
+
+## ScheduledTasks
+
+| Key | Type | Default | Constraint / behavior |
+|---|---|---|---|
+| `IncludePaths` | string array | `'\*'` | Wildcards matched against the task path |
+| `ExcludePaths` | string array | `'\Microsoft\*'` | Exclusions win over inclusions |
+| `ExcludeTasks` | string array | Empty | Wildcards matched against the task name |
+| `ExcludeResults` | number array | `267009`, `267011` | Result codes that never count as failures |
+| `WarningCount` | number | `1` | `>= 0` |
+| `CriticalCount` | number | `5` | `>= WarningCount` |
+
+## Defender
+
+| Key | Type | Default | Constraint |
+|---|---|---:|---|
+| `SignatureWarningDays` | number | `3` | `>= 0` |
+| `SignatureCriticalDays` | number | `7` | `>= SignatureWarningDays` |
+
+## Stability
+
+| Key | Type | Default | Constraint |
+|---|---|---:|---|
+| `LookbackDays` | number | `7` | `1`–`365` |
+| `WarningCount` | number | `1` | `>= 0` |
+| `CriticalCount` | number | `3` | `>= WarningCount` |
+
+## Storage
+
+| Key | Type | Default | Constraint |
+|---|---|---:|---|
+| `Enabled` | Boolean | `$true` | Used by default selection |
 
 ## Uptime
 

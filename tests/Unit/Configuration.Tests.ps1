@@ -201,6 +201,21 @@ Describe 'InfraPulse configuration lifecycle' {
         ($missingDevice.Errors -join ' ') | Should -Match 'Volumes\[0\]\.DeviceId'
     }
 
+    It 'validates the host-depth check settings' {
+        $defaults = Test-InfraPulseConfiguration -Configuration @{}
+        $defaults.IsValid | Should -BeTrue
+        $defaults.EffectiveConfiguration.Checks.Cpu.SampleCount | Should -Be 3
+        $defaults.EffectiveConfiguration.Checks.Stability.LookbackDays | Should -Be 7
+        $defaults.EffectiveConfiguration.Checks.Defender.SignatureCriticalDays | Should -Be 7
+        @($defaults.EffectiveConfiguration.Checks.ScheduledTasks.ExcludeResults) | Should -Contain 267009
+
+        (Test-InfraPulseConfiguration -Configuration @{ Checks = @{ Cpu = @{ SampleCount = 0 } } }).IsValid | Should -BeFalse
+        (Test-InfraPulseConfiguration -Configuration @{ Checks = @{ Stability = @{ WarningCount = 5; CriticalCount = 2 } } }).IsValid | Should -BeFalse
+        (Test-InfraPulseConfiguration -Configuration @{ Checks = @{ Defender = @{ SignatureWarningDays = 9; SignatureCriticalDays = 3 } } }).IsValid | Should -BeFalse
+        (Test-InfraPulseConfiguration -Configuration @{ Checks = @{ ScheduledTasks = @{ ExcludePaths = @('   ') } } }).IsValid | Should -BeFalse
+        (Test-InfraPulseConfiguration -Configuration @{ Checks = @{ Memory = @{ WarningCommitPercent = 95; CriticalCommitPercent = 90 } } }).IsValid | Should -BeFalse
+    }
+
     It 'defaults the Tls check to enabled with safe thresholds' {
         $result = Test-InfraPulseConfiguration -Configuration @{}
 

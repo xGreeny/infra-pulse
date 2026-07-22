@@ -40,6 +40,33 @@
         Memory = @{
             WarningAvailablePercent  = 20
             CriticalAvailablePercent = 10
+            WarningCommitPercent     = 90
+            CriticalCommitPercent    = 95
+        }
+
+        Cpu = @{
+            SampleCount           = 3
+            SampleIntervalSeconds = 1
+            WarningPercent        = 85
+            CriticalPercent       = 95
+        }
+
+        ScheduledTasks = @{
+            ExcludePaths   = @('\Microsoft\*')
+            ExcludeResults = @(267009, 267011)
+            WarningCount   = 1
+            CriticalCount  = 5
+        }
+
+        Defender = @{
+            SignatureWarningDays  = 3
+            SignatureCriticalDays = 7
+        }
+
+        Stability = @{
+            LookbackDays  = 7
+            WarningCount  = 1
+            CriticalCount = 3
         }
 
         Uptime = @{

@@ -44,12 +44,17 @@ function Get-InfraPulseConfigurationTemplate {
         DefaultChecks = @(
             'Disk'
             'Memory'
+            'Cpu'
             'Uptime'
             'PendingReboot'
             'PatchAge'
             'Services'
+            'ScheduledTasks'
             'Certificates'
+            'Defender'
             'EventLog'
+            'Stability'
+            'Storage'
             'Dns'
             'Tcp'
             'Tls'
@@ -88,6 +93,19 @@ function Get-InfraPulseConfigurationTemplate {
             Enabled                  = $true
             WarningAvailablePercent  = 20
             CriticalAvailablePercent = 10
+
+            # Commit charge relative to the commit limit; a host can suffocate
+            # at the commit limit while physical memory still looks fine.
+            WarningCommitPercent     = 90
+            CriticalCommitPercent    = 95
+        }
+
+        Cpu = @{
+            Enabled               = $true
+            SampleCount           = 3
+            SampleIntervalSeconds = 1
+            WarningPercent        = 85
+            CriticalPercent       = 95
         }
 
         Uptime = @{
@@ -113,6 +131,21 @@ function Get-InfraPulseConfigurationTemplate {
             Enabled      = $true
             WarningDays  = 45
             CriticalDays = 90
+        }
+
+        ScheduledTasks = @{
+            Enabled      = $true
+            IncludePaths = @('\*')
+
+            # Microsoft maintenance tasks are excluded by default; the check
+            # targets operator-created jobs such as backups and sync scripts.
+            ExcludePaths = @('\Microsoft\*')
+            ExcludeTasks = @()
+
+            # Benign result codes: 267009 = currently running, 267011 = never run.
+            ExcludeResults = @(267009, 267011)
+            WarningCount   = 1
+            CriticalCount  = 5
         }
 
         Services = @{
@@ -162,6 +195,23 @@ function Get-InfraPulseConfigurationTemplate {
             # and only alert when the rotation breaks (expiry). Set to $false to
             # evaluate them against the thresholds like any other certificate.
             TreatShortLivedAsRotating = $true
+        }
+
+        Defender = @{
+            Enabled               = $true
+            SignatureWarningDays  = 3
+            SignatureCriticalDays = 7
+        }
+
+        Stability = @{
+            Enabled       = $true
+            LookbackDays  = 7
+            WarningCount  = 1
+            CriticalCount = 3
+        }
+
+        Storage = @{
+            Enabled = $true
         }
 
         EventLog = @{

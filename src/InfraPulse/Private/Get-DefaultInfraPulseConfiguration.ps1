@@ -8,12 +8,17 @@ function Get-DefaultInfraPulseConfiguration {
             DefaultChecks           = @(
                 'Disk'
                 'Memory'
+                'Cpu'
                 'Uptime'
                 'PendingReboot'
                 'PatchAge'
                 'Services'
+                'ScheduledTasks'
                 'Certificates'
+                'Defender'
                 'EventLog'
+                'Stability'
+                'Storage'
                 'Dns'
                 'Tcp'
                 'Tls'
@@ -39,6 +44,15 @@ function Get-DefaultInfraPulseConfiguration {
                 Enabled                  = $true
                 WarningAvailablePercent  = 20
                 CriticalAvailablePercent = 10
+                WarningCommitPercent     = 90
+                CriticalCommitPercent    = 95
+            }
+            Cpu           = [ordered]@{
+                Enabled               = $true
+                SampleCount           = 3
+                SampleIntervalSeconds = 1
+                WarningPercent        = 85
+                CriticalPercent       = 95
             }
             Uptime        = [ordered]@{
                 Enabled      = $true
@@ -54,6 +68,15 @@ function Get-DefaultInfraPulseConfiguration {
                 Enabled      = $true
                 WarningDays  = 45
                 CriticalDays = 90
+            }
+            ScheduledTasks = [ordered]@{
+                Enabled        = $true
+                IncludePaths   = @('\*')
+                ExcludePaths   = @('\Microsoft\*')
+                ExcludeTasks   = @()
+                ExcludeResults = @(267009, 267011)
+                WarningCount   = 1
+                CriticalCount  = 5
             }
             Services      = [ordered]@{
                 Enabled  = $true
@@ -83,6 +106,20 @@ function Get-DefaultInfraPulseConfiguration {
                 RequirePrivateKey      = $false
                 MinTotalLifetimeDays   = 0
                 TreatShortLivedAsRotating = $true
+            }
+            Defender      = [ordered]@{
+                Enabled               = $true
+                SignatureWarningDays  = 3
+                SignatureCriticalDays = 7
+            }
+            Stability     = [ordered]@{
+                Enabled       = $true
+                LookbackDays  = 7
+                WarningCount  = 1
+                CriticalCount = 3
+            }
+            Storage       = [ordered]@{
+                Enabled = $true
             }
             EventLog      = [ordered]@{
                 Enabled          = $true

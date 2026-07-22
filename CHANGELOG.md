@@ -2,6 +2,17 @@
 
 All notable changes to InfraPulse are documented in this file. The project follows [Semantic Versioning](https://semver.org/).
 
+## [1.6.0] - 2026-07-21
+
+### Added
+
+- `Stability` check: bugchecks, kernel power-loss events, unexpected shutdowns, and WHEA hardware errors in a configurable lookback window, with per-incident evidence and the minidump count.
+- `Storage` check: physical-disk and fixed-volume health status through the Storage cmdlets — the disk's condition rather than its free space; `Unknown` where the interfaces are unavailable.
+- `ScheduledTasks` check: enabled tasks whose last run failed, scoped outside the Microsoft namespace by default, with benign result codes (currently running, never run) pre-excluded and configurable path/task/result exclusions.
+- `Cpu` check: processor load averaged over a short sample series with per-sample evidence, logical processor count, and top processes.
+- `Defender` check: Microsoft Defender protection state and signature age; reported as `Skipped` when the Defender interfaces are unavailable, for example with third-party antivirus.
+- Memory check now measures the commit charge against the commit limit (default warning 90%, critical 95%) and records page-file usage; the status is the worse of the availability and commit evaluations.
+
 ## [1.5.0] - 2026-07-21
 
 ### Added
@@ -98,6 +109,7 @@ All notable changes to InfraPulse are documented in this file. The project follo
 - Pester test suite, PSScriptAnalyzer policy, dual-engine CI, and tagged-release packaging.
 - Operator documentation, examples, issue forms, security policy, and contribution workflow.
 
+[1.6.0]: https://github.com/xGreeny/infra-pulse/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/xGreeny/infra-pulse/compare/v1.4.1...v1.5.0
 [1.4.1]: https://github.com/xGreeny/infra-pulse/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/xGreeny/infra-pulse/compare/v1.3.0...v1.4.0

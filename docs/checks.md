@@ -28,7 +28,47 @@ Thresholds are evaluated against unrounded values derived from the raw byte coun
 **Platform:** Windows
 **Source:** `Win32_OperatingSystem`
 
-Evaluates current available physical memory as a percentage of visible physical memory. This is a point-in-time signal, not a trend. Use it for triage or validation and correlate warnings with sustained telemetry before resizing a workload.
+Evaluates current available physical memory as a percentage of visible physical memory, and the commit charge as a percentage of the commit limit — a host can suffocate at its commit limit while physical memory still looks fine. The result status is the worse of the two evaluations, and page-file allocation and usage are recorded as evidence. This is a point-in-time signal, not a trend. Use it for triage or validation and correlate warnings with sustained telemetry before resizing a workload.
+
+## Cpu
+
+**Category:** Capacity
+**Platform:** Windows
+**Source:** `Win32_Processor.LoadPercentage`
+
+Averages processor load over a short sample series (default three samples, one second apart) to separate sustained pressure from momentary spikes. Evidence carries the individual samples, the logical processor count, and the five largest processes by working set. The sampling adds roughly `SampleCount × SampleIntervalSeconds` to the scan duration.
+
+## ScheduledTasks
+
+**Category:** Availability
+**Platform:** Windows
+**Source:** `Get-ScheduledTask` / `Get-ScheduledTaskInfo`
+
+Finds enabled scheduled tasks whose last run ended with a failure result — the classic silent failure mode of backup and maintenance jobs. The Microsoft namespace (`\Microsoft\*`) is excluded by default so the check targets operator-created jobs; `IncludePaths`, `ExcludePaths`, and `ExcludeTasks` use PowerShell wildcards. Benign result codes are pre-excluded (`267009` currently running, `267011` never run) and configurable through `ExcludeResults`. Reported as `Unknown` where the ScheduledTasks module is unavailable.
+
+## Defender
+
+**Category:** Security
+**Platform:** Windows
+**Source:** `Get-MpComputerStatus`
+
+Validates that the Microsoft Defender engine and real-time protection are enabled and that antivirus signatures are current. Disabled protection is `Critical`; signature age is evaluated against `SignatureWarningDays`/`SignatureCriticalDays`. When the Defender cmdlets are unavailable or fail — typically because a third-party antivirus owns the host — the check reports `Skipped` with a note rather than alarming.
+
+## Stability
+
+**Category:** Reliability
+**Platform:** Windows
+**Source:** targeted System event log queries
+
+Counts crash indicators inside `LookbackDays` (default 7): bugchecks (event 1001), kernel power-loss events (41), unexpected shutdowns (6008), and WHEA hardware errors. Each indicator is queried separately so one unreadable provider does not hide the others; evidence lists the individual incidents and the number of minidump files. When every query fails, the check reports `Unknown`.
+
+## Storage
+
+**Category:** Reliability
+**Platform:** Windows
+**Source:** `Get-PhysicalDisk` / `Get-Volume`
+
+Reports the health status of physical disks and fixed volumes — the condition of the storage rather than its free space, complementing the Disk check. Any non-healthy physical disk is `Critical` (`Warning` state maps to `Warning`), unhealthy volumes are reported per volume, and a summary result carries the full inventory. On targets without the Storage cmdlets the check reports `Unknown`.
 
 ## Uptime
 

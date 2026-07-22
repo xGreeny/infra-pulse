@@ -145,7 +145,7 @@ function Test-InfraPulseConfigurationData {
 
         if ($checks.Contains('Memory')) {
             $memory = $checks.Memory
-            foreach ($name in @('WarningAvailablePercent', 'CriticalAvailablePercent')) {
+            foreach ($name in @('WarningAvailablePercent', 'CriticalAvailablePercent', 'WarningCommitPercent', 'CriticalCommitPercent')) {
                 if (-not $memory.Contains($name) -or -not (Test-InfraPulseNumber -Value $memory[$name] -Minimum 0 -Maximum 100)) {
                     [void]$errors.Add("Checks.Memory.$name must be between 0 and 100.")
                 }
@@ -156,6 +156,98 @@ function Test-InfraPulseConfigurationData {
                 [double]$memory.CriticalAvailablePercent -gt [double]$memory.WarningAvailablePercent
             ) {
                 [void]$errors.Add('Checks.Memory.CriticalAvailablePercent must be less than or equal to WarningAvailablePercent.')
+            }
+            if (
+                (Test-InfraPulseNumber -Value $memory.WarningCommitPercent) -and
+                (Test-InfraPulseNumber -Value $memory.CriticalCommitPercent) -and
+                [double]$memory.CriticalCommitPercent -lt [double]$memory.WarningCommitPercent
+            ) {
+                [void]$errors.Add('Checks.Memory.CriticalCommitPercent must be greater than or equal to WarningCommitPercent.')
+            }
+        }
+
+        if ($checks.Contains('Cpu')) {
+            $cpu = $checks.Cpu
+            if (-not $cpu.Contains('SampleCount') -or -not (Test-InfraPulseNumber -Value $cpu.SampleCount -Minimum 1 -Maximum 10)) {
+                [void]$errors.Add('Checks.Cpu.SampleCount must be between 1 and 10.')
+            }
+            if (-not $cpu.Contains('SampleIntervalSeconds') -or -not (Test-InfraPulseNumber -Value $cpu.SampleIntervalSeconds -Minimum 1 -Maximum 30)) {
+                [void]$errors.Add('Checks.Cpu.SampleIntervalSeconds must be between 1 and 30.')
+            }
+            foreach ($name in @('WarningPercent', 'CriticalPercent')) {
+                if (-not $cpu.Contains($name) -or -not (Test-InfraPulseNumber -Value $cpu[$name] -Minimum 0 -Maximum 100)) {
+                    [void]$errors.Add("Checks.Cpu.$name must be between 0 and 100.")
+                }
+            }
+            if (
+                (Test-InfraPulseNumber -Value $cpu.WarningPercent) -and
+                (Test-InfraPulseNumber -Value $cpu.CriticalPercent) -and
+                [double]$cpu.CriticalPercent -lt [double]$cpu.WarningPercent
+            ) {
+                [void]$errors.Add('Checks.Cpu.CriticalPercent must be greater than or equal to WarningPercent.')
+            }
+        }
+
+        if ($checks.Contains('ScheduledTasks')) {
+            $scheduledTasks = $checks.ScheduledTasks
+            foreach ($patternName in @('IncludePaths', 'ExcludePaths', 'ExcludeTasks')) {
+                foreach ($pattern in @($scheduledTasks[$patternName])) {
+                    if ([string]::IsNullOrWhiteSpace([string]$pattern)) {
+                        [void]$errors.Add("Checks.ScheduledTasks.$patternName cannot contain an empty pattern.")
+                    }
+                }
+            }
+            foreach ($excludeResult in @($scheduledTasks['ExcludeResults'])) {
+                if (-not (Test-InfraPulseNumber -Value $excludeResult -Minimum 0)) {
+                    [void]$errors.Add("Checks.ScheduledTasks.ExcludeResults contains invalid result code '$excludeResult'.")
+                }
+            }
+            foreach ($name in @('WarningCount', 'CriticalCount')) {
+                if (-not $scheduledTasks.Contains($name) -or -not (Test-InfraPulseNumber -Value $scheduledTasks[$name] -Minimum 0)) {
+                    [void]$errors.Add("Checks.ScheduledTasks.$name must be zero or greater.")
+                }
+            }
+            if (
+                (Test-InfraPulseNumber -Value $scheduledTasks.WarningCount) -and
+                (Test-InfraPulseNumber -Value $scheduledTasks.CriticalCount) -and
+                [double]$scheduledTasks.CriticalCount -lt [double]$scheduledTasks.WarningCount
+            ) {
+                [void]$errors.Add('Checks.ScheduledTasks.CriticalCount must be greater than or equal to WarningCount.')
+            }
+        }
+
+        if ($checks.Contains('Defender')) {
+            $defender = $checks.Defender
+            foreach ($name in @('SignatureWarningDays', 'SignatureCriticalDays')) {
+                if (-not $defender.Contains($name) -or -not (Test-InfraPulseNumber -Value $defender[$name] -Minimum 0)) {
+                    [void]$errors.Add("Checks.Defender.$name must be zero or greater.")
+                }
+            }
+            if (
+                (Test-InfraPulseNumber -Value $defender.SignatureWarningDays) -and
+                (Test-InfraPulseNumber -Value $defender.SignatureCriticalDays) -and
+                [double]$defender.SignatureCriticalDays -lt [double]$defender.SignatureWarningDays
+            ) {
+                [void]$errors.Add('Checks.Defender.SignatureCriticalDays must be greater than or equal to SignatureWarningDays.')
+            }
+        }
+
+        if ($checks.Contains('Stability')) {
+            $stability = $checks.Stability
+            if (-not $stability.Contains('LookbackDays') -or -not (Test-InfraPulseNumber -Value $stability.LookbackDays -Minimum 1 -Maximum 365)) {
+                [void]$errors.Add('Checks.Stability.LookbackDays must be between 1 and 365.')
+            }
+            foreach ($name in @('WarningCount', 'CriticalCount')) {
+                if (-not $stability.Contains($name) -or -not (Test-InfraPulseNumber -Value $stability[$name] -Minimum 0)) {
+                    [void]$errors.Add("Checks.Stability.$name must be zero or greater.")
+                }
+            }
+            if (
+                (Test-InfraPulseNumber -Value $stability.WarningCount) -and
+                (Test-InfraPulseNumber -Value $stability.CriticalCount) -and
+                [double]$stability.CriticalCount -lt [double]$stability.WarningCount
+            ) {
+                [void]$errors.Add('Checks.Stability.CriticalCount must be greater than or equal to WarningCount.')
             }
         }
 

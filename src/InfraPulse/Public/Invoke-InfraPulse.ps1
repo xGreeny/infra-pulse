@@ -81,7 +81,7 @@ function Invoke-InfraPulse {
         [ValidateNotNull()]
         [System.Collections.IDictionary]$Configuration,
 
-        [ValidateSet('Disk', 'Memory', 'Uptime', 'PendingReboot', 'PatchAge', 'Services', 'Certificates', 'EventLog', 'Dns', 'Tcp', 'Tls', 'TimeSync')]
+        [ValidateSet('Disk', 'Memory', 'Cpu', 'Uptime', 'PendingReboot', 'PatchAge', 'Services', 'ScheduledTasks', 'Certificates', 'Defender', 'EventLog', 'Stability', 'Storage', 'Dns', 'Tcp', 'Tls', 'TimeSync')]
         [string[]]$Check,
 
         [Parameter(ParameterSetName = 'ComputerName')]

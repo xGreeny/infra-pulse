@@ -18,6 +18,13 @@ function Get-InfraPulseCheckCatalog {
             Description     = 'Evaluates currently available physical memory.'
         }
         [pscustomobject]@{
+            Name            = 'Cpu'
+            Category        = 'Capacity'
+            FunctionName    = 'Invoke-InfraPulseCpuCheck'
+            RequiresWindows = $true
+            Description     = 'Averages processor load over a short sample series to separate sustained pressure from spikes.'
+        }
+        [pscustomobject]@{
             Name            = 'Uptime'
             Category        = 'Lifecycle'
             FunctionName    = 'Invoke-InfraPulseUptimeCheck'
@@ -46,6 +53,13 @@ function Get-InfraPulseCheckCatalog {
             Description     = 'Verifies explicitly configured Windows services and expected states.'
         }
         [pscustomobject]@{
+            Name            = 'ScheduledTasks'
+            Category        = 'Availability'
+            FunctionName    = 'Invoke-InfraPulseScheduledTaskCheck'
+            RequiresWindows = $true
+            Description     = 'Finds enabled scheduled tasks whose last run ended with a failure result.'
+        }
+        [pscustomobject]@{
             Name            = 'Certificates'
             Category        = 'Security'
             FunctionName    = 'Invoke-InfraPulseCertificateCheck'
@@ -53,11 +67,32 @@ function Get-InfraPulseCheckCatalog {
             Description     = 'Finds expired and soon-to-expire certificates in configured LocalMachine stores.'
         }
         [pscustomobject]@{
+            Name            = 'Defender'
+            Category        = 'Security'
+            FunctionName    = 'Invoke-InfraPulseDefenderCheck'
+            RequiresWindows = $true
+            Description     = 'Validates Microsoft Defender protection state and signature age; skipped when other antivirus is active.'
+        }
+        [pscustomobject]@{
             Name            = 'EventLog'
             Category        = 'Reliability'
             FunctionName    = 'Invoke-InfraPulseEventLogCheck'
             RequiresWindows = $true
             Description     = 'Counts recent critical and error events and identifies the noisiest providers.'
+        }
+        [pscustomobject]@{
+            Name            = 'Stability'
+            Category        = 'Reliability'
+            FunctionName    = 'Invoke-InfraPulseStabilityCheck'
+            RequiresWindows = $true
+            Description     = 'Counts bugchecks, unexpected shutdowns, power-loss events, and hardware errors in a lookback window.'
+        }
+        [pscustomobject]@{
+            Name            = 'Storage'
+            Category        = 'Reliability'
+            FunctionName    = 'Invoke-InfraPulseStorageCheck'
+            RequiresWindows = $true
+            Description     = 'Reports physical-disk and fixed-volume health status independently of free space.'
         }
         [pscustomobject]@{
             Name            = 'Dns'
