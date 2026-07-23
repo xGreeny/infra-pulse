@@ -1,5 +1,13 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'"><meta name="generator" content="InfraPulse 1.0.0"><title>Infrastructure Health Report</title><style>:root {
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<meta name="generator" content="InfraPulse 1.6.0">
+<title>Infrastructure Health Report</title>
+<style>:root {
   color-scheme: dark;
   --bg: #080c16;
   --panel: #101827;
@@ -97,6 +105,9 @@ tr:hover td { background: rgba(255,255,255,.018); }
 .muted { color: var(--muted); }
 .threshold { display: block; white-space: nowrap; }
 .recommendation { max-width: 380px; }
+.fleet table { min-width: 720px; }
+.fleet a { color: var(--accent-2); text-decoration: none; }
+.fleet a:hover { text-decoration: underline; }
 details { margin-top: 8px; }
 summary { color: var(--accent); cursor: pointer; font-size: .78rem; }
 pre { white-space: pre-wrap; word-break: break-word; max-width: 640px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: #090e19; color: #c9d7e8; font-size: .74rem; }
@@ -122,71 +133,346 @@ footer { margin-top: 28px; color: var(--muted); text-align: center; font-size: .
   .toolbar { display: none; }
   .host { break-inside: avoid; box-shadow: none; }
   details { display: none; }
-}</style></head><body><main>
-<section class="hero"><div><div class="eyebrow">InfraPulse // infrastructure telemetry</div><h1>Infrastructure Health Report</h1><p class="subtitle">Read-only health telemetry for Windows infrastructure. Generated 2026-07-11 09:30:03 UTC.</p><div class="overall critical">Critical</div></div>
-<svg class="pulse-mark" viewBox="0 0 260 100" role="img" aria-label="InfraPulse heartbeat"><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#63e6be" stop-opacity=".15"/><stop offset=".5" stop-color="#63e6be"/><stop offset="1" stop-color="#63e6be" stop-opacity=".15"/></linearGradient></defs><path d="M5 56h42l14-28 22 58 24-72 24 54 17-28 14 16h93" fill="none" stroke="url(#g)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="129" cy="68" r="4" fill="#63e6be"/></svg></section>
+}</style>
+</head>
+<body><main>
+<section class="hero">
+<div>
+<div class="eyebrow">InfraPulse // infrastructure telemetry</div>
+<h1>Infrastructure Health Report</h1>
+<p class="subtitle">Read-only health telemetry for Windows infrastructure — Contoso Production. Generated 2026-07-23 08:44:00 UTC.</p>
+<div class="overall critical">Critical</div>
+</div>
+<svg class="pulse-mark" viewBox="0 0 260 100" role="img" aria-label="InfraPulse heartbeat"><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#63e6be" stop-opacity=".15"/><stop offset=".5" stop-color="#63e6be"/><stop offset="1" stop-color="#63e6be" stop-opacity=".15"/></linearGradient></defs><path d="M5 56h42l14-28 22 58 24-72 24 54 17-28 14 16h93" fill="none" stroke="url(#g)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="129" cy="68" r="4" fill="#63e6be"/></svg>
+</section>
 <section class="summary-grid" aria-label="Report summary">
 <div class="metric"><span class="value">2</span><span class="label">Hosts</span></div>
-<div class="metric"><span class="value">17</span><span class="label">Checks</span></div>
-<div class="metric healthy"><span class="value">12</span><span class="label">Healthy</span></div>
-<div class="metric warning"><span class="value">4</span><span class="label">Warning</span></div>
-<div class="metric critical"><span class="value">1</span><span class="label">Critical</span></div>
+<div class="metric"><span class="value">38</span><span class="label">Checks</span></div>
+<div class="metric healthy"><span class="value">26</span><span class="label">Healthy</span></div>
+<div class="metric warning"><span class="value">2</span><span class="label">Warning</span></div>
+<div class="metric critical"><span class="value">4</span><span class="label">Critical</span></div>
 <div class="metric unknown"><span class="value">0</span><span class="label">Unknown</span></div>
-<div class="metric skipped"><span class="value">0</span><span class="label">Skipped</span></div>
+<div class="metric skipped"><span class="value">6</span><span class="label">Skipped</span></div>
 </section>
-<section class="toolbar" aria-label="Report filters"><input id="filter-query" class="control" type="search" placeholder="Filter host, check, target or message" aria-label="Filter report"><select id="filter-status" class="control" aria-label="Filter by status"><option value="all">All statuses</option><option value="critical">Critical</option><option value="warning">Warning</option><option value="unknown">Unknown</option><option value="healthy">Healthy</option><option value="skipped">Skipped</option></select><button id="filter-reset" class="button" type="button">Reset</button><button id="print-report" class="button" type="button">Print</button><span id="visible-count" class="visible-count" aria-live="polite"></span></section>
-<article class="host" data-search="srv-app-01 srv-app-01.contoso.invalid production application {&quot;computername&quot;: &quot;srv-app-01&quot;, &quot;fqdn&quot;: &quot;srv-app-01.contoso.invalid&quot;, &quot;platform&quot;: &quot;windows&quot;, &quot;operatingsystem&quot;: &quot;microsoft windows server 2022 standard&quot;, &quot;operatingsystemsku&quot;: 7, &quot;version&quot;: &quot;10.0.20348&quot;, &quot;buildnumber&quot;: &quot;20348&quot;, &quot;architecture&quot;: &quot;64-bit&quot;, &quot;manufacturer&quot;: &quot;vmware, inc.&quot;, &quot;model&quot;: &quot;vmware virtual platform&quot;, &quot;domain&quot;: &quot;contoso.invalid&quot;, &quot;partofdomain&quot;: true, &quot;powershellversion&quot;: &quot;7.6.3&quot;, &quot;powershelledition&quot;: &quot;core&quot;, &quot;collectedatutc&quot;: &quot;2026-07-11t09:29:59z&quot;}"><header class="host-header"><div><h2 class="host-title">SRV-APP-01</h2><div class="host-meta">generated 2026-07-11 09:30:00 UTC | duration 842 ms</div><div class="tags"><span class="tag">production</span><span class="tag">application</span></div></div><span class="status warning">Warning</span></header>
-<dl class="inventory"><div><dt>Operating system</dt><dd>Microsoft Windows Server 2022 Standard</dd></div><div><dt>Version / build</dt><dd>10.0.20348 / 20348</dd></div><div><dt>Architecture</dt><dd>64-bit</dd></div><div><dt>FQDN</dt><dd>srv-app-01.contoso.invalid</dd></div><div><dt>Manufacturer</dt><dd>VMware, Inc.</dd></div><div><dt>Model</dt><dd>VMware Virtual Platform</dd></div><div><dt>Domain</dt><dd>contoso.invalid</dd></div><div><dt>PowerShell</dt><dd>Core 7.6.3</dd></div></dl><div class="table-wrap"><table><thead><tr><th>Status</th><th>Check</th><th>Target</th><th>Message</th><th>Observed</th><th>Thresholds</th><th>Recommendation / evidence</th></tr></thead><tbody>
-<tr data-status="warning" data-search="warning disk capacity c: 36.80 gb free (18.40%) of 200.00 gb on c: (system). 18.40% / 36.80 gb review growth, cleanup candidates, and volume capacity before the critical threshold is reached. "><td><span class="status warning">Warning</span></td><td><span class="mono">Disk</span><br><span class="muted">Capacity</span></td><td>C:</td><td>36.80 GB free (18.40%) of 200.00 GB on C: (System).</td><td class="mono">18.40% / 36.80 GB</td><td class="mono"><span class="threshold">W: &lt;= 20% or &lt;= 30 GB</span><span class="threshold">C: &lt;= 8% or &lt;= 12 GB</span></td><td class="recommendation">Review growth, cleanup candidates, and volume capacity before the critical threshold is reached.<details><summary>Evidence</summary><pre>{
+<section class="host fleet" aria-label="Fleet overview">
+<header class="host-header"><div><h2 class="host-title">Fleet overview</h2><div class="host-meta">2 hosts</div></div><span class="status critical">Critical</span></header>
+<div class="table-wrap"><table>
+<thead><tr><th>Host</th><th>Status</th><th>Critical</th><th>Warning</th><th>Unknown</th><th>Healthy</th><th>Skipped</th><th>Duration</th></tr></thead><tbody>
+<tr>
+<td><a class="mono" href="#host-0">SRV-APP-01</a></td>
+<td><span class="status critical">Critical</span></td>
+<td class="mono">2</td>
+<td class="mono">1</td>
+<td class="mono">0</td>
+<td class="mono">13</td>
+<td class="mono">3</td>
+<td class="mono">18,340 ms</td>
+</tr>
+<tr>
+<td><a class="mono" href="#host-1">SRV-RDS-02</a></td>
+<td><span class="status critical">Critical</span></td>
+<td class="mono">2</td>
+<td class="mono">1</td>
+<td class="mono">0</td>
+<td class="mono">13</td>
+<td class="mono">3</td>
+<td class="mono">14,858 ms</td>
+</tr>
+</tbody></table></div></section>
+<section class="toolbar" aria-label="Report filters">
+<input id="filter-query" class="control" type="search" placeholder="Filter host, check, target or message" aria-label="Filter report">
+<select id="filter-status" class="control" aria-label="Filter by status"><option value="all">All statuses</option><option value="critical">Critical</option><option value="warning">Warning</option><option value="unknown">Unknown</option><option value="healthy">Healthy</option><option value="skipped">Skipped</option></select>
+<button id="filter-reset" class="button" type="button">Reset</button>
+<button id="print-report" class="button" type="button">Print</button>
+<span id="visible-count" class="visible-count" aria-live="polite"></span>
+</section>
+<article class="host" id="host-0" data-search="srv-app-01 localhost  {&quot;computername&quot;:&quot;srv-app-01&quot;,&quot;fqdn&quot;:&quot;srv-app-01.corp.contoso.com&quot;,&quot;platform&quot;:&quot;windows&quot;,&quot;operatingsystem&quot;:&quot;microsoft windows server 2025 standard&quot;,&quot;operatingsystemsku&quot;:7,&quot;version&quot;:&quot;10.0.26100&quot;,&quot;buildnumber&quot;:&quot;26100&quot;,&quot;architecture&quot;:&quot;64-bit&quot;,&quot;manufacturer&quot;:&quot;microsoft corporation&quot;,&quot;model&quot;:&quot;virtual machine&quot;,&quot;domain&quot;:&quot;corp.contoso.com&quot;,&quot;partofdomain&quot;:true,&quot;powershellversion&quot;:&quot;5.1.26100.8655&quot;,&quot;powershelledition&quot;:&quot;desktop&quot;,&quot;collectedatutc&quot;:&quot;2026-07-23t08:39:35.8083998z&quot;}">
+<header class="host-header"><div><h2 class="host-title">SRV-APP-01</h2><div class="host-meta">Contoso Production | generated 2026-07-23 08:39:53 UTC | duration 18,340 ms</div>
+</div><span class="status critical">Critical</span></header>
+<dl class="inventory">
+<div><dt>Operating system</dt><dd>Microsoft Windows Server 2025 Standard</dd></div>
+<div><dt>Version / build</dt><dd>10.0.26100 / 26100</dd></div>
+<div><dt>Architecture</dt><dd>64-Bit</dd></div>
+<div><dt>FQDN</dt><dd>srv-app-01.corp.contoso.com</dd></div>
+<div><dt>Manufacturer</dt><dd>Microsoft Corporation</dd></div>
+<div><dt>Model</dt><dd>Virtual Machine</dd></div>
+<div><dt>Domain</dt><dd>corp.contoso.com</dd></div>
+<div><dt>PowerShell</dt><dd>Desktop 5.1.26100.8655</dd></div>
+</dl>
+<div class="table-wrap"><table>
+<thead><tr><th>Status</th><th>Check</th><th>Target</th><th>Message</th><th>Observed</th><th>Thresholds</th><th>Recommendation / evidence</th></tr></thead><tbody>
+<tr data-status="healthy" data-search="healthy disk capacity c: 365.51 gb free (38.35%) of 953.03 gb on c: (unlabeled). 38.35% / 365.51 gb  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Disk</span><br><span class="muted">Capacity</span></td>
+<td>C:</td>
+<td>365.51 GB free (38.35%) of 953.03 GB on C: (unlabeled).</td>
+<td class="mono">38.35% / 365.51 GB</td>
+<td class="mono"><span class="threshold">W: &lt;= 20% or &lt;= 20 GB</span><span class="threshold">C: &lt;= 10% or &lt;= 10 GB</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
   &quot;DeviceId&quot;: &quot;C:&quot;,
-  &quot;VolumeName&quot;: &quot;System&quot;,
+  &quot;VolumeName&quot;: &quot;&quot;,
   &quot;FileSystem&quot;: &quot;NTFS&quot;,
-  &quot;SizeBytes&quot;: 214748364800,
-  &quot;FreeBytes&quot;: 39513699123,
-  &quot;FreeGB&quot;: 36.8,
-  &quot;FreePercent&quot;: 18.4
-}</pre></details></td></tr>
-<tr data-status="healthy" data-search="healthy memory capacity physical memory 12.53 gb available (39.16%) of 32.00 gb physical memory. 39.16%  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Memory</span><br><span class="muted">Capacity</span></td><td>Physical memory</td><td>12.53 GB available (39.16%) of 32.00 GB physical memory.</td><td class="mono">39.16%</td><td class="mono"><span class="threshold">W: &lt;= 20%</span><span class="threshold">C: &lt;= 10%</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
-  &quot;TotalGB&quot;: 32,
-  &quot;AvailableGB&quot;: 12.53,
-  &quot;AvailablePercent&quot;: 39.16
-}</pre></details></td></tr>
-<tr data-status="healthy" data-search="healthy uptime lifecycle operating system 18.42 days since last boot (2026-06-22 23:25:00 +00:00). 18.42 days  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Uptime</span><br><span class="muted">Lifecycle</span></td><td>Operating system</td><td>18.42 days since last boot (2026-06-22 23:25:00 +00:00).</td><td class="mono">18.42 days</td><td class="mono"><span class="threshold">W: &gt;= 45 days</span><span class="threshold">C: &gt;= 90 days</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
-  &quot;LastBootTime&quot;: &quot;2026-06-22T23:25:00Z&quot;,
-  &quot;UptimeDays&quot;: 18.42,
-  &quot;UptimeHours&quot;: 442.08
-}</pre></details></td></tr>
-<tr data-status="healthy" data-search="healthy pendingreboot lifecycle operating system no supported pending-reboot indicators were detected. false  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">PendingReboot</span><br><span class="muted">Lifecycle</span></td><td>Operating system</td><td>No supported pending-reboot indicators were detected.</td><td class="mono">False</td><td class="mono"><span class="threshold">W: Any supported reboot indicator</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;SizeBytes&quot;: 1023303217152,
+  &quot;FreeBytes&quot;: 392462323712,
+  &quot;FreeGB&quot;: 365.51,
+  &quot;FreePercent&quot;: 38.35
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy memory capacity physical memory 8.29 gb available (26.35%) of 31.47 gb physical memory. 26.35%  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Memory</span><br><span class="muted">Capacity</span></td>
+<td>Physical memory</td>
+<td>8.29 GB available (26.35%) of 31.47 GB physical memory.</td>
+<td class="mono">26.35%</td>
+<td class="mono"><span class="threshold">W: &lt;= 20% available or &gt;= 90% commit</span><span class="threshold">C: &lt;= 10% available or &gt;= 95% commit</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;TotalBytes&quot;: 33785393152,
+  &quot;AvailableBytes&quot;: 8902356992,
+  &quot;TotalGB&quot;: 31.47,
+  &quot;AvailableGB&quot;: 8.29,
+  &quot;AvailablePercent&quot;: 26.35,
+  &quot;CommitLimitGB&quot;: 40.97,
+  &quot;CommitUsedGB&quot;: 31.75,
+  &quot;CommitUsedPercent&quot;: 77.51,
+  &quot;PageFileAllocatedMB&quot;: null,
+  &quot;PageFileUsedMB&quot;: null
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy cpu capacity processor average cpu load 20.3% across 3 sample(s). 20.3%  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Cpu</span><br><span class="muted">Capacity</span></td>
+<td>Processor</td>
+<td>Average CPU load 20.3% across 3 sample(s).</td>
+<td class="mono">20.3%</td>
+<td class="mono"><span class="threshold">W: &gt;= 85%</span><span class="threshold">C: &gt;= 95%</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;AveragePercent&quot;: 20.3,
+  &quot;Samples&quot;: [
+    12,
+    25,
+    24
+  ],
+  &quot;SampleCount&quot;: 3,
+  &quot;LogicalProcessors&quot;: 22,
+  &quot;TopProcesses&quot;: [
+    {
+      &quot;Name&quot;: &quot;Memory Compression&quot;,
+      &quot;Id&quot;: 4216,
+      &quot;WorkingSetMB&quot;: 1928.7
+    },
+    {
+      &quot;Name&quot;: &quot;sqlservr&quot;,
+      &quot;Id&quot;: 24088,
+      &quot;WorkingSetMB&quot;: 767.9
+    },
+    {
+      &quot;Name&quot;: &quot;w3wp&quot;,
+      &quot;Id&quot;: 15272,
+      &quot;WorkingSetMB&quot;: 674
+    },
+    {
+      &quot;Name&quot;: &quot;svchost&quot;,
+      &quot;Id&quot;: 30628,
+      &quot;WorkingSetMB&quot;: 574.4
+    },
+    {
+      &quot;Name&quot;: &quot;w3wp&quot;,
+      &quot;Id&quot;: 31544,
+      &quot;WorkingSetMB&quot;: 494.5
+    }
+  ]
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy uptime lifecycle operating system 0.12 days since last boot (2026-07-23 07:43:46 +02:00). 0.12 days  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Uptime</span><br><span class="muted">Lifecycle</span></td>
+<td>Operating system</td>
+<td>0.12 days since last boot (2026-07-23 07:43:46 +02:00).</td>
+<td class="mono">0.12 days</td>
+<td class="mono"><span class="threshold">W: &gt;= 45 days</span><span class="threshold">C: &gt;= 90 days</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;LastBootTime&quot;: &quot;2026-07-23T05:43:46.5000000Z&quot;,
+  &quot;UptimeDays&quot;: 0.12,
+  &quot;UptimeHours&quot;: 2.93
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy pendingreboot lifecycle operating system no supported pending-reboot indicators were detected. false  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">PendingReboot</span><br><span class="muted">Lifecycle</span></td>
+<td>Operating system</td>
+<td>No supported pending-reboot indicators were detected.</td>
+<td class="mono">False</td>
+<td class="mono"><span class="threshold">W: Any supported reboot indicator</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
   &quot;Pending&quot;: false,
-  &quot;Reasons&quot;: []
-}</pre></details></td></tr>
-<tr data-status="healthy" data-search="healthy services availability eventlog service &#x27;windows event log&#x27; is running. running  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Services</span><br><span class="muted">Availability</span></td><td>EventLog</td><td>Service &#x27;Windows Event Log&#x27; is Running.</td><td class="mono">Running</td><td class="mono"><span class="threshold">C: Expected: Running</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;Reasons&quot;: [],
+  &quot;ExcludedReasons&quot;: []
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy patchage lifecycle operating system last update (kb5094126) was installed 34 day(s) ago on 2026-06-19. 34.44 days  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">PatchAge</span><br><span class="muted">Lifecycle</span></td>
+<td>Operating system</td>
+<td>Last update (KB5094126) was installed 34 day(s) ago on 2026-06-19.</td>
+<td class="mono">34.44 days</td>
+<td class="mono"><span class="threshold">W: &gt;= 45 days</span><span class="threshold">C: &gt;= 90 days</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;LastPatchDate&quot;: &quot;2026-06-18T22:00:00.0000000Z&quot;,
+  &quot;LastPatchId&quot;: &quot;KB5094126&quot;,
+  &quot;DaysSince&quot;: 34.44,
+  &quot;LastBootTime&quot;: &quot;2026-07-23T05:43:46.5000000Z&quot;,
+  &quot;AwaitingReboot&quot;: false,
+  &quot;TotalPatches&quot;: 7,
+  &quot;RecentPatches&quot;: [
+    {
+      &quot;HotFixId&quot;: &quot;KB5094126&quot;,
+      &quot;Description&quot;: &quot;Security Update&quot;,
+      &quot;InstalledOn&quot;: &quot;2026-06-18T22:00:00.0000000Z&quot;
+    },
+    {
+      &quot;HotFixId&quot;: &quot;KB5094135&quot;,
+      &quot;Description&quot;: &quot;Security Update&quot;,
+      &quot;InstalledOn&quot;: &quot;2026-06-17T22:00:00.0000000Z&quot;
+    },
+    {
+      &quot;HotFixId&quot;: &quot;KB5087051&quot;,
+      &quot;Description&quot;: &quot;Update&quot;,
+      &quot;InstalledOn&quot;: &quot;2026-05-21T22:00:00.0000000Z&quot;
+    },
+    {
+      &quot;HotFixId&quot;: &quot;KB5054156&quot;,
+      &quot;Description&quot;: &quot;Update&quot;,
+      &quot;InstalledOn&quot;: &quot;2026-04-26T22:00:00.0000000Z&quot;
+    },
+    {
+      &quot;HotFixId&quot;: &quot;KB5054273&quot;,
+      &quot;Description&quot;: &quot;Update&quot;,
+      &quot;InstalledOn&quot;: &quot;2025-08-05T22:00:00.0000000Z&quot;
+    }
+  ]
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy services availability eventlog service &#39;windows event log&#39; is running. running  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Services</span><br><span class="muted">Availability</span></td>
+<td>EventLog</td>
+<td>Service &#39;Windows Event Log&#39; is Running.</td>
+<td class="mono">Running</td>
+<td class="mono"><span class="threshold">C: Expected: Running</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
   &quot;Name&quot;: &quot;EventLog&quot;,
   &quot;DisplayName&quot;: &quot;Windows Event Log&quot;,
   &quot;Status&quot;: &quot;Running&quot;,
   &quot;ExpectedStatus&quot;: &quot;Running&quot;,
   &quot;StartMode&quot;: &quot;Auto&quot;,
   &quot;Exists&quot;: true
-}</pre></details></td></tr>
-<tr data-status="healthy" data-search="healthy services availability winmgmt service &#x27;windows management instrumentation&#x27; is running. running  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Services</span><br><span class="muted">Availability</span></td><td>Winmgmt</td><td>Service &#x27;Windows Management Instrumentation&#x27; is Running.</td><td class="mono">Running</td><td class="mono"><span class="threshold">C: Expected: Running</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy services availability winmgmt service &#39;windows management instrumentation&#39; is running. running  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Services</span><br><span class="muted">Availability</span></td>
+<td>Winmgmt</td>
+<td>Service &#39;Windows Management Instrumentation&#39; is Running.</td>
+<td class="mono">Running</td>
+<td class="mono"><span class="threshold">C: Expected: Running</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
   &quot;Name&quot;: &quot;Winmgmt&quot;,
+  &quot;DisplayName&quot;: &quot;Windows Management Instrumentation&quot;,
   &quot;Status&quot;: &quot;Running&quot;,
   &quot;ExpectedStatus&quot;: &quot;Running&quot;,
   &quot;StartMode&quot;: &quot;Auto&quot;,
   &quot;Exists&quot;: true
-}</pre></details></td></tr>
-<tr data-status="healthy" data-search="healthy certificates security certificate inventory 6 of 6 certificate(s) are valid beyond the warning threshold. 6  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Certificates</span><br><span class="muted">Security</span></td><td>Certificate inventory</td><td>6 of 6 certificate(s) are valid beyond the warning threshold.</td><td class="mono">6</td><td class="mono"><span class="threshold">W: Expiry &lt;= 30 days</span><span class="threshold">C: Expiry &lt;= 14 days</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
-  &quot;TotalCertificates&quot;: 6,
-  &quot;HealthyCertificates&quot;: 6,
+}</pre></details></td>
+</tr>
+<tr data-status="warning" data-search="warning scheduledtasks availability scheduled tasks 2 of 17 evaluated scheduled task(s) failed their last run. 2 check the task result codes and last run times, then re-run or repair the failing tasks. ">
+<td><span class="status warning">Warning</span></td>
+<td><span class="mono">ScheduledTasks</span><br><span class="muted">Availability</span></td>
+<td>Scheduled tasks</td>
+<td>2 of 17 evaluated scheduled task(s) failed their last run.</td>
+<td class="mono">2</td>
+<td class="mono"><span class="threshold">W: &gt;= 1 failed task(s)</span><span class="threshold">C: &gt;= 5 failed task(s)</span></td>
+<td class="recommendation">Check the task result codes and last run times, then re-run or repair the failing tasks.<details><summary>Evidence</summary><pre>{
+  &quot;FailedCount&quot;: 2,
+  &quot;EvaluatedCount&quot;: 17,
+  &quot;FailedTasks&quot;: [
+    {
+      &quot;Task&quot;: &quot;\\Contoso\\Nightly Database Backup&quot;,
+      &quot;LastTaskResult&quot;: &quot;0x8004EE04&quot;,
+      &quot;LastRunTime&quot;: &quot;2026-07-23T05:48:50.0000000Z&quot;
+    },
+    {
+      &quot;Task&quot;: &quot;\\Contoso\\App Log Archiver&quot;,
+      &quot;LastTaskResult&quot;: &quot;0x8007042B&quot;,
+      &quot;LastRunTime&quot;: &quot;2026-06-25T10:03:27.0000000Z&quot;
+    }
+  ],
+  &quot;Truncated&quot;: false
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy certificates security cn=7d3f2a91-4c6b-4e8a-9f21-0b5d8c3e6a47, dc=3a9e1c25-7f4d-4b6e-8d02-c1f5a7b9e364 [5013b8d9a2c4] auto-rotating certificate (total lifetime 1 day(s)) is valid until 2026-07-24. 0.88 days  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Certificates</span><br><span class="muted">Security</span></td>
+<td>CN=7d3f2a91-4c6b-4e8a-9f21-0b5d8c3e6a47, DC=3a9e1c25-7f4d-4b6e-8d02-c1f5a7b9e364 [5013B8D9A2C4]</td>
+<td>Auto-rotating certificate (total lifetime 1 day(s)) is valid until 2026-07-24.</td>
+<td class="mono">0.88 days</td>
+<td class="mono"><span class="threshold">W: &lt;= 30 days</span><span class="threshold">C: &lt;= 14 days or expired</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;Subject&quot;: &quot;CN=7d3f2a91-4c6b-4e8a-9f21-0b5d8c3e6a47, DC=3a9e1c25-7f4d-4b6e-8d02-c1f5a7b9e364&quot;,
+  &quot;Issuer&quot;: &quot;CN=MS-Organization-P2P-Access [2025]&quot;,
+  &quot;Thumbprint&quot;: &quot;9A41C7D2E85F0B36A19D64C82E7F5013B8D9A2C4&quot;,
+  &quot;SerialNumber&quot;: &quot;00A3D18E5B92C7F4066D31B8E9A250C471&quot;,
+  &quot;StorePath&quot;: &quot;Cert:\\LocalMachine\\My&quot;,
+  &quot;NotBefore&quot;: &quot;2026-07-23T05:39:22.0000000Z&quot;,
+  &quot;NotAfter&quot;: &quot;2026-07-24T05:44:22.0000000Z&quot;,
+  &quot;DaysRemaining&quot;: 0.88,
+  &quot;TotalLifetimeDays&quot;: 1,
+  &quot;Rotating&quot;: true,
+  &quot;HasPrivateKey&quot;: true
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy certificates security certificate inventory 4 of 4 certificate(s) satisfy the expiry policy. 4  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Certificates</span><br><span class="muted">Security</span></td>
+<td>Certificate inventory</td>
+<td>4 of 4 certificate(s) satisfy the expiry policy.</td>
+<td class="mono">4</td>
+<td class="mono"><span class="threshold">W: Expiry &lt;= 30 days</span><span class="threshold">C: Expiry &lt;= 14 days</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;TotalCertificates&quot;: 4,
+  &quot;HealthyCertificates&quot;: 4,
+  &quot;RotatingCertificates&quot;: 1,
   &quot;ExistingStores&quot;: [
-    &quot;Cert:\\LocalMachine\\My&quot;,
-    &quot;Cert:\\LocalMachine\\WebHosting&quot;
+    &quot;Cert:\\LocalMachine\\My&quot;
   ],
   &quot;MissingStores&quot;: []
-}</pre></details></td></tr>
-<tr data-status="healthy" data-search="healthy eventlog reliability system 8 critical/error event(s) in &#x27;system&#x27; during the last 24 hour(s). 8  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">EventLog</span><br><span class="muted">Reliability</span></td><td>System</td><td>8 critical/error event(s) in &#x27;System&#x27; during the last 24 hour(s).</td><td class="mono">8</td><td class="mono"><span class="threshold">W: &gt;= 25 events</span><span class="threshold">C: &gt;= 100 events</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+}</pre></details></td>
+</tr>
+<tr data-status="critical" data-search="critical defender security microsoft defender microsoft defender real-time protection is disabled. 0 day(s) re-enable microsoft defender protection or document the managed replacement; an unprotected host is a critical exposure. ">
+<td><span class="status critical">Critical</span></td>
+<td><span class="mono">Defender</span><br><span class="muted">Security</span></td>
+<td>Microsoft Defender</td>
+<td>Microsoft Defender real-time protection is disabled.</td>
+<td class="mono">0 day(s)</td>
+<td class="mono"><span class="threshold">W: &gt;= 3 days signature age</span><span class="threshold">C: &gt;= 7 days signature age or disabled protection</span></td>
+<td class="recommendation">Re-enable Microsoft Defender protection or document the managed replacement; an unprotected host is a critical exposure.<details><summary>Evidence</summary><pre>{
+  &quot;AntivirusEnabled&quot;: true,
+  &quot;RealTimeProtectionEnabled&quot;: false,
+  &quot;AntivirusSignatureAge&quot;: 0,
+  &quot;AntivirusSignatureLastUpdated&quot;: &quot;2026-07-22T22:45:00.0000000Z&quot;,
+  &quot;AMEngineVersion&quot;: &quot;1.1.26060.3008&quot;
+}</pre></details></td>
+</tr>
+<tr data-status="critical" data-search="critical eventlog reliability system 127 critical/error event(s) in &#39;system&#39; during the last 24 hour(s). 127 triage the highest-volume providers and correlate events with service impact and recent changes. ">
+<td><span class="status critical">Critical</span></td>
+<td><span class="mono">EventLog</span><br><span class="muted">Reliability</span></td>
+<td>System</td>
+<td>127 critical/error event(s) in &#39;System&#39; during the last 24 hour(s).</td>
+<td class="mono">127</td>
+<td class="mono"><span class="threshold">W: &gt;= 25 events</span><span class="threshold">C: &gt;= 100 events</span></td>
+<td class="recommendation">Triage the highest-volume providers and correlate events with service impact and recent changes.<details><summary>Evidence</summary><pre>{
   &quot;LogName&quot;: &quot;System&quot;,
-  &quot;Count&quot;: 8,
+  &quot;Count&quot;: 127,
+  &quot;RetrievedCount&quot;: 127,
   &quot;LookbackHours&quot;: 24,
   &quot;Levels&quot;: [
     1,
@@ -194,67 +480,78 @@ footer { margin-top: 28px; color: var(--muted); text-align: center; font-size: .
   ],
   &quot;Truncated&quot;: false,
   &quot;TopProviders&quot;: [
+    {
+      &quot;Provider&quot;: &quot;Schannel&quot;,
+      &quot;Count&quot;: 100
+    },
+    {
+      &quot;Provider&quot;: &quot;Microsoft-Windows-Time-Service&quot;,
+      &quot;Count&quot;: 10
+    },
+    {
+      &quot;Provider&quot;: &quot;Microsoft-Windows-DistributedCOM&quot;,
+      &quot;Count&quot;: 8
+    },
+    {
+      &quot;Provider&quot;: &quot;Microsoft-Windows-Security-Kerberos&quot;,
+      &quot;Count&quot;: 6
+    },
     {
       &quot;Provider&quot;: &quot;Service Control Manager&quot;,
       &quot;Count&quot;: 3
     }
-  ]
-}</pre></details></td></tr>
-<tr data-status="healthy" data-search="healthy dns connectivity login.microsoftonline.com resolved login.microsoftonline.com [a] to 20.190.160.2 in 11.2 ms. 20.190.160.2  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Dns</span><br><span class="muted">Connectivity</span></td><td>login.microsoftonline.com</td><td>Resolved login.microsoftonline.com [A] to 20.190.160.2 in 11.2 ms.</td><td class="mono">20.190.160.2</td><td class="mono"><span class="threshold">C: Resolution failure</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
-  &quot;Name&quot;: &quot;login.microsoftonline.com&quot;,
-  &quot;QueryType&quot;: &quot;A&quot;,
-  &quot;Server&quot;: &quot;&quot;,
-  &quot;Answers&quot;: [
-    &quot;20.190.160.2&quot;
   ],
-  &quot;DurationMs&quot;: 11.2
-}</pre></details></td></tr>
-<tr data-status="healthy" data-search="healthy tcp connectivity microsoft identity connected to login.microsoftonline.com:443 in 24.8 ms. true  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Tcp</span><br><span class="muted">Connectivity</span></td><td>Microsoft identity</td><td>Connected to login.microsoftonline.com:443 in 24.8 ms.</td><td class="mono">True</td><td class="mono"><span class="threshold">C: Connection failure</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
-  &quot;Name&quot;: &quot;Microsoft identity&quot;,
-  &quot;Host&quot;: &quot;login.microsoftonline.com&quot;,
-  &quot;Port&quot;: 443,
-  &quot;DurationMs&quot;: 24.8,
-  &quot;TimeoutMs&quot;: 3000
-}</pre></details></td></tr>
-</tbody></table></div></article>
-<article class="host" data-search="srv-dc-01 srv-dc-01.contoso.invalid production domain-controller {&quot;computername&quot;: &quot;srv-dc-01&quot;, &quot;fqdn&quot;: &quot;srv-dc-01.contoso.invalid&quot;, &quot;platform&quot;: &quot;windows&quot;, &quot;operatingsystem&quot;: &quot;microsoft windows server 2022 datacenter&quot;, &quot;operatingsystemsku&quot;: 8, &quot;version&quot;: &quot;10.0.20348&quot;, &quot;buildnumber&quot;: &quot;20348&quot;, &quot;architecture&quot;: &quot;64-bit&quot;, &quot;manufacturer&quot;: &quot;dell inc.&quot;, &quot;model&quot;: &quot;poweredge r650&quot;, &quot;domain&quot;: &quot;contoso.invalid&quot;, &quot;partofdomain&quot;: true, &quot;powershellversion&quot;: &quot;5.1.20348.2849&quot;, &quot;powershelledition&quot;: &quot;desktop&quot;, &quot;collectedatutc&quot;: &quot;2026-07-11t09:30:01z&quot;}"><header class="host-header"><div><h2 class="host-title">SRV-DC-01</h2><div class="host-meta">generated 2026-07-11 09:30:02 UTC | duration 611 ms</div><div class="tags"><span class="tag">production</span><span class="tag">domain-controller</span></div></div><span class="status critical">Critical</span></header>
-<dl class="inventory"><div><dt>Operating system</dt><dd>Microsoft Windows Server 2022 Datacenter</dd></div><div><dt>Version / build</dt><dd>10.0.20348 / 20348</dd></div><div><dt>Architecture</dt><dd>64-bit</dd></div><div><dt>FQDN</dt><dd>srv-dc-01.contoso.invalid</dd></div><div><dt>Manufacturer</dt><dd>Dell Inc.</dd></div><div><dt>Model</dt><dd>PowerEdge R650</dd></div><div><dt>Domain</dt><dd>contoso.invalid</dd></div><div><dt>PowerShell</dt><dd>Desktop 5.1.20348.2849</dd></div></dl><div class="table-wrap"><table><thead><tr><th>Status</th><th>Check</th><th>Target</th><th>Message</th><th>Observed</th><th>Thresholds</th><th>Recommendation / evidence</th></tr></thead><tbody>
-<tr data-status="healthy" data-search="healthy disk capacity c: 82.14 gb free (41.07%) of 200.00 gb on c: (system). 41.07% / 82.14 gb  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Disk</span><br><span class="muted">Capacity</span></td><td>C:</td><td>82.14 GB free (41.07%) of 200.00 GB on C: (System).</td><td class="mono">41.07% / 82.14 GB</td><td class="mono"><span class="threshold">W: &lt;= 20% or &lt;= 30 GB</span><span class="threshold">C: &lt;= 8% or &lt;= 12 GB</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
-  &quot;DeviceId&quot;: &quot;C:&quot;,
-  &quot;VolumeName&quot;: &quot;System&quot;,
-  &quot;FileSystem&quot;: &quot;NTFS&quot;,
-  &quot;SizeBytes&quot;: 214748364800,
-  &quot;FreeBytes&quot;: 88197133414,
-  &quot;FreeGB&quot;: 82.14,
-  &quot;FreePercent&quot;: 41.07
-}</pre></details></td></tr>
-<tr data-status="healthy" data-search="healthy memory capacity physical memory 9.81 gb available (61.31%) of 16.00 gb physical memory. 61.31%  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Memory</span><br><span class="muted">Capacity</span></td><td>Physical memory</td><td>9.81 GB available (61.31%) of 16.00 GB physical memory.</td><td class="mono">61.31%</td><td class="mono"><span class="threshold">W: &lt;= 20%</span><span class="threshold">C: &lt;= 10%</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
-  &quot;TotalGB&quot;: 16,
-  &quot;AvailableGB&quot;: 9.81,
-  &quot;AvailablePercent&quot;: 61.31
-}</pre></details></td></tr>
-<tr data-status="warning" data-search="warning uptime lifecycle operating system 57.21 days since last boot (2026-05-15 04:27:00 +00:00). 57.21 days review maintenance cadence and schedule a controlled restart if required by patching or operational policy. "><td><span class="status warning">Warning</span></td><td><span class="mono">Uptime</span><br><span class="muted">Lifecycle</span></td><td>Operating system</td><td>57.21 days since last boot (2026-05-15 04:27:00 +00:00).</td><td class="mono">57.21 days</td><td class="mono"><span class="threshold">W: &gt;= 45 days</span><span class="threshold">C: &gt;= 90 days</span></td><td class="recommendation">Review maintenance cadence and schedule a controlled restart if required by patching or operational policy.<details><summary>Evidence</summary><pre>{
-  &quot;LastBootTime&quot;: &quot;2026-05-15T04:27:00Z&quot;,
-  &quot;UptimeDays&quot;: 57.21,
-  &quot;UptimeHours&quot;: 1373.04
-}</pre></details></td></tr>
-<tr data-status="warning" data-search="warning pendingreboot lifecycle operating system a reboot is pending: windows update. true schedule a controlled restart, confirm service restoration, and verify that all reboot indicators clear afterward. "><td><span class="status warning">Warning</span></td><td><span class="mono">PendingReboot</span><br><span class="muted">Lifecycle</span></td><td>Operating system</td><td>A reboot is pending: Windows Update.</td><td class="mono">True</td><td class="mono"><span class="threshold">W: Any supported reboot indicator</span></td><td class="recommendation">Schedule a controlled restart, confirm service restoration, and verify that all reboot indicators clear afterward.<details><summary>Evidence</summary><pre>{
-  &quot;Pending&quot;: true,
-  &quot;Reasons&quot;: [
-    &quot;Windows Update&quot;
-  ]
-}</pre></details></td></tr>
-<tr data-status="critical" data-search="critical services availability ntds service &#x27;active directory domain services&#x27; is stopped; expected running. stopped review dependent services and recent changes, then restore the expected state using the approved operational procedure. "><td><span class="status critical">Critical</span></td><td><span class="mono">Services</span><br><span class="muted">Availability</span></td><td>NTDS</td><td>Service &#x27;Active Directory Domain Services&#x27; is Stopped; expected Running.</td><td class="mono">Stopped</td><td class="mono"><span class="threshold">C: Expected: Running</span></td><td class="recommendation">Review dependent services and recent changes, then restore the expected state using the approved operational procedure.<details><summary>Evidence</summary><pre>{
-  &quot;Name&quot;: &quot;NTDS&quot;,
-  &quot;DisplayName&quot;: &quot;Active Directory Domain Services&quot;,
-  &quot;Status&quot;: &quot;Stopped&quot;,
-  &quot;ExpectedStatus&quot;: &quot;Running&quot;,
-  &quot;StartMode&quot;: &quot;Auto&quot;,
-  &quot;Exists&quot;: true
-}</pre></details></td></tr>
-<tr data-status="warning" data-search="warning eventlog reliability directory service 42 critical/error event(s) in &#x27;directory service&#x27; during the last 24 hour(s). 42 review recurring providers and event ids before the error rate becomes operationally significant. "><td><span class="status warning">Warning</span></td><td><span class="mono">EventLog</span><br><span class="muted">Reliability</span></td><td>Directory Service</td><td>42 critical/error event(s) in &#x27;Directory Service&#x27; during the last 24 hour(s).</td><td class="mono">42</td><td class="mono"><span class="threshold">W: &gt;= 25 events</span><span class="threshold">C: &gt;= 100 events</span></td><td class="recommendation">Review recurring providers and event IDs before the error rate becomes operationally significant.<details><summary>Evidence</summary><pre>{
-  &quot;LogName&quot;: &quot;Directory Service&quot;,
-  &quot;Count&quot;: 42,
+  &quot;Samples&quot;: [
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T07:16:30.4454330Z&quot;,
+      &quot;Id&quot;: 11,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;Microsoft-Windows-Security-Kerberos&quot;,
+      &quot;Message&quot;: null
+    },
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T06:03:59.4513868Z&quot;,
+      &quot;Id&quot;: 5010,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;Microsoft-Windows-Time-Service&quot;,
+      &quot;Message&quot;: null
+    },
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T06:03:59.4150376Z&quot;,
+      &quot;Id&quot;: 5010,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;Microsoft-Windows-Time-Service&quot;,
+      &quot;Message&quot;: null
+    },
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T06:03:00.6595226Z&quot;,
+      &quot;Id&quot;: 5010,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;Microsoft-Windows-Time-Service&quot;,
+      &quot;Message&quot;: null
+    },
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T06:02:59.4489764Z&quot;,
+      &quot;Id&quot;: 5010,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;Microsoft-Windows-Time-Service&quot;,
+      &quot;Message&quot;: null
+    }
+  ],
+  &quot;QueryError&quot;: &quot;&quot;
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy eventlog reliability application 22 critical/error event(s) in &#39;application&#39; during the last 24 hour(s). 22  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">EventLog</span><br><span class="muted">Reliability</span></td>
+<td>Application</td>
+<td>22 critical/error event(s) in &#39;Application&#39; during the last 24 hour(s).</td>
+<td class="mono">22</td>
+<td class="mono"><span class="threshold">W: &gt;= 25 events</span><span class="threshold">C: &gt;= 100 events</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;LogName&quot;: &quot;Application&quot;,
+  &quot;Count&quot;: 22,
+  &quot;RetrievedCount&quot;: 22,
   &quot;LookbackHours&quot;: 24,
   &quot;Levels&quot;: [
     1,
@@ -263,30 +560,665 @@ footer { margin-top: 28px; color: var(--muted); text-align: center; font-size: .
   &quot;Truncated&quot;: false,
   &quot;TopProviders&quot;: [
     {
-      &quot;Provider&quot;: &quot;Microsoft-Windows-ActiveDirectory_DomainService&quot;,
-      &quot;Count&quot;: 31
+      &quot;Provider&quot;: &quot;.NET Runtime&quot;,
+      &quot;Count&quot;: 13
+    },
+    {
+      &quot;Provider&quot;: &quot;Universal Print&quot;,
+      &quot;Count&quot;: 4
+    },
+    {
+      &quot;Provider&quot;: &quot;Application Error&quot;,
+      &quot;Count&quot;: 2
+    },
+    {
+      &quot;Provider&quot;: &quot;Application Hang&quot;,
+      &quot;Count&quot;: 1
+    },
+    {
+      &quot;Provider&quot;: &quot;SideBySide&quot;,
+      &quot;Count&quot;: 1
+    }
+  ],
+  &quot;Samples&quot;: [
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T07:14:51.6787556Z&quot;,
+      &quot;Id&quot;: 1022,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;.NET Runtime&quot;,
+      &quot;Message&quot;: null
+    },
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T07:12:51.5394745Z&quot;,
+      &quot;Id&quot;: 1022,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;.NET Runtime&quot;,
+      &quot;Message&quot;: null
+    },
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T07:02:10.7380332Z&quot;,
+      &quot;Id&quot;: 1022,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;.NET Runtime&quot;,
+      &quot;Message&quot;: null
+    },
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T06:58:04.9384144Z&quot;,
+      &quot;Id&quot;: 1022,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;.NET Runtime&quot;,
+      &quot;Message&quot;: null
+    },
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T06:18:08.6970391Z&quot;,
+      &quot;Id&quot;: 1022,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;.NET Runtime&quot;,
+      &quot;Message&quot;: null
+    }
+  ],
+  &quot;QueryError&quot;: &quot;&quot;
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy stability reliability operating system no crash indicators in the last 7 day(s). 0  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Stability</span><br><span class="muted">Reliability</span></td>
+<td>Operating system</td>
+<td>No crash indicators in the last 7 day(s).</td>
+<td class="mono">0</td>
+<td class="mono"><span class="threshold">W: &gt;= 1 incident(s)</span><span class="threshold">C: &gt;= 3 incident(s)</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;IncidentCount&quot;: 0,
+  &quot;LookbackDays&quot;: 7,
+  &quot;Incidents&quot;: [],
+  &quot;MinidumpCount&quot;: 0,
+  &quot;QueryErrors&quot;: []
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy storage reliability storage inventory 1 of 1 physical disk(s) and 2 of 2 fixed volume(s) report healthy status. 3  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Storage</span><br><span class="muted">Reliability</span></td>
+<td>Storage inventory</td>
+<td>1 of 1 physical disk(s) and 2 of 2 fixed volume(s) report healthy status.</td>
+<td class="mono">3</td>
+<td class="mono"><span class="threshold">C: Health status must be Healthy</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;PhysicalDisks&quot;: [
+    {
+      &quot;FriendlyName&quot;: &quot;Msft Virtual Disk&quot;,
+      &quot;MediaType&quot;: &quot;SSD&quot;,
+      &quot;HealthStatus&quot;: &quot;Healthy&quot;,
+      &quot;OperationalStatus&quot;: &quot;OK&quot;,
+      &quot;SizeGB&quot;: 953.87
+    }
+  ],
+  &quot;FixedVolumes&quot;: [
+    {
+      &quot;DriveLetter&quot;: &quot;C&quot;,
+      &quot;FileSystemLabel&quot;: &quot;&quot;,
+      &quot;FileSystem&quot;: &quot;NTFS&quot;,
+      &quot;HealthStatus&quot;: &quot;Healthy&quot;
+    },
+    {
+      &quot;DriveLetter&quot;: &quot;&quot;,
+      &quot;FileSystemLabel&quot;: &quot;&quot;,
+      &quot;FileSystem&quot;: &quot;NTFS&quot;,
+      &quot;HealthStatus&quot;: &quot;Healthy&quot;
+    }
+  ],
+  &quot;UnhealthyObjects&quot;: 0
+}</pre></details></td>
+</tr>
+<tr data-status="skipped" data-search="skipped dns connectivity dns targets no dns targets are configured.  add required names under checks.dns.targets to validate name resolution from the target host. ">
+<td><span class="status skipped">Skipped</span></td>
+<td><span class="mono">Dns</span><br><span class="muted">Connectivity</span></td>
+<td>DNS targets</td>
+<td>No DNS targets are configured.</td>
+<td class="mono">-</td>
+<td class="mono">-</td>
+<td class="recommendation">Add required names under Checks.Dns.Targets to validate name resolution from the target host.<details><summary>Evidence</summary><pre>{}</pre></details></td>
+</tr>
+<tr data-status="skipped" data-search="skipped tcp connectivity tcp endpoints no tcp endpoints are configured.  add required host and port pairs under checks.tcp.endpoints. ">
+<td><span class="status skipped">Skipped</span></td>
+<td><span class="mono">Tcp</span><br><span class="muted">Connectivity</span></td>
+<td>TCP endpoints</td>
+<td>No TCP endpoints are configured.</td>
+<td class="mono">-</td>
+<td class="mono">-</td>
+<td class="recommendation">Add required host and port pairs under Checks.Tcp.Endpoints.<details><summary>Evidence</summary><pre>{}</pre></details></td>
+</tr>
+<tr data-status="skipped" data-search="skipped tls security tls endpoints no tls endpoints are configured.  add host entries under checks.tls.endpoints to validate tls handshakes, certificate identity, and expiry. ">
+<td><span class="status skipped">Skipped</span></td>
+<td><span class="mono">Tls</span><br><span class="muted">Security</span></td>
+<td>TLS endpoints</td>
+<td>No TLS endpoints are configured.</td>
+<td class="mono">-</td>
+<td class="mono">-</td>
+<td class="recommendation">Add host entries under Checks.Tls.Endpoints to validate TLS handshakes, certificate identity, and expiry.<details><summary>Evidence</summary><pre>{}</pre></details></td>
+</tr>
+</tbody></table></div></article>
+<article class="host" id="host-1" data-search="srv-rds-02 localhost  {&quot;computername&quot;:&quot;srv-rds-02&quot;,&quot;fqdn&quot;:&quot;srv-rds-02.corp.contoso.com&quot;,&quot;platform&quot;:&quot;windows&quot;,&quot;operatingsystem&quot;:&quot;microsoft windows server 2025 standard&quot;,&quot;operatingsystemsku&quot;:7,&quot;version&quot;:&quot;10.0.26100&quot;,&quot;buildnumber&quot;:&quot;26100&quot;,&quot;architecture&quot;:&quot;64-bit&quot;,&quot;manufacturer&quot;:&quot;microsoft corporation&quot;,&quot;model&quot;:&quot;virtual machine&quot;,&quot;domain&quot;:&quot;corp.contoso.com&quot;,&quot;partofdomain&quot;:true,&quot;powershellversion&quot;:&quot;5.1.26100.8655&quot;,&quot;powershelledition&quot;:&quot;desktop&quot;,&quot;collectedatutc&quot;:&quot;2026-07-23t08:39:59.4129561z&quot;}">
+<header class="host-header"><div><h2 class="host-title">SRV-RDS-02</h2><div class="host-meta">Contoso Production | generated 2026-07-23 08:40:13 UTC | duration 14,858 ms</div>
+</div><span class="status critical">Critical</span></header>
+<dl class="inventory">
+<div><dt>Operating system</dt><dd>Microsoft Windows Server 2025 Standard</dd></div>
+<div><dt>Version / build</dt><dd>10.0.26100 / 26100</dd></div>
+<div><dt>Architecture</dt><dd>64-Bit</dd></div>
+<div><dt>FQDN</dt><dd>srv-rds-02.corp.contoso.com</dd></div>
+<div><dt>Manufacturer</dt><dd>Microsoft Corporation</dd></div>
+<div><dt>Model</dt><dd>Virtual Machine</dd></div>
+<div><dt>Domain</dt><dd>corp.contoso.com</dd></div>
+<div><dt>PowerShell</dt><dd>Desktop 5.1.26100.8655</dd></div>
+</dl>
+<div class="table-wrap"><table>
+<thead><tr><th>Status</th><th>Check</th><th>Target</th><th>Message</th><th>Observed</th><th>Thresholds</th><th>Recommendation / evidence</th></tr></thead><tbody>
+<tr data-status="healthy" data-search="healthy disk capacity c: 365.48 gb free (38.35%) of 953.03 gb on c: (unlabeled). 38.35% / 365.48 gb  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Disk</span><br><span class="muted">Capacity</span></td>
+<td>C:</td>
+<td>365.48 GB free (38.35%) of 953.03 GB on C: (unlabeled).</td>
+<td class="mono">38.35% / 365.48 GB</td>
+<td class="mono"><span class="threshold">W: &lt;= 20% or &lt;= 20 GB</span><span class="threshold">C: &lt;= 10% or &lt;= 10 GB</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;DeviceId&quot;: &quot;C:&quot;,
+  &quot;VolumeName&quot;: &quot;&quot;,
+  &quot;FileSystem&quot;: &quot;NTFS&quot;,
+  &quot;SizeBytes&quot;: 1023303217152,
+  &quot;FreeBytes&quot;: 392435392512,
+  &quot;FreeGB&quot;: 365.48,
+  &quot;FreePercent&quot;: 38.35
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy memory capacity physical memory 8.32 gb available (26.43%) of 31.47 gb physical memory. 26.43%  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Memory</span><br><span class="muted">Capacity</span></td>
+<td>Physical memory</td>
+<td>8.32 GB available (26.43%) of 31.47 GB physical memory.</td>
+<td class="mono">26.43%</td>
+<td class="mono"><span class="threshold">W: &lt;= 20% available or &gt;= 90% commit</span><span class="threshold">C: &lt;= 10% available or &gt;= 95% commit</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;TotalBytes&quot;: 33785393152,
+  &quot;AvailableBytes&quot;: 8930238464,
+  &quot;TotalGB&quot;: 31.47,
+  &quot;AvailableGB&quot;: 8.32,
+  &quot;AvailablePercent&quot;: 26.43,
+  &quot;CommitLimitGB&quot;: 40.97,
+  &quot;CommitUsedGB&quot;: 31.81,
+  &quot;CommitUsedPercent&quot;: 77.66,
+  &quot;PageFileAllocatedMB&quot;: null,
+  &quot;PageFileUsedMB&quot;: null
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy cpu capacity processor average cpu load 35% across 3 sample(s). 35.0%  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Cpu</span><br><span class="muted">Capacity</span></td>
+<td>Processor</td>
+<td>Average CPU load 35% across 3 sample(s).</td>
+<td class="mono">35.0%</td>
+<td class="mono"><span class="threshold">W: &gt;= 85%</span><span class="threshold">C: &gt;= 95%</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;AveragePercent&quot;: 35,
+  &quot;Samples&quot;: [
+    37,
+    40,
+    28
+  ],
+  &quot;SampleCount&quot;: 3,
+  &quot;LogicalProcessors&quot;: 22,
+  &quot;TopProcesses&quot;: [
+    {
+      &quot;Name&quot;: &quot;Memory Compression&quot;,
+      &quot;Id&quot;: 4216,
+      &quot;WorkingSetMB&quot;: 1996.6
+    },
+    {
+      &quot;Name&quot;: &quot;msedge&quot;,
+      &quot;Id&quot;: 24088,
+      &quot;WorkingSetMB&quot;: 767.9
+    },
+    {
+      &quot;Name&quot;: &quot;Teams&quot;,
+      &quot;Id&quot;: 30628,
+      &quot;WorkingSetMB&quot;: 579.2
+    },
+    {
+      &quot;Name&quot;: &quot;svchost&quot;,
+      &quot;Id&quot;: 15272,
+      &quot;WorkingSetMB&quot;: 538.5
+    },
+    {
+      &quot;Name&quot;: &quot;msedge&quot;,
+      &quot;Id&quot;: 31544,
+      &quot;WorkingSetMB&quot;: 494.5
     }
   ]
-}</pre></details></td></tr>
-<tr data-status="healthy" data-search="healthy dns connectivity _ldap._tcp.dc._msdcs.contoso.invalid resolved _ldap._tcp.dc._msdcs.contoso.invalid [srv] to dc01.contoso.invalid in 6.4 ms. dc01.contoso.invalid  "><td><span class="status healthy">Healthy</span></td><td><span class="mono">Dns</span><br><span class="muted">Connectivity</span></td><td>_ldap._tcp.dc._msdcs.contoso.invalid</td><td>Resolved _ldap._tcp.dc._msdcs.contoso.invalid [SRV] to dc01.contoso.invalid in 6.4 ms.</td><td class="mono">dc01.contoso.invalid</td><td class="mono"><span class="threshold">C: Resolution failure</span></td><td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
-  &quot;Name&quot;: &quot;_ldap._tcp.dc._msdcs.contoso.invalid&quot;,
-  &quot;QueryType&quot;: &quot;SRV&quot;,
-  &quot;Server&quot;: &quot;10.20.0.10&quot;,
-  &quot;Answers&quot;: [
-    &quot;dc01.contoso.invalid&quot;
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy uptime lifecycle operating system 0.12 days since last boot (2026-07-23 07:43:46 +02:00). 0.12 days  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Uptime</span><br><span class="muted">Lifecycle</span></td>
+<td>Operating system</td>
+<td>0.12 days since last boot (2026-07-23 07:43:46 +02:00).</td>
+<td class="mono">0.12 days</td>
+<td class="mono"><span class="threshold">W: &gt;= 45 days</span><span class="threshold">C: &gt;= 90 days</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;LastBootTime&quot;: &quot;2026-07-23T05:43:46.5000000Z&quot;,
+  &quot;UptimeDays&quot;: 0.12,
+  &quot;UptimeHours&quot;: 2.94
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy pendingreboot lifecycle operating system no supported pending-reboot indicators were detected. false  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">PendingReboot</span><br><span class="muted">Lifecycle</span></td>
+<td>Operating system</td>
+<td>No supported pending-reboot indicators were detected.</td>
+<td class="mono">False</td>
+<td class="mono"><span class="threshold">W: Any supported reboot indicator</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;Pending&quot;: false,
+  &quot;Reasons&quot;: [],
+  &quot;ExcludedReasons&quot;: []
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy patchage lifecycle operating system last update (kb5094126) was installed 34 day(s) ago on 2026-06-19. 34.44 days  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">PatchAge</span><br><span class="muted">Lifecycle</span></td>
+<td>Operating system</td>
+<td>Last update (KB5094126) was installed 34 day(s) ago on 2026-06-19.</td>
+<td class="mono">34.44 days</td>
+<td class="mono"><span class="threshold">W: &gt;= 45 days</span><span class="threshold">C: &gt;= 90 days</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;LastPatchDate&quot;: &quot;2026-06-18T22:00:00.0000000Z&quot;,
+  &quot;LastPatchId&quot;: &quot;KB5094126&quot;,
+  &quot;DaysSince&quot;: 34.44,
+  &quot;LastBootTime&quot;: &quot;2026-07-23T05:43:46.5000000Z&quot;,
+  &quot;AwaitingReboot&quot;: false,
+  &quot;TotalPatches&quot;: 7,
+  &quot;RecentPatches&quot;: [
+    {
+      &quot;HotFixId&quot;: &quot;KB5094126&quot;,
+      &quot;Description&quot;: &quot;Security Update&quot;,
+      &quot;InstalledOn&quot;: &quot;2026-06-18T22:00:00.0000000Z&quot;
+    },
+    {
+      &quot;HotFixId&quot;: &quot;KB5094135&quot;,
+      &quot;Description&quot;: &quot;Security Update&quot;,
+      &quot;InstalledOn&quot;: &quot;2026-06-17T22:00:00.0000000Z&quot;
+    },
+    {
+      &quot;HotFixId&quot;: &quot;KB5087051&quot;,
+      &quot;Description&quot;: &quot;Update&quot;,
+      &quot;InstalledOn&quot;: &quot;2026-05-21T22:00:00.0000000Z&quot;
+    },
+    {
+      &quot;HotFixId&quot;: &quot;KB5054156&quot;,
+      &quot;Description&quot;: &quot;Update&quot;,
+      &quot;InstalledOn&quot;: &quot;2026-04-26T22:00:00.0000000Z&quot;
+    },
+    {
+      &quot;HotFixId&quot;: &quot;KB5054273&quot;,
+      &quot;Description&quot;: &quot;Update&quot;,
+      &quot;InstalledOn&quot;: &quot;2025-08-05T22:00:00.0000000Z&quot;
+    }
+  ]
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy services availability eventlog service &#39;windows event log&#39; is running. running  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Services</span><br><span class="muted">Availability</span></td>
+<td>EventLog</td>
+<td>Service &#39;Windows Event Log&#39; is Running.</td>
+<td class="mono">Running</td>
+<td class="mono"><span class="threshold">C: Expected: Running</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;Name&quot;: &quot;EventLog&quot;,
+  &quot;DisplayName&quot;: &quot;Windows Event Log&quot;,
+  &quot;Status&quot;: &quot;Running&quot;,
+  &quot;ExpectedStatus&quot;: &quot;Running&quot;,
+  &quot;StartMode&quot;: &quot;Auto&quot;,
+  &quot;Exists&quot;: true
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy services availability winmgmt service &#39;windows management instrumentation&#39; is running. running  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Services</span><br><span class="muted">Availability</span></td>
+<td>Winmgmt</td>
+<td>Service &#39;Windows Management Instrumentation&#39; is Running.</td>
+<td class="mono">Running</td>
+<td class="mono"><span class="threshold">C: Expected: Running</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;Name&quot;: &quot;Winmgmt&quot;,
+  &quot;DisplayName&quot;: &quot;Windows Management Instrumentation&quot;,
+  &quot;Status&quot;: &quot;Running&quot;,
+  &quot;ExpectedStatus&quot;: &quot;Running&quot;,
+  &quot;StartMode&quot;: &quot;Auto&quot;,
+  &quot;Exists&quot;: true
+}</pre></details></td>
+</tr>
+<tr data-status="warning" data-search="warning scheduledtasks availability scheduled tasks 2 of 17 evaluated scheduled task(s) failed their last run. 2 check the task result codes and last run times, then re-run or repair the failing tasks. ">
+<td><span class="status warning">Warning</span></td>
+<td><span class="mono">ScheduledTasks</span><br><span class="muted">Availability</span></td>
+<td>Scheduled tasks</td>
+<td>2 of 17 evaluated scheduled task(s) failed their last run.</td>
+<td class="mono">2</td>
+<td class="mono"><span class="threshold">W: &gt;= 1 failed task(s)</span><span class="threshold">C: &gt;= 5 failed task(s)</span></td>
+<td class="recommendation">Check the task result codes and last run times, then re-run or repair the failing tasks.<details><summary>Evidence</summary><pre>{
+  &quot;FailedCount&quot;: 2,
+  &quot;EvaluatedCount&quot;: 17,
+  &quot;FailedTasks&quot;: [
+    {
+      &quot;Task&quot;: &quot;\\Contoso\\Profile Cleanup&quot;,
+      &quot;LastTaskResult&quot;: &quot;0x8004EE04&quot;,
+      &quot;LastRunTime&quot;: &quot;2026-07-23T05:48:50.0000000Z&quot;
+    },
+    {
+      &quot;Task&quot;: &quot;\\Contoso\\Session Report Export&quot;,
+      &quot;LastTaskResult&quot;: &quot;0x8007042B&quot;,
+      &quot;LastRunTime&quot;: &quot;2026-06-25T10:03:27.0000000Z&quot;
+    }
   ],
-  &quot;DurationMs&quot;: 6.4
-}</pre></details></td></tr>
+  &quot;Truncated&quot;: false
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy certificates security cn=b6e84d02-9a1f-47c3-8e5a-f2d70c4b91e6, dc=3a9e1c25-7f4d-4b6e-8d02-c1f5a7b9e364 [91a3c50d84f2] auto-rotating certificate (total lifetime 1 day(s)) is valid until 2026-07-24. 0.88 days  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Certificates</span><br><span class="muted">Security</span></td>
+<td>CN=b6e84d02-9a1f-47c3-8e5a-f2d70c4b91e6, DC=3a9e1c25-7f4d-4b6e-8d02-c1f5a7b9e364 [91A3C50D84F2]</td>
+<td>Auto-rotating certificate (total lifetime 1 day(s)) is valid until 2026-07-24.</td>
+<td class="mono">0.88 days</td>
+<td class="mono"><span class="threshold">W: &lt;= 30 days</span><span class="threshold">C: &lt;= 14 days or expired</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;Subject&quot;: &quot;CN=b6e84d02-9a1f-47c3-8e5a-f2d70c4b91e6, DC=3a9e1c25-7f4d-4b6e-8d02-c1f5a7b9e364&quot;,
+  &quot;Issuer&quot;: &quot;CN=MS-Organization-P2P-Access [2025]&quot;,
+  &quot;Thumbprint&quot;: &quot;4C82B5F09E3DA761C48F20D5B7E691A3C50D84F2&quot;,
+  &quot;SerialNumber&quot;: &quot;00C74B29F1E8D3A5066B42C90DE13F5A88&quot;,
+  &quot;StorePath&quot;: &quot;Cert:\\LocalMachine\\My&quot;,
+  &quot;NotBefore&quot;: &quot;2026-07-23T05:39:22.0000000Z&quot;,
+  &quot;NotAfter&quot;: &quot;2026-07-24T05:44:22.0000000Z&quot;,
+  &quot;DaysRemaining&quot;: 0.88,
+  &quot;TotalLifetimeDays&quot;: 1,
+  &quot;Rotating&quot;: true,
+  &quot;HasPrivateKey&quot;: true
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy certificates security certificate inventory 4 of 4 certificate(s) satisfy the expiry policy. 4  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Certificates</span><br><span class="muted">Security</span></td>
+<td>Certificate inventory</td>
+<td>4 of 4 certificate(s) satisfy the expiry policy.</td>
+<td class="mono">4</td>
+<td class="mono"><span class="threshold">W: Expiry &lt;= 30 days</span><span class="threshold">C: Expiry &lt;= 14 days</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;TotalCertificates&quot;: 4,
+  &quot;HealthyCertificates&quot;: 4,
+  &quot;RotatingCertificates&quot;: 1,
+  &quot;ExistingStores&quot;: [
+    &quot;Cert:\\LocalMachine\\My&quot;
+  ],
+  &quot;MissingStores&quot;: []
+}</pre></details></td>
+</tr>
+<tr data-status="critical" data-search="critical defender security microsoft defender microsoft defender real-time protection is disabled. 0 day(s) re-enable microsoft defender protection or document the managed replacement; an unprotected host is a critical exposure. ">
+<td><span class="status critical">Critical</span></td>
+<td><span class="mono">Defender</span><br><span class="muted">Security</span></td>
+<td>Microsoft Defender</td>
+<td>Microsoft Defender real-time protection is disabled.</td>
+<td class="mono">0 day(s)</td>
+<td class="mono"><span class="threshold">W: &gt;= 3 days signature age</span><span class="threshold">C: &gt;= 7 days signature age or disabled protection</span></td>
+<td class="recommendation">Re-enable Microsoft Defender protection or document the managed replacement; an unprotected host is a critical exposure.<details><summary>Evidence</summary><pre>{
+  &quot;AntivirusEnabled&quot;: true,
+  &quot;RealTimeProtectionEnabled&quot;: false,
+  &quot;AntivirusSignatureAge&quot;: 0,
+  &quot;AntivirusSignatureLastUpdated&quot;: &quot;2026-07-22T22:45:00.0000000Z&quot;,
+  &quot;AMEngineVersion&quot;: &quot;1.1.26060.3008&quot;
+}</pre></details></td>
+</tr>
+<tr data-status="critical" data-search="critical eventlog reliability system 126 critical/error event(s) in &#39;system&#39; during the last 24 hour(s). 126 triage the highest-volume providers and correlate events with service impact and recent changes. ">
+<td><span class="status critical">Critical</span></td>
+<td><span class="mono">EventLog</span><br><span class="muted">Reliability</span></td>
+<td>System</td>
+<td>126 critical/error event(s) in &#39;System&#39; during the last 24 hour(s).</td>
+<td class="mono">126</td>
+<td class="mono"><span class="threshold">W: &gt;= 25 events</span><span class="threshold">C: &gt;= 100 events</span></td>
+<td class="recommendation">Triage the highest-volume providers and correlate events with service impact and recent changes.<details><summary>Evidence</summary><pre>{
+  &quot;LogName&quot;: &quot;System&quot;,
+  &quot;Count&quot;: 126,
+  &quot;RetrievedCount&quot;: 126,
+  &quot;LookbackHours&quot;: 24,
+  &quot;Levels&quot;: [
+    1,
+    2
+  ],
+  &quot;Truncated&quot;: false,
+  &quot;TopProviders&quot;: [
+    {
+      &quot;Provider&quot;: &quot;Schannel&quot;,
+      &quot;Count&quot;: 100
+    },
+    {
+      &quot;Provider&quot;: &quot;Microsoft-Windows-Time-Service&quot;,
+      &quot;Count&quot;: 10
+    },
+    {
+      &quot;Provider&quot;: &quot;Microsoft-Windows-DistributedCOM&quot;,
+      &quot;Count&quot;: 8
+    },
+    {
+      &quot;Provider&quot;: &quot;Microsoft-Windows-Security-Kerberos&quot;,
+      &quot;Count&quot;: 5
+    },
+    {
+      &quot;Provider&quot;: &quot;Service Control Manager&quot;,
+      &quot;Count&quot;: 3
+    }
+  ],
+  &quot;Samples&quot;: [
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T07:16:30.4454330Z&quot;,
+      &quot;Id&quot;: 11,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;Microsoft-Windows-Security-Kerberos&quot;,
+      &quot;Message&quot;: null
+    },
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T06:03:59.4513868Z&quot;,
+      &quot;Id&quot;: 5010,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;Microsoft-Windows-Time-Service&quot;,
+      &quot;Message&quot;: null
+    },
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T06:03:59.4150376Z&quot;,
+      &quot;Id&quot;: 5010,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;Microsoft-Windows-Time-Service&quot;,
+      &quot;Message&quot;: null
+    },
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T06:03:00.6595226Z&quot;,
+      &quot;Id&quot;: 5010,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;Microsoft-Windows-Time-Service&quot;,
+      &quot;Message&quot;: null
+    },
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T06:02:59.4489764Z&quot;,
+      &quot;Id&quot;: 5010,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;Microsoft-Windows-Time-Service&quot;,
+      &quot;Message&quot;: null
+    }
+  ],
+  &quot;QueryError&quot;: &quot;&quot;
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy eventlog reliability application 22 critical/error event(s) in &#39;application&#39; during the last 24 hour(s). 22  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">EventLog</span><br><span class="muted">Reliability</span></td>
+<td>Application</td>
+<td>22 critical/error event(s) in &#39;Application&#39; during the last 24 hour(s).</td>
+<td class="mono">22</td>
+<td class="mono"><span class="threshold">W: &gt;= 25 events</span><span class="threshold">C: &gt;= 100 events</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;LogName&quot;: &quot;Application&quot;,
+  &quot;Count&quot;: 22,
+  &quot;RetrievedCount&quot;: 22,
+  &quot;LookbackHours&quot;: 24,
+  &quot;Levels&quot;: [
+    1,
+    2
+  ],
+  &quot;Truncated&quot;: false,
+  &quot;TopProviders&quot;: [
+    {
+      &quot;Provider&quot;: &quot;.NET Runtime&quot;,
+      &quot;Count&quot;: 13
+    },
+    {
+      &quot;Provider&quot;: &quot;Universal Print&quot;,
+      &quot;Count&quot;: 4
+    },
+    {
+      &quot;Provider&quot;: &quot;Application Error&quot;,
+      &quot;Count&quot;: 2
+    },
+    {
+      &quot;Provider&quot;: &quot;Application Hang&quot;,
+      &quot;Count&quot;: 1
+    },
+    {
+      &quot;Provider&quot;: &quot;SideBySide&quot;,
+      &quot;Count&quot;: 1
+    }
+  ],
+  &quot;Samples&quot;: [
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T07:14:51.6787556Z&quot;,
+      &quot;Id&quot;: 1022,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;.NET Runtime&quot;,
+      &quot;Message&quot;: null
+    },
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T07:12:51.5394745Z&quot;,
+      &quot;Id&quot;: 1022,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;.NET Runtime&quot;,
+      &quot;Message&quot;: null
+    },
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T07:02:10.7380332Z&quot;,
+      &quot;Id&quot;: 1022,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;.NET Runtime&quot;,
+      &quot;Message&quot;: null
+    },
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T06:58:04.9384144Z&quot;,
+      &quot;Id&quot;: 1022,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;.NET Runtime&quot;,
+      &quot;Message&quot;: null
+    },
+    {
+      &quot;TimeCreated&quot;: &quot;2026-07-23T06:18:08.6970391Z&quot;,
+      &quot;Id&quot;: 1022,
+      &quot;Level&quot;: &quot;Error&quot;,
+      &quot;ProviderName&quot;: &quot;.NET Runtime&quot;,
+      &quot;Message&quot;: null
+    }
+  ],
+  &quot;QueryError&quot;: &quot;&quot;
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy stability reliability operating system no crash indicators in the last 7 day(s). 0  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Stability</span><br><span class="muted">Reliability</span></td>
+<td>Operating system</td>
+<td>No crash indicators in the last 7 day(s).</td>
+<td class="mono">0</td>
+<td class="mono"><span class="threshold">W: &gt;= 1 incident(s)</span><span class="threshold">C: &gt;= 3 incident(s)</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;IncidentCount&quot;: 0,
+  &quot;LookbackDays&quot;: 7,
+  &quot;Incidents&quot;: [],
+  &quot;MinidumpCount&quot;: 0,
+  &quot;QueryErrors&quot;: []
+}</pre></details></td>
+</tr>
+<tr data-status="healthy" data-search="healthy storage reliability storage inventory 1 of 1 physical disk(s) and 2 of 2 fixed volume(s) report healthy status. 3  ">
+<td><span class="status healthy">Healthy</span></td>
+<td><span class="mono">Storage</span><br><span class="muted">Reliability</span></td>
+<td>Storage inventory</td>
+<td>1 of 1 physical disk(s) and 2 of 2 fixed volume(s) report healthy status.</td>
+<td class="mono">3</td>
+<td class="mono"><span class="threshold">C: Health status must be Healthy</span></td>
+<td class="recommendation"><span class="muted">No action required.</span><details><summary>Evidence</summary><pre>{
+  &quot;PhysicalDisks&quot;: [
+    {
+      &quot;FriendlyName&quot;: &quot;Msft Virtual Disk&quot;,
+      &quot;MediaType&quot;: &quot;SSD&quot;,
+      &quot;HealthStatus&quot;: &quot;Healthy&quot;,
+      &quot;OperationalStatus&quot;: &quot;OK&quot;,
+      &quot;SizeGB&quot;: 953.87
+    }
+  ],
+  &quot;FixedVolumes&quot;: [
+    {
+      &quot;DriveLetter&quot;: &quot;C&quot;,
+      &quot;FileSystemLabel&quot;: &quot;&quot;,
+      &quot;FileSystem&quot;: &quot;NTFS&quot;,
+      &quot;HealthStatus&quot;: &quot;Healthy&quot;
+    },
+    {
+      &quot;DriveLetter&quot;: &quot;&quot;,
+      &quot;FileSystemLabel&quot;: &quot;&quot;,
+      &quot;FileSystem&quot;: &quot;NTFS&quot;,
+      &quot;HealthStatus&quot;: &quot;Healthy&quot;
+    }
+  ],
+  &quot;UnhealthyObjects&quot;: 0
+}</pre></details></td>
+</tr>
+<tr data-status="skipped" data-search="skipped dns connectivity dns targets no dns targets are configured.  add required names under checks.dns.targets to validate name resolution from the target host. ">
+<td><span class="status skipped">Skipped</span></td>
+<td><span class="mono">Dns</span><br><span class="muted">Connectivity</span></td>
+<td>DNS targets</td>
+<td>No DNS targets are configured.</td>
+<td class="mono">-</td>
+<td class="mono">-</td>
+<td class="recommendation">Add required names under Checks.Dns.Targets to validate name resolution from the target host.<details><summary>Evidence</summary><pre>{}</pre></details></td>
+</tr>
+<tr data-status="skipped" data-search="skipped tcp connectivity tcp endpoints no tcp endpoints are configured.  add required host and port pairs under checks.tcp.endpoints. ">
+<td><span class="status skipped">Skipped</span></td>
+<td><span class="mono">Tcp</span><br><span class="muted">Connectivity</span></td>
+<td>TCP endpoints</td>
+<td>No TCP endpoints are configured.</td>
+<td class="mono">-</td>
+<td class="mono">-</td>
+<td class="recommendation">Add required host and port pairs under Checks.Tcp.Endpoints.<details><summary>Evidence</summary><pre>{}</pre></details></td>
+</tr>
+<tr data-status="skipped" data-search="skipped tls security tls endpoints no tls endpoints are configured.  add host entries under checks.tls.endpoints to validate tls handshakes, certificate identity, and expiry. ">
+<td><span class="status skipped">Skipped</span></td>
+<td><span class="mono">Tls</span><br><span class="muted">Security</span></td>
+<td>TLS endpoints</td>
+<td>No TLS endpoints are configured.</td>
+<td class="mono">-</td>
+<td class="mono">-</td>
+<td class="recommendation">Add host entries under Checks.Tls.Endpoints to validate TLS handshakes, certificate identity, and expiry.<details><summary>Evidence</summary><pre>{}</pre></details></td>
+</tr>
 </tbody></table></div></article>
-<div id="empty-state" class="empty-state">No checks match the current filters.</div><footer>InfraPulse 1.0.0 | read-only infrastructure health report</footer><script>(function () {
+<div id="empty-state" class="empty-state">No checks match the current filters.</div>
+<footer>InfraPulse 1.6.0 | read-only infrastructure health report</footer>
+<script>(function () {
   const queryInput = document.getElementById('filter-query');
   const statusSelect = document.getElementById('filter-status');
   const resetButton = document.getElementById('filter-reset');
   const printButton = document.getElementById('print-report');
   const visibleCount = document.getElementById('visible-count');
   const emptyState = document.getElementById('empty-state');
-  const rows = Array.from(document.querySelectorAll('tbody tr'));
-  const hosts = Array.from(document.querySelectorAll('.host'));
+  const rows = Array.from(document.querySelectorAll('article.host tbody tr'));
+  const hosts = Array.from(document.querySelectorAll('article.host'));
 
   function applyFilters() {
     const query = queryInput.value.trim().toLowerCase();
@@ -330,4 +1262,5 @@ footer { margin-top: 28px; color: var(--muted); text-align: center; font-size: .
   });
   printButton.addEventListener('click', function () { window.print(); });
   applyFilters();
-}());</script></main></body></html>
+}());</script>
+</main></body></html>

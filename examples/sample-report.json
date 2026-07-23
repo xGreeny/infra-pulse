@@ -1,36 +1,42 @@
 [
   {
-    "SchemaVersion": "1.0",
+    "SchemaVersion": "1.3",
     "Tool": "InfraPulse",
-    "ToolVersion": "1.0.0",
-    "RequestedComputerName": "srv-app-01.contoso.invalid",
+    "ToolVersion": "1.6.0",
+    "RunId": "b08e20d9-a719-44b1-82e2-319303a57542",
+    "RequestedComputerName": "localhost",
     "ComputerName": "SRV-APP-01",
-    "GeneratedAtUtc": "2026-07-11T09:30:00Z",
-    "OverallStatus": "Warning",
+    "GeneratedAtUtc": "2026-07-23T08:39:53.5741674Z",
+    "StartedAtUtc": "2026-07-23T08:39:35.2246604Z",
+    "CompletedAtUtc": "2026-07-23T08:39:53.5741674Z",
+    "ConfigurationFingerprint": "35c57460cb9aa284042bfa0c67155173e1a623f700e92b861ae1d18aa4bed1ef",
+    "ConfigurationSource": "Inline configuration",
+    "EnvironmentName": "Contoso Production",
+    "OverallStatus": "Critical",
     "Summary": {
-      "Total": 10,
-      "Healthy": 9,
+      "Total": 19,
+      "Healthy": 13,
       "Warning": 1,
-      "Critical": 0,
+      "Critical": 2,
       "Unknown": 0,
-      "Skipped": 0
+      "Skipped": 3
     },
     "Inventory": {
       "ComputerName": "SRV-APP-01",
-      "Fqdn": "srv-app-01.contoso.invalid",
+      "Fqdn": "srv-app-01.corp.contoso.com",
       "Platform": "Windows",
-      "OperatingSystem": "Microsoft Windows Server 2022 Standard",
+      "OperatingSystem": "Microsoft Windows Server 2025 Standard",
       "OperatingSystemSku": 7,
-      "Version": "10.0.20348",
-      "BuildNumber": "20348",
-      "Architecture": "64-bit",
-      "Manufacturer": "VMware, Inc.",
-      "Model": "VMware Virtual Platform",
-      "Domain": "contoso.invalid",
+      "Version": "10.0.26100",
+      "BuildNumber": "26100",
+      "Architecture": "64-Bit",
+      "Manufacturer": "Microsoft Corporation",
+      "Model": "Virtual Machine",
+      "Domain": "corp.contoso.com",
       "PartOfDomain": true,
-      "PowerShellVersion": "7.6.3",
-      "PowerShellEdition": "Core",
-      "CollectedAtUtc": "2026-07-11T09:29:59Z"
+      "PowerShellVersion": "5.1.26100.8655",
+      "PowerShellEdition": "Desktop",
+      "CollectedAtUtc": "2026-07-23T08:39:35.8083998Z"
     },
     "Results": [
       {
@@ -39,23 +45,23 @@
         "CheckName": "Disk",
         "Category": "Capacity",
         "Target": "C:",
-        "Status": "Warning",
-        "Message": "36.80 GB free (18.40%) of 200.00 GB on C: (System).",
-        "ObservedValue": "18.40% / 36.80 GB",
-        "WarningThreshold": "<= 20% or <= 30 GB",
-        "CriticalThreshold": "<= 8% or <= 12 GB",
-        "Recommendation": "Review growth, cleanup candidates, and volume capacity before the critical threshold is reached.",
+        "Status": "Healthy",
+        "Message": "365.51 GB free (38.35%) of 953.03 GB on C: (unlabeled).",
+        "ObservedValue": "38.35% / 365.51 GB",
+        "WarningThreshold": "<= 20% or <= 20 GB",
+        "CriticalThreshold": "<= 10% or <= 10 GB",
+        "Recommendation": "",
         "Evidence": {
           "DeviceId": "C:",
-          "VolumeName": "System",
+          "VolumeName": "",
           "FileSystem": "NTFS",
-          "SizeBytes": 214748364800,
-          "FreeBytes": 39513699123,
-          "FreeGB": 36.8,
-          "FreePercent": 18.4
+          "SizeBytes": 1023303217152,
+          "FreeBytes": 392462323712,
+          "FreeGB": 365.51,
+          "FreePercent": 38.35
         },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 48.2,
+        "TimestampUtc": "2026-07-23T08:39:35.8733168Z",
+        "DurationMs": 35,
         "Error": ""
       },
       {
@@ -65,18 +71,78 @@
         "Category": "Capacity",
         "Target": "Physical memory",
         "Status": "Healthy",
-        "Message": "12.53 GB available (39.16%) of 32.00 GB physical memory.",
-        "ObservedValue": "39.16%",
-        "WarningThreshold": "<= 20%",
-        "CriticalThreshold": "<= 10%",
+        "Message": "8.29 GB available (26.35%) of 31.47 GB physical memory.",
+        "ObservedValue": "26.35%",
+        "WarningThreshold": "<= 20% available or >= 90% commit",
+        "CriticalThreshold": "<= 10% available or >= 95% commit",
         "Recommendation": "",
         "Evidence": {
-          "TotalGB": 32,
-          "AvailableGB": 12.53,
-          "AvailablePercent": 39.16
+          "TotalBytes": 33785393152,
+          "AvailableBytes": 8902356992,
+          "TotalGB": 31.47,
+          "AvailableGB": 8.29,
+          "AvailablePercent": 26.35,
+          "CommitLimitGB": 40.97,
+          "CommitUsedGB": 31.75,
+          "CommitUsedPercent": 77.51,
+          "PageFileAllocatedMB": null,
+          "PageFileUsedMB": null
         },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 23.8,
+        "TimestampUtc": "2026-07-23T08:39:36.2843105Z",
+        "DurationMs": 385.41,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "Cpu",
+        "Category": "Capacity",
+        "Target": "Processor",
+        "Status": "Healthy",
+        "Message": "Average CPU load 20.3% across 3 sample(s).",
+        "ObservedValue": "20.3%",
+        "WarningThreshold": ">= 85%",
+        "CriticalThreshold": ">= 95%",
+        "Recommendation": "",
+        "Evidence": {
+          "AveragePercent": 20.3,
+          "Samples": [
+            12,
+            25,
+            24
+          ],
+          "SampleCount": 3,
+          "LogicalProcessors": 22,
+          "TopProcesses": [
+            {
+              "Name": "Memory Compression",
+              "Id": 4216,
+              "WorkingSetMB": 1928.7
+            },
+            {
+              "Name": "sqlservr",
+              "Id": 24088,
+              "WorkingSetMB": 767.9
+            },
+            {
+              "Name": "w3wp",
+              "Id": 15272,
+              "WorkingSetMB": 674
+            },
+            {
+              "Name": "svchost",
+              "Id": 30628,
+              "WorkingSetMB": 574.4
+            },
+            {
+              "Name": "w3wp",
+              "Id": 31544,
+              "WorkingSetMB": 494.5
+            }
+          ]
+        },
+        "TimestampUtc": "2026-07-23T08:39:41.9614805Z",
+        "DurationMs": 5663.76,
         "Error": ""
       },
       {
@@ -86,18 +152,18 @@
         "Category": "Lifecycle",
         "Target": "Operating system",
         "Status": "Healthy",
-        "Message": "18.42 days since last boot (2026-06-22 23:25:00 +00:00).",
-        "ObservedValue": "18.42 days",
+        "Message": "0.12 days since last boot (2026-07-23 07:43:46 +02:00).",
+        "ObservedValue": "0.12 days",
         "WarningThreshold": ">= 45 days",
         "CriticalThreshold": ">= 90 days",
         "Recommendation": "",
         "Evidence": {
-          "LastBootTime": "2026-06-22T23:25:00Z",
-          "UptimeDays": 18.42,
-          "UptimeHours": 442.08
+          "LastBootTime": "2026-07-23T05:43:46.5000000Z",
+          "UptimeDays": 0.12,
+          "UptimeHours": 2.93
         },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 17.4,
+        "TimestampUtc": "2026-07-23T08:39:42.3241254Z",
+        "DurationMs": 338.15,
         "Error": ""
       },
       {
@@ -114,10 +180,62 @@
         "Recommendation": "",
         "Evidence": {
           "Pending": false,
-          "Reasons": []
+          "Reasons": [],
+          "ExcludedReasons": []
         },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 14.1,
+        "TimestampUtc": "2026-07-23T08:39:42.4775354Z",
+        "DurationMs": 147.46,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "PatchAge",
+        "Category": "Lifecycle",
+        "Target": "Operating system",
+        "Status": "Healthy",
+        "Message": "Last update (KB5094126) was installed 34 day(s) ago on 2026-06-19.",
+        "ObservedValue": "34.44 days",
+        "WarningThreshold": ">= 45 days",
+        "CriticalThreshold": ">= 90 days",
+        "Recommendation": "",
+        "Evidence": {
+          "LastPatchDate": "2026-06-18T22:00:00.0000000Z",
+          "LastPatchId": "KB5094126",
+          "DaysSince": 34.44,
+          "LastBootTime": "2026-07-23T05:43:46.5000000Z",
+          "AwaitingReboot": false,
+          "TotalPatches": 7,
+          "RecentPatches": [
+            {
+              "HotFixId": "KB5094126",
+              "Description": "Security Update",
+              "InstalledOn": "2026-06-18T22:00:00.0000000Z"
+            },
+            {
+              "HotFixId": "KB5094135",
+              "Description": "Security Update",
+              "InstalledOn": "2026-06-17T22:00:00.0000000Z"
+            },
+            {
+              "HotFixId": "KB5087051",
+              "Description": "Update",
+              "InstalledOn": "2026-05-21T22:00:00.0000000Z"
+            },
+            {
+              "HotFixId": "KB5054156",
+              "Description": "Update",
+              "InstalledOn": "2026-04-26T22:00:00.0000000Z"
+            },
+            {
+              "HotFixId": "KB5054273",
+              "Description": "Update",
+              "InstalledOn": "2025-08-05T22:00:00.0000000Z"
+            }
+          ]
+        },
+        "TimestampUtc": "2026-07-23T08:39:44.8693813Z",
+        "DurationMs": 2379.37,
         "Error": ""
       },
       {
@@ -140,8 +258,8 @@
           "StartMode": "Auto",
           "Exists": true
         },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 12.2,
+        "TimestampUtc": "2026-07-23T08:39:46.2392465Z",
+        "DurationMs": 678.89,
         "Error": ""
       },
       {
@@ -158,13 +276,76 @@
         "Recommendation": "",
         "Evidence": {
           "Name": "Winmgmt",
+          "DisplayName": "Windows Management Instrumentation",
           "Status": "Running",
           "ExpectedStatus": "Running",
           "StartMode": "Auto",
           "Exists": true
         },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 12.2,
+        "TimestampUtc": "2026-07-23T08:39:46.2392465Z",
+        "DurationMs": 678.89,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "ScheduledTasks",
+        "Category": "Availability",
+        "Target": "Scheduled tasks",
+        "Status": "Warning",
+        "Message": "2 of 17 evaluated scheduled task(s) failed their last run.",
+        "ObservedValue": 2,
+        "WarningThreshold": ">= 1 failed task(s)",
+        "CriticalThreshold": ">= 5 failed task(s)",
+        "Recommendation": "Check the task result codes and last run times, then re-run or repair the failing tasks.",
+        "Evidence": {
+          "FailedCount": 2,
+          "EvaluatedCount": 17,
+          "FailedTasks": [
+            {
+              "Task": "\\Contoso\\Nightly Database Backup",
+              "LastTaskResult": "0x8004EE04",
+              "LastRunTime": "2026-07-23T05:48:50.0000000Z"
+            },
+            {
+              "Task": "\\Contoso\\App Log Archiver",
+              "LastTaskResult": "0x8007042B",
+              "LastRunTime": "2026-06-25T10:03:27.0000000Z"
+            }
+          ],
+          "Truncated": false
+        },
+        "TimestampUtc": "2026-07-23T08:39:48.9045102Z",
+        "DurationMs": 2652.36,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "Certificates",
+        "Category": "Security",
+        "Target": "CN=7d3f2a91-4c6b-4e8a-9f21-0b5d8c3e6a47, DC=3a9e1c25-7f4d-4b6e-8d02-c1f5a7b9e364 [5013B8D9A2C4]",
+        "Status": "Healthy",
+        "Message": "Auto-rotating certificate (total lifetime 1 day(s)) is valid until 2026-07-24.",
+        "ObservedValue": "0.88 days",
+        "WarningThreshold": "<= 30 days",
+        "CriticalThreshold": "<= 14 days or expired",
+        "Recommendation": "",
+        "Evidence": {
+          "Subject": "CN=7d3f2a91-4c6b-4e8a-9f21-0b5d8c3e6a47, DC=3a9e1c25-7f4d-4b6e-8d02-c1f5a7b9e364",
+          "Issuer": "CN=MS-Organization-P2P-Access [2025]",
+          "Thumbprint": "9A41C7D2E85F0B36A19D64C82E7F5013B8D9A2C4",
+          "SerialNumber": "00A3D18E5B92C7F4066D31B8E9A250C471",
+          "StorePath": "Cert:\\LocalMachine\\My",
+          "NotBefore": "2026-07-23T05:39:22.0000000Z",
+          "NotAfter": "2026-07-24T05:44:22.0000000Z",
+          "DaysRemaining": 0.88,
+          "TotalLifetimeDays": 1,
+          "Rotating": true,
+          "HasPrivateKey": true
+        },
+        "TimestampUtc": "2026-07-23T08:39:49.0771112Z",
+        "DurationMs": 33.18,
         "Error": ""
       },
       {
@@ -174,22 +355,45 @@
         "Category": "Security",
         "Target": "Certificate inventory",
         "Status": "Healthy",
-        "Message": "6 of 6 certificate(s) are valid beyond the warning threshold.",
-        "ObservedValue": 6,
+        "Message": "4 of 4 certificate(s) satisfy the expiry policy.",
+        "ObservedValue": 4,
         "WarningThreshold": "Expiry <= 30 days",
         "CriticalThreshold": "Expiry <= 14 days",
         "Recommendation": "",
         "Evidence": {
-          "TotalCertificates": 6,
-          "HealthyCertificates": 6,
+          "TotalCertificates": 4,
+          "HealthyCertificates": 4,
+          "RotatingCertificates": 1,
           "ExistingStores": [
-            "Cert:\\LocalMachine\\My",
-            "Cert:\\LocalMachine\\WebHosting"
+            "Cert:\\LocalMachine\\My"
           ],
           "MissingStores": []
         },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 61.8,
+        "TimestampUtc": "2026-07-23T08:39:49.0816757Z",
+        "DurationMs": 132.71,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "Defender",
+        "Category": "Security",
+        "Target": "Microsoft Defender",
+        "Status": "Critical",
+        "Message": "Microsoft Defender real-time protection is disabled.",
+        "ObservedValue": "0 day(s)",
+        "WarningThreshold": ">= 3 days signature age",
+        "CriticalThreshold": ">= 7 days signature age or disabled protection",
+        "Recommendation": "Re-enable Microsoft Defender protection or document the managed replacement; an unprotected host is a critical exposure.",
+        "Evidence": {
+          "AntivirusEnabled": true,
+          "RealTimeProtectionEnabled": false,
+          "AntivirusSignatureAge": 0,
+          "AntivirusSignatureLastUpdated": "2026-07-22T22:45:00.0000000Z",
+          "AMEngineVersion": "1.1.26060.3008"
+        },
+        "TimestampUtc": "2026-07-23T08:39:50.0654048Z",
+        "DurationMs": 976.19,
         "Error": ""
       },
       {
@@ -198,15 +402,16 @@
         "CheckName": "EventLog",
         "Category": "Reliability",
         "Target": "System",
-        "Status": "Healthy",
-        "Message": "8 critical/error event(s) in 'System' during the last 24 hour(s).",
-        "ObservedValue": 8,
+        "Status": "Critical",
+        "Message": "127 critical/error event(s) in 'System' during the last 24 hour(s).",
+        "ObservedValue": 127,
         "WarningThreshold": ">= 25 events",
         "CriticalThreshold": ">= 100 events",
-        "Recommendation": "",
+        "Recommendation": "Triage the highest-volume providers and correlate events with service impact and recent changes.",
         "Evidence": {
           "LogName": "System",
-          "Count": 8,
+          "Count": 127,
+          "RetrievedCount": 127,
           "LookbackHours": 24,
           "Levels": [
             1,
@@ -215,13 +420,219 @@
           "Truncated": false,
           "TopProviders": [
             {
+              "Provider": "Schannel",
+              "Count": 100
+            },
+            {
+              "Provider": "Microsoft-Windows-Time-Service",
+              "Count": 10
+            },
+            {
+              "Provider": "Microsoft-Windows-DistributedCOM",
+              "Count": 8
+            },
+            {
+              "Provider": "Microsoft-Windows-Security-Kerberos",
+              "Count": 6
+            },
+            {
               "Provider": "Service Control Manager",
               "Count": 3
             }
-          ]
+          ],
+          "Samples": [
+            {
+              "TimeCreated": "2026-07-23T07:16:30.4454330Z",
+              "Id": 11,
+              "Level": "Error",
+              "ProviderName": "Microsoft-Windows-Security-Kerberos",
+              "Message": null
+            },
+            {
+              "TimeCreated": "2026-07-23T06:03:59.4513868Z",
+              "Id": 5010,
+              "Level": "Error",
+              "ProviderName": "Microsoft-Windows-Time-Service",
+              "Message": null
+            },
+            {
+              "TimeCreated": "2026-07-23T06:03:59.4150376Z",
+              "Id": 5010,
+              "Level": "Error",
+              "ProviderName": "Microsoft-Windows-Time-Service",
+              "Message": null
+            },
+            {
+              "TimeCreated": "2026-07-23T06:03:00.6595226Z",
+              "Id": 5010,
+              "Level": "Error",
+              "ProviderName": "Microsoft-Windows-Time-Service",
+              "Message": null
+            },
+            {
+              "TimeCreated": "2026-07-23T06:02:59.4489764Z",
+              "Id": 5010,
+              "Level": "Error",
+              "ProviderName": "Microsoft-Windows-Time-Service",
+              "Message": null
+            }
+          ],
+          "QueryError": ""
         },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 76.4,
+        "TimestampUtc": "2026-07-23T08:39:50.7743569Z",
+        "DurationMs": 346.85,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "EventLog",
+        "Category": "Reliability",
+        "Target": "Application",
+        "Status": "Healthy",
+        "Message": "22 critical/error event(s) in 'Application' during the last 24 hour(s).",
+        "ObservedValue": 22,
+        "WarningThreshold": ">= 25 events",
+        "CriticalThreshold": ">= 100 events",
+        "Recommendation": "",
+        "Evidence": {
+          "LogName": "Application",
+          "Count": 22,
+          "RetrievedCount": 22,
+          "LookbackHours": 24,
+          "Levels": [
+            1,
+            2
+          ],
+          "Truncated": false,
+          "TopProviders": [
+            {
+              "Provider": ".NET Runtime",
+              "Count": 13
+            },
+            {
+              "Provider": "Universal Print",
+              "Count": 4
+            },
+            {
+              "Provider": "Application Error",
+              "Count": 2
+            },
+            {
+              "Provider": "Application Hang",
+              "Count": 1
+            },
+            {
+              "Provider": "SideBySide",
+              "Count": 1
+            }
+          ],
+          "Samples": [
+            {
+              "TimeCreated": "2026-07-23T07:14:51.6787556Z",
+              "Id": 1022,
+              "Level": "Error",
+              "ProviderName": ".NET Runtime",
+              "Message": null
+            },
+            {
+              "TimeCreated": "2026-07-23T07:12:51.5394745Z",
+              "Id": 1022,
+              "Level": "Error",
+              "ProviderName": ".NET Runtime",
+              "Message": null
+            },
+            {
+              "TimeCreated": "2026-07-23T07:02:10.7380332Z",
+              "Id": 1022,
+              "Level": "Error",
+              "ProviderName": ".NET Runtime",
+              "Message": null
+            },
+            {
+              "TimeCreated": "2026-07-23T06:58:04.9384144Z",
+              "Id": 1022,
+              "Level": "Error",
+              "ProviderName": ".NET Runtime",
+              "Message": null
+            },
+            {
+              "TimeCreated": "2026-07-23T06:18:08.6970391Z",
+              "Id": 1022,
+              "Level": "Error",
+              "ProviderName": ".NET Runtime",
+              "Message": null
+            }
+          ],
+          "QueryError": ""
+        },
+        "TimestampUtc": "2026-07-23T08:39:50.7763895Z",
+        "DurationMs": 346.85,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "Stability",
+        "Category": "Reliability",
+        "Target": "Operating system",
+        "Status": "Healthy",
+        "Message": "No crash indicators in the last 7 day(s).",
+        "ObservedValue": 0,
+        "WarningThreshold": ">= 1 incident(s)",
+        "CriticalThreshold": ">= 3 incident(s)",
+        "Recommendation": "",
+        "Evidence": {
+          "IncidentCount": 0,
+          "LookbackDays": 7,
+          "Incidents": [],
+          "MinidumpCount": 0,
+          "QueryErrors": []
+        },
+        "TimestampUtc": "2026-07-23T08:39:51.3517542Z",
+        "DurationMs": 567.38,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "Storage",
+        "Category": "Reliability",
+        "Target": "Storage inventory",
+        "Status": "Healthy",
+        "Message": "1 of 1 physical disk(s) and 2 of 2 fixed volume(s) report healthy status.",
+        "ObservedValue": 3,
+        "WarningThreshold": null,
+        "CriticalThreshold": "Health status must be Healthy",
+        "Recommendation": "",
+        "Evidence": {
+          "PhysicalDisks": [
+            {
+              "FriendlyName": "Msft Virtual Disk",
+              "MediaType": "SSD",
+              "HealthStatus": "Healthy",
+              "OperationalStatus": "OK",
+              "SizeGB": 953.87
+            }
+          ],
+          "FixedVolumes": [
+            {
+              "DriveLetter": "C",
+              "FileSystemLabel": "",
+              "FileSystem": "NTFS",
+              "HealthStatus": "Healthy"
+            },
+            {
+              "DriveLetter": "",
+              "FileSystemLabel": "",
+              "FileSystem": "NTFS",
+              "HealthStatus": "Healthy"
+            }
+          ],
+          "UnhealthyObjects": 0
+        },
+        "TimestampUtc": "2026-07-23T08:39:53.5365926Z",
+        "DurationMs": 2168.33,
         "Error": ""
       },
       {
@@ -229,24 +640,16 @@
         "ComputerName": "SRV-APP-01",
         "CheckName": "Dns",
         "Category": "Connectivity",
-        "Target": "login.microsoftonline.com",
-        "Status": "Healthy",
-        "Message": "Resolved login.microsoftonline.com [A] to 20.190.160.2 in 11.2 ms.",
-        "ObservedValue": "20.190.160.2",
+        "Target": "DNS targets",
+        "Status": "Skipped",
+        "Message": "No DNS targets are configured.",
+        "ObservedValue": null,
         "WarningThreshold": null,
-        "CriticalThreshold": "Resolution failure",
-        "Recommendation": "",
-        "Evidence": {
-          "Name": "login.microsoftonline.com",
-          "QueryType": "A",
-          "Server": "",
-          "Answers": [
-            "20.190.160.2"
-          ],
-          "DurationMs": 11.2
-        },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 11.2,
+        "CriticalThreshold": null,
+        "Recommendation": "Add required names under Checks.Dns.Targets to validate name resolution from the target host.",
+        "Evidence": {},
+        "TimestampUtc": "2026-07-23T08:39:53.5443407Z",
+        "DurationMs": 0,
         "Error": ""
       },
       {
@@ -254,193 +657,452 @@
         "ComputerName": "SRV-APP-01",
         "CheckName": "Tcp",
         "Category": "Connectivity",
-        "Target": "Microsoft identity",
-        "Status": "Healthy",
-        "Message": "Connected to login.microsoftonline.com:443 in 24.8 ms.",
-        "ObservedValue": true,
+        "Target": "TCP endpoints",
+        "Status": "Skipped",
+        "Message": "No TCP endpoints are configured.",
+        "ObservedValue": null,
         "WarningThreshold": null,
-        "CriticalThreshold": "Connection failure",
-        "Recommendation": "",
-        "Evidence": {
-          "Name": "Microsoft identity",
-          "Host": "login.microsoftonline.com",
-          "Port": 443,
-          "DurationMs": 24.8,
-          "TimeoutMs": 3000
-        },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 24.8,
+        "CriticalThreshold": null,
+        "Recommendation": "Add required host and port pairs under Checks.Tcp.Endpoints.",
+        "Evidence": {},
+        "TimestampUtc": "2026-07-23T08:39:53.5561286Z",
+        "DurationMs": 0,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-APP-01",
+        "CheckName": "Tls",
+        "Category": "Security",
+        "Target": "TLS endpoints",
+        "Status": "Skipped",
+        "Message": "No TLS endpoints are configured.",
+        "ObservedValue": null,
+        "WarningThreshold": null,
+        "CriticalThreshold": null,
+        "Recommendation": "Add host entries under Checks.Tls.Endpoints to validate TLS handshakes, certificate identity, and expiry.",
+        "Evidence": {},
+        "TimestampUtc": "2026-07-23T08:39:53.5616329Z",
+        "DurationMs": 0,
         "Error": ""
       }
     ],
-    "Tags": [
-      "production",
-      "application"
-    ],
-    "DurationMs": 842.17
+    "Tags": [],
+    "DurationMs": 18339.64
   },
   {
-    "SchemaVersion": "1.0",
+    "SchemaVersion": "1.3",
     "Tool": "InfraPulse",
-    "ToolVersion": "1.0.0",
-    "RequestedComputerName": "srv-dc-01.contoso.invalid",
-    "ComputerName": "SRV-DC-01",
-    "GeneratedAtUtc": "2026-07-11T09:30:02Z",
+    "ToolVersion": "1.6.0",
+    "RunId": "b08e20d9-a719-44b1-82e2-319303a57542",
+    "RequestedComputerName": "localhost",
+    "ComputerName": "SRV-RDS-02",
+    "GeneratedAtUtc": "2026-07-23T08:40:13.8544201Z",
+    "StartedAtUtc": "2026-07-23T08:39:58.9975236Z",
+    "CompletedAtUtc": "2026-07-23T08:40:13.8544201Z",
+    "ConfigurationFingerprint": "35c57460cb9aa284042bfa0c67155173e1a623f700e92b861ae1d18aa4bed1ef",
+    "ConfigurationSource": "Inline configuration",
+    "EnvironmentName": "Contoso Production",
     "OverallStatus": "Critical",
     "Summary": {
-      "Total": 7,
-      "Healthy": 3,
-      "Warning": 3,
-      "Critical": 1,
+      "Total": 19,
+      "Healthy": 13,
+      "Warning": 1,
+      "Critical": 2,
       "Unknown": 0,
-      "Skipped": 0
+      "Skipped": 3
     },
     "Inventory": {
-      "ComputerName": "SRV-DC-01",
-      "Fqdn": "srv-dc-01.contoso.invalid",
+      "ComputerName": "SRV-RDS-02",
+      "Fqdn": "srv-rds-02.corp.contoso.com",
       "Platform": "Windows",
-      "OperatingSystem": "Microsoft Windows Server 2022 Datacenter",
-      "OperatingSystemSku": 8,
-      "Version": "10.0.20348",
-      "BuildNumber": "20348",
-      "Architecture": "64-bit",
-      "Manufacturer": "Dell Inc.",
-      "Model": "PowerEdge R650",
-      "Domain": "contoso.invalid",
+      "OperatingSystem": "Microsoft Windows Server 2025 Standard",
+      "OperatingSystemSku": 7,
+      "Version": "10.0.26100",
+      "BuildNumber": "26100",
+      "Architecture": "64-Bit",
+      "Manufacturer": "Microsoft Corporation",
+      "Model": "Virtual Machine",
+      "Domain": "corp.contoso.com",
       "PartOfDomain": true,
-      "PowerShellVersion": "5.1.20348.2849",
+      "PowerShellVersion": "5.1.26100.8655",
       "PowerShellEdition": "Desktop",
-      "CollectedAtUtc": "2026-07-11T09:30:01Z"
+      "CollectedAtUtc": "2026-07-23T08:39:59.4129561Z"
     },
     "Results": [
       {
         "SchemaVersion": "1.0",
-        "ComputerName": "SRV-DC-01",
+        "ComputerName": "SRV-RDS-02",
         "CheckName": "Disk",
         "Category": "Capacity",
         "Target": "C:",
         "Status": "Healthy",
-        "Message": "82.14 GB free (41.07%) of 200.00 GB on C: (System).",
-        "ObservedValue": "41.07% / 82.14 GB",
-        "WarningThreshold": "<= 20% or <= 30 GB",
-        "CriticalThreshold": "<= 8% or <= 12 GB",
+        "Message": "365.48 GB free (38.35%) of 953.03 GB on C: (unlabeled).",
+        "ObservedValue": "38.35% / 365.48 GB",
+        "WarningThreshold": "<= 20% or <= 20 GB",
+        "CriticalThreshold": "<= 10% or <= 10 GB",
         "Recommendation": "",
         "Evidence": {
           "DeviceId": "C:",
-          "VolumeName": "System",
+          "VolumeName": "",
           "FileSystem": "NTFS",
-          "SizeBytes": 214748364800,
-          "FreeBytes": 88197133414,
-          "FreeGB": 82.14,
-          "FreePercent": 41.07
+          "SizeBytes": 1023303217152,
+          "FreeBytes": 392435392512,
+          "FreeGB": 365.48,
+          "FreePercent": 38.35
         },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 41.7,
+        "TimestampUtc": "2026-07-23T08:39:59.4442710Z",
+        "DurationMs": 27.75,
         "Error": ""
       },
       {
         "SchemaVersion": "1.0",
-        "ComputerName": "SRV-DC-01",
+        "ComputerName": "SRV-RDS-02",
         "CheckName": "Memory",
         "Category": "Capacity",
         "Target": "Physical memory",
         "Status": "Healthy",
-        "Message": "9.81 GB available (61.31%) of 16.00 GB physical memory.",
-        "ObservedValue": "61.31%",
-        "WarningThreshold": "<= 20%",
-        "CriticalThreshold": "<= 10%",
+        "Message": "8.32 GB available (26.43%) of 31.47 GB physical memory.",
+        "ObservedValue": "26.43%",
+        "WarningThreshold": "<= 20% available or >= 90% commit",
+        "CriticalThreshold": "<= 10% available or >= 95% commit",
         "Recommendation": "",
         "Evidence": {
-          "TotalGB": 16,
-          "AvailableGB": 9.81,
-          "AvailablePercent": 61.31
+          "TotalBytes": 33785393152,
+          "AvailableBytes": 8930238464,
+          "TotalGB": 31.47,
+          "AvailableGB": 8.32,
+          "AvailablePercent": 26.43,
+          "CommitLimitGB": 40.97,
+          "CommitUsedGB": 31.81,
+          "CommitUsedPercent": 77.66,
+          "PageFileAllocatedMB": null,
+          "PageFileUsedMB": null
         },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 20.2,
+        "TimestampUtc": "2026-07-23T08:39:59.8521041Z",
+        "DurationMs": 406.08,
         "Error": ""
       },
       {
         "SchemaVersion": "1.0",
-        "ComputerName": "SRV-DC-01",
+        "ComputerName": "SRV-RDS-02",
+        "CheckName": "Cpu",
+        "Category": "Capacity",
+        "Target": "Processor",
+        "Status": "Healthy",
+        "Message": "Average CPU load 35% across 3 sample(s).",
+        "ObservedValue": "35.0%",
+        "WarningThreshold": ">= 85%",
+        "CriticalThreshold": ">= 95%",
+        "Recommendation": "",
+        "Evidence": {
+          "AveragePercent": 35,
+          "Samples": [
+            37,
+            40,
+            28
+          ],
+          "SampleCount": 3,
+          "LogicalProcessors": 22,
+          "TopProcesses": [
+            {
+              "Name": "Memory Compression",
+              "Id": 4216,
+              "WorkingSetMB": 1996.6
+            },
+            {
+              "Name": "msedge",
+              "Id": 24088,
+              "WorkingSetMB": 767.9
+            },
+            {
+              "Name": "Teams",
+              "Id": 30628,
+              "WorkingSetMB": 579.2
+            },
+            {
+              "Name": "svchost",
+              "Id": 15272,
+              "WorkingSetMB": 538.5
+            },
+            {
+              "Name": "msedge",
+              "Id": 31544,
+              "WorkingSetMB": 494.5
+            }
+          ]
+        },
+        "TimestampUtc": "2026-07-23T08:40:05.5316619Z",
+        "DurationMs": 5677.39,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-RDS-02",
         "CheckName": "Uptime",
         "Category": "Lifecycle",
         "Target": "Operating system",
-        "Status": "Warning",
-        "Message": "57.21 days since last boot (2026-05-15 04:27:00 +00:00).",
-        "ObservedValue": "57.21 days",
+        "Status": "Healthy",
+        "Message": "0.12 days since last boot (2026-07-23 07:43:46 +02:00).",
+        "ObservedValue": "0.12 days",
         "WarningThreshold": ">= 45 days",
         "CriticalThreshold": ">= 90 days",
-        "Recommendation": "Review maintenance cadence and schedule a controlled restart if required by patching or operational policy.",
+        "Recommendation": "",
         "Evidence": {
-          "LastBootTime": "2026-05-15T04:27:00Z",
-          "UptimeDays": 57.21,
-          "UptimeHours": 1373.04
+          "LastBootTime": "2026-07-23T05:43:46.5000000Z",
+          "UptimeDays": 0.12,
+          "UptimeHours": 2.94
         },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 15.9,
+        "TimestampUtc": "2026-07-23T08:40:05.8716373Z",
+        "DurationMs": 340.16,
         "Error": ""
       },
       {
         "SchemaVersion": "1.0",
-        "ComputerName": "SRV-DC-01",
+        "ComputerName": "SRV-RDS-02",
         "CheckName": "PendingReboot",
         "Category": "Lifecycle",
         "Target": "Operating system",
-        "Status": "Warning",
-        "Message": "A reboot is pending: Windows Update.",
-        "ObservedValue": true,
+        "Status": "Healthy",
+        "Message": "No supported pending-reboot indicators were detected.",
+        "ObservedValue": false,
         "WarningThreshold": "Any supported reboot indicator",
         "CriticalThreshold": null,
-        "Recommendation": "Schedule a controlled restart, confirm service restoration, and verify that all reboot indicators clear afterward.",
+        "Recommendation": "",
         "Evidence": {
-          "Pending": true,
-          "Reasons": [
-            "Windows Update"
-          ]
+          "Pending": false,
+          "Reasons": [],
+          "ExcludedReasons": []
         },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 12.8,
+        "TimestampUtc": "2026-07-23T08:40:06.0912062Z",
+        "DurationMs": 207.01,
         "Error": ""
       },
       {
         "SchemaVersion": "1.0",
-        "ComputerName": "SRV-DC-01",
+        "ComputerName": "SRV-RDS-02",
+        "CheckName": "PatchAge",
+        "Category": "Lifecycle",
+        "Target": "Operating system",
+        "Status": "Healthy",
+        "Message": "Last update (KB5094126) was installed 34 day(s) ago on 2026-06-19.",
+        "ObservedValue": "34.44 days",
+        "WarningThreshold": ">= 45 days",
+        "CriticalThreshold": ">= 90 days",
+        "Recommendation": "",
+        "Evidence": {
+          "LastPatchDate": "2026-06-18T22:00:00.0000000Z",
+          "LastPatchId": "KB5094126",
+          "DaysSince": 34.44,
+          "LastBootTime": "2026-07-23T05:43:46.5000000Z",
+          "AwaitingReboot": false,
+          "TotalPatches": 7,
+          "RecentPatches": [
+            {
+              "HotFixId": "KB5094126",
+              "Description": "Security Update",
+              "InstalledOn": "2026-06-18T22:00:00.0000000Z"
+            },
+            {
+              "HotFixId": "KB5094135",
+              "Description": "Security Update",
+              "InstalledOn": "2026-06-17T22:00:00.0000000Z"
+            },
+            {
+              "HotFixId": "KB5087051",
+              "Description": "Update",
+              "InstalledOn": "2026-05-21T22:00:00.0000000Z"
+            },
+            {
+              "HotFixId": "KB5054156",
+              "Description": "Update",
+              "InstalledOn": "2026-04-26T22:00:00.0000000Z"
+            },
+            {
+              "HotFixId": "KB5054273",
+              "Description": "Update",
+              "InstalledOn": "2025-08-05T22:00:00.0000000Z"
+            }
+          ]
+        },
+        "TimestampUtc": "2026-07-23T08:40:08.4843519Z",
+        "DurationMs": 2393.97,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-RDS-02",
         "CheckName": "Services",
         "Category": "Availability",
-        "Target": "NTDS",
-        "Status": "Critical",
-        "Message": "Service 'Active Directory Domain Services' is Stopped; expected Running.",
-        "ObservedValue": "Stopped",
+        "Target": "EventLog",
+        "Status": "Healthy",
+        "Message": "Service 'Windows Event Log' is Running.",
+        "ObservedValue": "Running",
         "WarningThreshold": null,
         "CriticalThreshold": "Expected: Running",
-        "Recommendation": "Review dependent services and recent changes, then restore the expected state using the approved operational procedure.",
+        "Recommendation": "",
         "Evidence": {
-          "Name": "NTDS",
-          "DisplayName": "Active Directory Domain Services",
-          "Status": "Stopped",
+          "Name": "EventLog",
+          "DisplayName": "Windows Event Log",
+          "Status": "Running",
           "ExpectedStatus": "Running",
           "StartMode": "Auto",
           "Exists": true
         },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 18.1,
+        "TimestampUtc": "2026-07-23T08:40:10.2690950Z",
+        "DurationMs": 890.02,
         "Error": ""
       },
       {
         "SchemaVersion": "1.0",
-        "ComputerName": "SRV-DC-01",
+        "ComputerName": "SRV-RDS-02",
+        "CheckName": "Services",
+        "Category": "Availability",
+        "Target": "Winmgmt",
+        "Status": "Healthy",
+        "Message": "Service 'Windows Management Instrumentation' is Running.",
+        "ObservedValue": "Running",
+        "WarningThreshold": null,
+        "CriticalThreshold": "Expected: Running",
+        "Recommendation": "",
+        "Evidence": {
+          "Name": "Winmgmt",
+          "DisplayName": "Windows Management Instrumentation",
+          "Status": "Running",
+          "ExpectedStatus": "Running",
+          "StartMode": "Auto",
+          "Exists": true
+        },
+        "TimestampUtc": "2026-07-23T08:40:10.2697638Z",
+        "DurationMs": 890.02,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-RDS-02",
+        "CheckName": "ScheduledTasks",
+        "Category": "Availability",
+        "Target": "Scheduled tasks",
+        "Status": "Warning",
+        "Message": "2 of 17 evaluated scheduled task(s) failed their last run.",
+        "ObservedValue": 2,
+        "WarningThreshold": ">= 1 failed task(s)",
+        "CriticalThreshold": ">= 5 failed task(s)",
+        "Recommendation": "Check the task result codes and last run times, then re-run or repair the failing tasks.",
+        "Evidence": {
+          "FailedCount": 2,
+          "EvaluatedCount": 17,
+          "FailedTasks": [
+            {
+              "Task": "\\Contoso\\Profile Cleanup",
+              "LastTaskResult": "0x8004EE04",
+              "LastRunTime": "2026-07-23T05:48:50.0000000Z"
+            },
+            {
+              "Task": "\\Contoso\\Session Report Export",
+              "LastTaskResult": "0x8007042B",
+              "LastRunTime": "2026-06-25T10:03:27.0000000Z"
+            }
+          ],
+          "Truncated": false
+        },
+        "TimestampUtc": "2026-07-23T08:40:12.5442223Z",
+        "DurationMs": 2277.44,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-RDS-02",
+        "CheckName": "Certificates",
+        "Category": "Security",
+        "Target": "CN=b6e84d02-9a1f-47c3-8e5a-f2d70c4b91e6, DC=3a9e1c25-7f4d-4b6e-8d02-c1f5a7b9e364 [91A3C50D84F2]",
+        "Status": "Healthy",
+        "Message": "Auto-rotating certificate (total lifetime 1 day(s)) is valid until 2026-07-24.",
+        "ObservedValue": "0.88 days",
+        "WarningThreshold": "<= 30 days",
+        "CriticalThreshold": "<= 14 days or expired",
+        "Recommendation": "",
+        "Evidence": {
+          "Subject": "CN=b6e84d02-9a1f-47c3-8e5a-f2d70c4b91e6, DC=3a9e1c25-7f4d-4b6e-8d02-c1f5a7b9e364",
+          "Issuer": "CN=MS-Organization-P2P-Access [2025]",
+          "Thumbprint": "4C82B5F09E3DA761C48F20D5B7E691A3C50D84F2",
+          "SerialNumber": "00C74B29F1E8D3A5066B42C90DE13F5A88",
+          "StorePath": "Cert:\\LocalMachine\\My",
+          "NotBefore": "2026-07-23T05:39:22.0000000Z",
+          "NotAfter": "2026-07-24T05:44:22.0000000Z",
+          "DaysRemaining": 0.88,
+          "TotalLifetimeDays": 1,
+          "Rotating": true,
+          "HasPrivateKey": true
+        },
+        "TimestampUtc": "2026-07-23T08:40:12.5631715Z",
+        "DurationMs": 2.86,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-RDS-02",
+        "CheckName": "Certificates",
+        "Category": "Security",
+        "Target": "Certificate inventory",
+        "Status": "Healthy",
+        "Message": "4 of 4 certificate(s) satisfy the expiry policy.",
+        "ObservedValue": 4,
+        "WarningThreshold": "Expiry <= 30 days",
+        "CriticalThreshold": "Expiry <= 14 days",
+        "Recommendation": "",
+        "Evidence": {
+          "TotalCertificates": 4,
+          "HealthyCertificates": 4,
+          "RotatingCertificates": 1,
+          "ExistingStores": [
+            "Cert:\\LocalMachine\\My"
+          ],
+          "MissingStores": []
+        },
+        "TimestampUtc": "2026-07-23T08:40:12.5641776Z",
+        "DurationMs": 11.44,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-RDS-02",
+        "CheckName": "Defender",
+        "Category": "Security",
+        "Target": "Microsoft Defender",
+        "Status": "Critical",
+        "Message": "Microsoft Defender real-time protection is disabled.",
+        "ObservedValue": "0 day(s)",
+        "WarningThreshold": ">= 3 days signature age",
+        "CriticalThreshold": ">= 7 days signature age or disabled protection",
+        "Recommendation": "Re-enable Microsoft Defender protection or document the managed replacement; an unprotected host is a critical exposure.",
+        "Evidence": {
+          "AntivirusEnabled": true,
+          "RealTimeProtectionEnabled": false,
+          "AntivirusSignatureAge": 0,
+          "AntivirusSignatureLastUpdated": "2026-07-22T22:45:00.0000000Z",
+          "AMEngineVersion": "1.1.26060.3008"
+        },
+        "TimestampUtc": "2026-07-23T08:40:12.7161344Z",
+        "DurationMs": 155.45,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-RDS-02",
         "CheckName": "EventLog",
         "Category": "Reliability",
-        "Target": "Directory Service",
-        "Status": "Warning",
-        "Message": "42 critical/error event(s) in 'Directory Service' during the last 24 hour(s).",
-        "ObservedValue": 42,
+        "Target": "System",
+        "Status": "Critical",
+        "Message": "126 critical/error event(s) in 'System' during the last 24 hour(s).",
+        "ObservedValue": 126,
         "WarningThreshold": ">= 25 events",
         "CriticalThreshold": ">= 100 events",
-        "Recommendation": "Review recurring providers and event IDs before the error rate becomes operationally significant.",
+        "Recommendation": "Triage the highest-volume providers and correlate events with service impact and recent changes.",
         "Evidence": {
-          "LogName": "Directory Service",
-          "Count": 42,
+          "LogName": "System",
+          "Count": 126,
+          "RetrievedCount": 126,
           "LookbackHours": 24,
           "Levels": [
             1,
@@ -449,45 +1111,274 @@
           "Truncated": false,
           "TopProviders": [
             {
-              "Provider": "Microsoft-Windows-ActiveDirectory_DomainService",
-              "Count": 31
+              "Provider": "Schannel",
+              "Count": 100
+            },
+            {
+              "Provider": "Microsoft-Windows-Time-Service",
+              "Count": 10
+            },
+            {
+              "Provider": "Microsoft-Windows-DistributedCOM",
+              "Count": 8
+            },
+            {
+              "Provider": "Microsoft-Windows-Security-Kerberos",
+              "Count": 5
+            },
+            {
+              "Provider": "Service Control Manager",
+              "Count": 3
             }
-          ]
+          ],
+          "Samples": [
+            {
+              "TimeCreated": "2026-07-23T07:16:30.4454330Z",
+              "Id": 11,
+              "Level": "Error",
+              "ProviderName": "Microsoft-Windows-Security-Kerberos",
+              "Message": null
+            },
+            {
+              "TimeCreated": "2026-07-23T06:03:59.4513868Z",
+              "Id": 5010,
+              "Level": "Error",
+              "ProviderName": "Microsoft-Windows-Time-Service",
+              "Message": null
+            },
+            {
+              "TimeCreated": "2026-07-23T06:03:59.4150376Z",
+              "Id": 5010,
+              "Level": "Error",
+              "ProviderName": "Microsoft-Windows-Time-Service",
+              "Message": null
+            },
+            {
+              "TimeCreated": "2026-07-23T06:03:00.6595226Z",
+              "Id": 5010,
+              "Level": "Error",
+              "ProviderName": "Microsoft-Windows-Time-Service",
+              "Message": null
+            },
+            {
+              "TimeCreated": "2026-07-23T06:02:59.4489764Z",
+              "Id": 5010,
+              "Level": "Error",
+              "ProviderName": "Microsoft-Windows-Time-Service",
+              "Message": null
+            }
+          ],
+          "QueryError": ""
         },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 92.6,
+        "TimestampUtc": "2026-07-23T08:40:13.1513153Z",
+        "DurationMs": 214.61,
         "Error": ""
       },
       {
         "SchemaVersion": "1.0",
-        "ComputerName": "SRV-DC-01",
-        "CheckName": "Dns",
-        "Category": "Connectivity",
-        "Target": "_ldap._tcp.dc._msdcs.contoso.invalid",
+        "ComputerName": "SRV-RDS-02",
+        "CheckName": "EventLog",
+        "Category": "Reliability",
+        "Target": "Application",
         "Status": "Healthy",
-        "Message": "Resolved _ldap._tcp.dc._msdcs.contoso.invalid [SRV] to dc01.contoso.invalid in 6.4 ms.",
-        "ObservedValue": "dc01.contoso.invalid",
-        "WarningThreshold": null,
-        "CriticalThreshold": "Resolution failure",
+        "Message": "22 critical/error event(s) in 'Application' during the last 24 hour(s).",
+        "ObservedValue": 22,
+        "WarningThreshold": ">= 25 events",
+        "CriticalThreshold": ">= 100 events",
         "Recommendation": "",
         "Evidence": {
-          "Name": "_ldap._tcp.dc._msdcs.contoso.invalid",
-          "QueryType": "SRV",
-          "Server": "10.20.0.10",
-          "Answers": [
-            "dc01.contoso.invalid"
+          "LogName": "Application",
+          "Count": 22,
+          "RetrievedCount": 22,
+          "LookbackHours": 24,
+          "Levels": [
+            1,
+            2
           ],
-          "DurationMs": 6.4
+          "Truncated": false,
+          "TopProviders": [
+            {
+              "Provider": ".NET Runtime",
+              "Count": 13
+            },
+            {
+              "Provider": "Universal Print",
+              "Count": 4
+            },
+            {
+              "Provider": "Application Error",
+              "Count": 2
+            },
+            {
+              "Provider": "Application Hang",
+              "Count": 1
+            },
+            {
+              "Provider": "SideBySide",
+              "Count": 1
+            }
+          ],
+          "Samples": [
+            {
+              "TimeCreated": "2026-07-23T07:14:51.6787556Z",
+              "Id": 1022,
+              "Level": "Error",
+              "ProviderName": ".NET Runtime",
+              "Message": null
+            },
+            {
+              "TimeCreated": "2026-07-23T07:12:51.5394745Z",
+              "Id": 1022,
+              "Level": "Error",
+              "ProviderName": ".NET Runtime",
+              "Message": null
+            },
+            {
+              "TimeCreated": "2026-07-23T07:02:10.7380332Z",
+              "Id": 1022,
+              "Level": "Error",
+              "ProviderName": ".NET Runtime",
+              "Message": null
+            },
+            {
+              "TimeCreated": "2026-07-23T06:58:04.9384144Z",
+              "Id": 1022,
+              "Level": "Error",
+              "ProviderName": ".NET Runtime",
+              "Message": null
+            },
+            {
+              "TimeCreated": "2026-07-23T06:18:08.6970391Z",
+              "Id": 1022,
+              "Level": "Error",
+              "ProviderName": ".NET Runtime",
+              "Message": null
+            }
+          ],
+          "QueryError": ""
         },
-        "TimestampUtc": "2026-07-11T09:30:00Z",
-        "DurationMs": 6.4,
+        "TimestampUtc": "2026-07-23T08:40:13.1523874Z",
+        "DurationMs": 214.61,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-RDS-02",
+        "CheckName": "Stability",
+        "Category": "Reliability",
+        "Target": "Operating system",
+        "Status": "Healthy",
+        "Message": "No crash indicators in the last 7 day(s).",
+        "ObservedValue": 0,
+        "WarningThreshold": ">= 1 incident(s)",
+        "CriticalThreshold": ">= 3 incident(s)",
+        "Recommendation": "",
+        "Evidence": {
+          "IncidentCount": 0,
+          "LookbackDays": 7,
+          "Incidents": [],
+          "MinidumpCount": 0,
+          "QueryErrors": []
+        },
+        "TimestampUtc": "2026-07-23T08:40:13.6843408Z",
+        "DurationMs": 531.2,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-RDS-02",
+        "CheckName": "Storage",
+        "Category": "Reliability",
+        "Target": "Storage inventory",
+        "Status": "Healthy",
+        "Message": "1 of 1 physical disk(s) and 2 of 2 fixed volume(s) report healthy status.",
+        "ObservedValue": 3,
+        "WarningThreshold": null,
+        "CriticalThreshold": "Health status must be Healthy",
+        "Recommendation": "",
+        "Evidence": {
+          "PhysicalDisks": [
+            {
+              "FriendlyName": "Msft Virtual Disk",
+              "MediaType": "SSD",
+              "HealthStatus": "Healthy",
+              "OperationalStatus": "OK",
+              "SizeGB": 953.87
+            }
+          ],
+          "FixedVolumes": [
+            {
+              "DriveLetter": "C",
+              "FileSystemLabel": "",
+              "FileSystem": "NTFS",
+              "HealthStatus": "Healthy"
+            },
+            {
+              "DriveLetter": "",
+              "FileSystemLabel": "",
+              "FileSystem": "NTFS",
+              "HealthStatus": "Healthy"
+            }
+          ],
+          "UnhealthyObjects": 0
+        },
+        "TimestampUtc": "2026-07-23T08:40:13.8440429Z",
+        "DurationMs": 160.35,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-RDS-02",
+        "CheckName": "Dns",
+        "Category": "Connectivity",
+        "Target": "DNS targets",
+        "Status": "Skipped",
+        "Message": "No DNS targets are configured.",
+        "ObservedValue": null,
+        "WarningThreshold": null,
+        "CriticalThreshold": null,
+        "Recommendation": "Add required names under Checks.Dns.Targets to validate name resolution from the target host.",
+        "Evidence": {},
+        "TimestampUtc": "2026-07-23T08:40:13.8440429Z",
+        "DurationMs": 0,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-RDS-02",
+        "CheckName": "Tcp",
+        "Category": "Connectivity",
+        "Target": "TCP endpoints",
+        "Status": "Skipped",
+        "Message": "No TCP endpoints are configured.",
+        "ObservedValue": null,
+        "WarningThreshold": null,
+        "CriticalThreshold": null,
+        "Recommendation": "Add required host and port pairs under Checks.Tcp.Endpoints.",
+        "Evidence": {},
+        "TimestampUtc": "2026-07-23T08:40:13.8513520Z",
+        "DurationMs": 0,
+        "Error": ""
+      },
+      {
+        "SchemaVersion": "1.0",
+        "ComputerName": "SRV-RDS-02",
+        "CheckName": "Tls",
+        "Category": "Security",
+        "Target": "TLS endpoints",
+        "Status": "Skipped",
+        "Message": "No TLS endpoints are configured.",
+        "ObservedValue": null,
+        "WarningThreshold": null,
+        "CriticalThreshold": null,
+        "Recommendation": "Add host entries under Checks.Tls.Endpoints to validate TLS handshakes, certificate identity, and expiry.",
+        "Evidence": {},
+        "TimestampUtc": "2026-07-23T08:40:13.8544201Z",
+        "DurationMs": 0,
         "Error": ""
       }
     ],
-    "Tags": [
-      "production",
-      "domain-controller"
-    ],
-    "DurationMs": 611.43
+    "Tags": [],
+    "DurationMs": 14857.82
   }
 ]

@@ -6,6 +6,7 @@
   <a href="https://github.com/xGreeny/infra-pulse/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/xGreeny/infra-pulse/ci.yml?branch=main&style=flat-square&label=CI"></a>
   <a href="https://github.com/xGreeny/infra-pulse/releases"><img alt="Release" src="https://img.shields.io/github/v/release/xGreeny/infra-pulse?display_name=tag&sort=semver&style=flat-square"></a>
   <a href="https://www.powershellgallery.com/packages/InfraPulse"><img alt="PowerShell Gallery" src="https://img.shields.io/powershellgallery/v/InfraPulse?style=flat-square&label=PSGallery&color=5391FE"></a>
+  <a href="https://www.powershellgallery.com/packages/InfraPulse"><img alt="PowerShell Gallery downloads" src="https://img.shields.io/powershellgallery/dt/InfraPulse?style=flat-square&label=downloads&color=5391FE"></a>
   <img alt="PowerShell 5.1 and later" src="https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?logo=powershell&logoColor=white&style=flat-square">
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-45d483?style=flat-square"></a>
 </p>
