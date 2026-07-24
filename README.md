@@ -426,4 +426,4 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the change workflow and [`SECURITY.
 
 ## License
 
-InfraPulse is licensed under the [MIT License](LICENSE).
+Copyright (c) 2026 [Flurin Gubler](https://github.com/xGreeny). InfraPulse is licensed under the [MIT License](LICENSE).
